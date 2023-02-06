@@ -13,10 +13,9 @@ export const UserExtended = types
     initials: types.maybeNull(types.string),
     phone: types.maybeNull(types.string),
   })
-  .preProcessSnapshot((sn) => {
+  .preProcessSnapshot(sn => {
     return camelizeKeys(sn ?? {});
   });
-
 
 /**
  * User store of Label Studio

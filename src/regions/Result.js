@@ -102,7 +102,7 @@ const Result = types
     },
 
     mergeMainValue(value) {
-      value =  value?.toJSON ? value.toJSON() : value;
+      value = value?.toJSON ? value.toJSON() : value;
       const mainValue = self.mainValue?.toJSON?.() ? self.mainValue?.toJSON?.() : self.mainValue;
 
       if (typeof value !== typeof mainValue) return null;
@@ -142,8 +142,8 @@ const Result = types
     },
 
     /**
-     * Checks perRegion and Visibility params
-     */
+             * Checks perRegion and Visibility params
+             */
     get isSubmitable() {
       const control = self.from_name;
 
@@ -251,7 +251,7 @@ const Result = types
     // update region appearence based on it's current states, for
     // example bbox needs to update its colors when you change the
     // label, becuase it takes color from the label
-    updateAppearenceFromState() {},
+    updateAppearenceFromState() { },
 
     serialize(options) {
       const { type, score, value, ...sn } = getSnapshot(self);
@@ -349,8 +349,8 @@ const Result = types
     },
 
     /**
-     * Remove region
-     */
+             * Remove region
+             */
     deleteRegion() {
       if (!self.annotation.editable) return;
 

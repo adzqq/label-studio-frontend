@@ -11,7 +11,7 @@ import { IconExpand, IconHandTool, IconZoomIn, IconZoomOut } from '../assets/ico
 const ToolView = observer(({ item }) => {
   return (
     <Fragment>
-      <Tool
+      {/* <Tool
         active={item.selected}
         icon={<IconHandTool />}
         ariaLabel="pan"
@@ -22,7 +22,7 @@ const ToolView = observer(({ item }) => {
 
           item.manager.selectTool(item, !sel);
         }}
-      />
+      /> */}
       <Tool
         icon={<IconZoomIn />}
         ariaLabel="zoom-in"
@@ -32,7 +32,7 @@ const ToolView = observer(({ item }) => {
           item.handleZoom(1);
         }}
       />
-      <FlyoutMenu
+      {/* <FlyoutMenu
         icon={<IconExpand />}
         items={[
           {
@@ -50,7 +50,7 @@ const ToolView = observer(({ item }) => {
             },
           },
         ]}
-      />
+      /> */}
       <Tool
         icon={<IconZoomOut />}
         ariaLabel="zoom-out"

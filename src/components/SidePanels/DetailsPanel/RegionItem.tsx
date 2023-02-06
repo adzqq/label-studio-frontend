@@ -12,8 +12,8 @@ interface RegionItemProps {
   withActions?: boolean;
   compact?: boolean;
   withIds?: boolean;
-  mainDetails?: FC<{region: any}>;
-  metaDetails?: FC<{region: any, editMode?: boolean, cancelEditMode?: () => void}>;
+  mainDetails?: FC<{ region: any }>;
+  metaDetails?: FC<{ region: any, editMode?: boolean, cancelEditMode?: () => void }>;
 }
 
 export const RegionItem: FC<RegionItemProps> = observer(({
@@ -46,12 +46,12 @@ export const RegionItem: FC<RegionItemProps> = observer(({
     <Block name="detailed-region" mod={{ compact }}>
       <Elem name="head" style={{ color: color.css() }}>
         <Elem name="title">
-          <Elem name="icon"><NodeIcon node={region}/></Elem>
+          <Elem name="icon"><NodeIcon node={region} /></Elem>
           {title}
         </Elem>
         {withIds && <span>{region.cleanId}</span>}
       </Elem>
-      {MainDetails && <Elem name="content"><MainDetails region={region}/></Elem>}
+      {MainDetails && <Elem name="content"><MainDetails region={region} /></Elem>}
       {region?.isDrawing && (
         <Elem name="warning">
           <IconWarning />
@@ -92,7 +92,7 @@ const RegionAction: FC<any> = observer(({
   entityButtons.push((
     <RegionActionButton
       key="relation"
-      icon={<IconLink/>}
+      icon={<IconLink />}
       primary={annotation.relationMode}
       onClick={() => {
         if (annotation.relationMode) {
@@ -108,7 +108,7 @@ const RegionAction: FC<any> = observer(({
   entityButtons.push((
     <RegionActionButton
       key="meta"
-      icon={<IconPlusAlt/>}
+      icon={<IconPlusAlt />}
       primary={editMode}
       onClick={() => onEditModeChange(!editMode)}
       hotkey="region:meta"
@@ -122,20 +122,20 @@ const RegionAction: FC<any> = observer(({
       </Elem>
       <Elem name="group" mod={{ align: 'right' }}>
         <RegionActionButton
-          icon={region.editable ? <IconLockUnlocked/> : <IconLockLocked/>}
+          icon={region.editable ? <IconLockUnlocked /> : <IconLockLocked />}
           disabled={region.readonly}
           onClick={() => region.setLocked(!region.locked)}
           hotkey="region:lock"
         />
         <RegionActionButton
-          icon={region.hidden ? <IconEyeClosed/> : <IconEyeOpened/>}
+          icon={region.hidden ? <IconEyeClosed /> : <IconEyeOpened />}
           onClick={region.toggleHidden}
           hotkey="region:visibility"
         />
         <RegionActionButton
           danger
           disabled={region.readonly || region.locked || !region.editable}
-          icon={<IconTrash/>}
+          icon={<IconTrash />}
           onClick={() => annotation.deleteRegion(region)}
         />
       </Elem>

@@ -58,7 +58,8 @@ const Model = types
     toolNames: ['Ellipse'],
   }));
 
-const EllipseModel = types.compose('EllipseModel',
+const EllipseModel = types.compose(
+  'EllipseModel',
   ControlBase,
   AnnotationMixin,
   SeparatedControlMixin,

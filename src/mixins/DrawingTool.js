@@ -118,12 +118,15 @@ const DrawingTool = types
       commitDrawingRegion() {
         const { currentArea, control, obj } = self;
 
-        if(!currentArea) return;
+        if (!currentArea) return;
         const source = currentArea.toJSON();
-        const value = Object.keys(currentArea.serialize().value).reduce((value, key) => {
-          value[key] = source[key];
-          return value;
-        }, { coordstype: 'px', dynamic: self.dynamic  });
+        const value = Object.keys(currentArea.serialize().value).reduce(
+          (value, key) => {
+            value[key] = source[key];
+            return value;
+          },
+          { coordstype: 'px', dynamic: self.dynamic },
+        );
 
         const newArea = self.annotation.createResult(value, currentArea.results[0].value.toJSON(), control, obj);
 
@@ -158,7 +161,9 @@ const DrawingTool = types
       },
 
       canStartDrawing() {
-        return !self.isIncorrectControl() /*&& !self.isIncorrectLabel()*/ && self.canStart() && !self.annotation.isDrawing;
+        return (
+          !self.isIncorrectControl() /*&& !self.isIncorrectLabel()*/ && self.canStart() && !self.annotation.isDrawing
+        );
       },
 
       startDrawing(x, y) {
@@ -179,7 +184,7 @@ const DrawingTool = types
         self.commitDrawingRegion();
         self._resetState();
       },
-      _resetState(){
+      _resetState() {
         self.annotation.setIsDrawing(false);
         self.annotation.history.unfreeze();
         self.mode = 'viewing';
@@ -338,7 +343,7 @@ const MultipleClicksDrawingTool = DrawingTool.named('MultipleClicksMixin')
 
         pointsCount = 0;
         self.closeCurrent();
-        setTimeout(()=>{
+        setTimeout(() => {
           self._finishDrawing();
         });
       },
@@ -394,7 +399,7 @@ const MultipleClicksDrawingTool = DrawingTool.named('MultipleClicksMixin')
       },
 
       drawDefault() {
-        const { x,y } = startPoint;
+        const { x, y } = startPoint;
 
         self.nextPoint(x + self.defaultDimensions.length, y);
         self.nextPoint(
@@ -407,7 +412,7 @@ const MultipleClicksDrawingTool = DrawingTool.named('MultipleClicksMixin')
   });
 
 const ThreePointsDrawingTool = DrawingTool.named('ThreePointsDrawingTool')
-  .views((self) => ({
+  .views(self => ({
     canStart() {
       return !this.current();
     },
@@ -438,10 +443,8 @@ const ThreePointsDrawingTool = DrawingTool.named('ThreePointsDrawingTool')
         return !self.isIncorrectControl();
       },
       updateDraw: (x, y) => {
-        if (currentMode === DEFAULT_MODE)
-          self.getCurrentArea()?.draw(x, y, points);
-        else if (currentMode === DRAG_MODE)
-          self.draw(x, y);
+        if (currentMode === DEFAULT_MODE) self.getCurrentArea()?.draw(x, y, points);
+        else if (currentMode === DRAG_MODE) self.draw(x, y);
       },
 
       nextPoint(x, y) {
@@ -470,15 +473,15 @@ const ThreePointsDrawingTool = DrawingTool.named('ThreePointsDrawingTool')
           startPoint = null;
           currentMode = DEFAULT_MODE;
           Super.finishDrawing(x, y);
-          setTimeout(()=>{
+          setTimeout(() => {
             self._finishDrawing();
           });
         } else return;
       },
 
       mousemoveEv(_, [x, y]) {
-        if(self.isDrawing){
-          if(lastEvent === MOUSE_DOWN_EVENT) {
+        if (self.isDrawing) {
+          if (lastEvent === MOUSE_DOWN_EVENT) {
             currentMode = DRAG_MODE;
           }
 
@@ -498,7 +501,7 @@ const ThreePointsDrawingTool = DrawingTool.named('ThreePointsDrawingTool')
       },
       mouseupEv(ev, [x, y]) {
         if (!self.canStartDrawing()) return;
-        if(self.isDrawing) {
+        if (self.isDrawing) {
           if (currentMode === DRAG_MODE) {
             self.draw(x, y);
             self.finishDrawing(x, y);

@@ -12,7 +12,6 @@ import { isDefined } from '../../../utils/utilities';
 import ObjectBase from '../Base';
 import { WS_SPEED, WS_VOLUME, WS_ZOOM_X } from './constants';
 
-
 /**
  * The Audio tag plays audio and shows its waveform. Use for audio annotation tasks where you want to label regions of audio, see the waveform, and manipulate audio during annotation.
  *
@@ -74,13 +73,14 @@ export const AudioModel = types.compose(
   ObjectBase,
   AnnotationMixin,
   IsReadyMixin,
-  types.model('AudioModel', {
-    type: 'audio',
-    _value: types.optional(types.string, ''),
+  types
+    .model('AudioModel', {
+      type: 'audio',
+      _value: types.optional(types.string, ''),
 
-    playing: types.optional(types.boolean, false),
-    regions: types.array(AudioRegionModel),
-  })
+      playing: types.optional(types.boolean, false),
+      regions: types.array(AudioRegionModel),
+    })
     .volatile(() => ({
       errors: [],
     }))
@@ -169,8 +169,8 @@ export const AudioModel = types.compose(
         if (!fm.perregion && fromModel.type !== 'labels') return;
 
         /**
-       *
-       */
+         *
+         */
         const tree = {
           pid: obj.id,
           start: obj.value.start,
@@ -187,9 +187,9 @@ export const AudioModel = types.compose(
           // m.fromStateJSON(obj);
 
           if (!r) {
-          // tree.states = [m];
+            // tree.states = [m];
             r = self.createRegion(tree, [m]);
-          // r = self.addRegion(tree);
+            // r = self.addRegion(tree);
           } else {
             r.states.push(m);
           }
@@ -247,7 +247,7 @@ export const AudioModel = types.compose(
       },
 
       selectRange(ev, ws_region) {
-        const selectedRegions = self.regs.filter(r=>r.start >= ws_region.start && r.end <= ws_region.end);
+        const selectedRegions = self.regs.filter(r => r.start >= ws_region.start && r.end <= ws_region.end);
 
         ws_region.remove && ws_region.remove();
         if (!selectedRegions.length) return;
@@ -273,7 +273,7 @@ export const AudioModel = types.compose(
         const states = self.getAvailableStates();
 
         if (states.length === 0) {
-          wsRegion.on('update-end', ev=>self.selectRange(ev,wsRegion));
+          wsRegion.on('update-end', ev => self.selectRange(ev, wsRegion));
           return;
         }
 
@@ -287,8 +287,8 @@ export const AudioModel = types.compose(
       },
 
       /**
-     * Play and stop
-     */
+       * Play and stop
+       */
       handlePlay() {
         if (self._ws) {
           self.playing = !self.playing;
@@ -320,7 +320,6 @@ export const AudioModel = types.compose(
         self.regs.forEach(reg => {
           self.createWsRegion(reg);
         });
-
 
         // In cases where we do skipNextUndoState on region creation, we need to make sure
         // that we don't skip the next undo state after it is resolved entirely.

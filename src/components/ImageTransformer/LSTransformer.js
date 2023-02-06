@@ -7,22 +7,14 @@ const EVENTS_NAME = 'tr-konva';
 // Copies of local methods from Konva's original implementation
 function getCenter(shape) {
   return {
-    x: shape.x +
-      (shape.width / 2) * Math.cos(shape.rotation) +
-      (shape.height / 2) * Math.sin(-shape.rotation),
-    y: shape.y +
-      (shape.height / 2) * Math.cos(shape.rotation) +
-      (shape.width / 2) * Math.sin(shape.rotation),
+    x: shape.x + (shape.width / 2) * Math.cos(shape.rotation) + (shape.height / 2) * Math.sin(-shape.rotation),
+    y: shape.y + (shape.height / 2) * Math.cos(shape.rotation) + (shape.width / 2) * Math.sin(shape.rotation),
   };
 }
 
 function rotateAroundPoint(shape, angleRad, point) {
-  const x = point.x +
-    (shape.x - point.x) * Math.cos(angleRad) -
-    (shape.y - point.y) * Math.sin(angleRad);
-  const y = point.y +
-    (shape.x - point.x) * Math.sin(angleRad) +
-    (shape.y - point.y) * Math.cos(angleRad);
+  const x = point.x + (shape.x - point.x) * Math.cos(angleRad) - (shape.y - point.y) * Math.sin(angleRad);
+  const y = point.y + (shape.x - point.x) * Math.sin(angleRad) + (shape.y - point.y) * Math.cos(angleRad);
 
   return {
     ...shape,
@@ -64,8 +56,7 @@ class LSTransformer extends Konva.Transformer {
   constructor(props) {
     super(props);
 
-    if (props.rotateEnabled)
-      this.createRotateButton();
+    if (props.rotateEnabled) this.createRotateButton();
   }
 
   // Here starts the configuration of the rotation tool
@@ -75,7 +66,7 @@ class LSTransformer extends Konva.Transformer {
     for (const obj in rotateList) {
       const rotateButton = new Konva.Circle({
         radius: 20,
-        name:`rotate-${obj}`,
+        name: `rotate-${obj}`,
         dragDistance: 0,
         draggable: true,
         x: rotateList[obj].x,
@@ -103,20 +94,20 @@ class LSTransformer extends Konva.Transformer {
         }
       });
 
-      rotateButton.on('dragstart', (e) => {
+      rotateButton.on('dragstart', e => {
         const anchorNode = this.findOne('.' + this._movingAnchorName);
 
         anchorNode.stopDrag();
         e.cancelBubble = true;
       });
 
-      rotateButton.on('dragend', (e) => {
+      rotateButton.on('dragend', e => {
         e.cancelBubble = true;
       });
     }
   }
 
-  handleMouseDown = (e) => {
+  handleMouseDown = e => {
     const stage = this.getStage();
     const pp = stage?.getPointerPosition();
 
@@ -126,7 +117,7 @@ class LSTransformer extends Konva.Transformer {
     const origin = getCenter(shape);
     const dx = pp.x - origin.x;
     const dy = pp.y - origin.y;
-    const azimuth = (Math.PI / 2 - Math.atan2(-dy, dx));
+    const azimuth = Math.PI / 2 - Math.atan2(-dy, dx);
 
     stage.content.style.cursor = `url(${IconRotate}) 16 16, pointer`;
     this.isMouseDown = true;
@@ -145,12 +136,12 @@ class LSTransformer extends Konva.Transformer {
     }
 
     this._fire('transformstart', { evt: e, target: this.getNode() });
-    this._nodes.forEach((target) => {
+    this._nodes.forEach(target => {
       target._fire('transformstart', { evt: e, target });
     });
   };
 
-  handleMouseUp = (e) => {
+  handleMouseUp = e => {
     this.isMouseDown = false;
     this.origin = undefined;
 
@@ -169,14 +160,14 @@ class LSTransformer extends Konva.Transformer {
 
     this._fire('transformend', { evt: e, target: node });
     if (node) {
-      this._nodes.forEach((target) => {
+      this._nodes.forEach(target => {
         target._fire('transformend', { evt: e, target });
       });
     }
     this._movingAnchorName = '';
   };
 
-  handleMouseMove = (e) => {
+  handleMouseMove = e => {
     const stage = this.getStage();
 
     if (!this.isMouseDown || !this.origin || !stage) return;
@@ -191,7 +182,7 @@ class LSTransformer extends Konva.Transformer {
     const dx = pp.x - this.origin.x;
     const dy = pp.y - this.origin.y;
     // @todo why such signs? but they produce correct angles in every quadrant
-    const azimuth = (Math.PI / 2 - Math.atan2(-dy, dx));
+    const azimuth = Math.PI / 2 - Math.atan2(-dy, dx);
 
     const newRotation = azimuth - this.initialRotationDelta;
 
@@ -258,10 +249,13 @@ class LSTransformer extends Konva.Transformer {
       const anchorNode = this.findOne(`.rotate-${obj}`);
 
       if (anchorNode) {
-        anchorNode.setAttrs({
-          x: rotateList[obj].x,
-          y: rotateList[obj].y,
-        }).getLayer().batchDraw();
+        anchorNode
+          .setAttrs({
+            x: rotateList[obj].x,
+            y: rotateList[obj].y,
+          })
+          .getLayer()
+          .batchDraw();
       }
     }
 
@@ -275,13 +269,16 @@ class LSTransformer extends Konva.Transformer {
         y: backAbsScale.y / trAbsScale.y,
       };
 
-      outerBack.setAttrs({
-        x: (x - this.getStage().getAttr('x')) * scale.x,
-        y: (y - this.getStage().getAttr('y')) * scale.y,
-        width: width * scale.x,
-        height: height * scale.y,
-        rotation,
-      }).getLayer().batchDraw();
+      outerBack
+        .setAttrs({
+          x: (x - this.getStage().getAttr('x')) * scale.x,
+          y: (y - this.getStage().getAttr('y')) * scale.y,
+          width: width * scale.x,
+          height: height * scale.y,
+          rotation,
+        })
+        .getLayer()
+        .batchDraw();
     }
   }
 }

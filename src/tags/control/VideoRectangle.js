@@ -31,18 +31,12 @@ const TagAttrs = types.model({
   toname: types.maybeNull(types.string),
 });
 
-const ModelAttrs = types
-  .model('VideoRectangleModel', {
-    pid: types.optional(types.string, guidGenerator),
-    type: 'videorectangle',
-  });
+const ModelAttrs = types.model('VideoRectangleModel', {
+  pid: types.optional(types.string, guidGenerator),
+  type: 'videorectangle',
+});
 
-const VideoRectangleModel = types.compose(
-  'VideoRectangleModel',
-  ModelAttrs,
-  TagAttrs,
-  ControlBase,
-);
+const VideoRectangleModel = types.compose('VideoRectangleModel', ModelAttrs, TagAttrs, ControlBase);
 
 const HtxVideoRectangle = observer(() => {
   return null;

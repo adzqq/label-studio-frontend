@@ -52,7 +52,8 @@ const Model = types
     toolNames: ['Brush', 'Erase'],
   }));
 
-const BrushModel = types.compose('BrushModel',
+const BrushModel = types.compose(
+  'BrushModel',
   ControlBase,
   AnnotationMixin,
   SeparatedControlMixin,

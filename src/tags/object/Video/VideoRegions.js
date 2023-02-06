@@ -12,17 +12,15 @@ import { createBoundingBoxGetter, createOnDragMoveHandler } from './TransformToo
 
 export const MIN_SIZE = 5;
 
-const SelectionRect = (props) => {
+const SelectionRect = props => {
   return (
     <>
+      <Rect {...props} strokeWidth={2} stroke="#fff" />
       <Rect
         {...props}
-        strokeWidth={2}
-        stroke="#fff"
-      />
-      <Rect
-        {...props}
-        fill={chroma('#0099FF').alpha(0.1).css()}
+        fill={chroma('#0099FF')
+          .alpha(0.1)
+          .css()}
         strokeWidth={2}
         stroke="#0099FF"
         dash={[2, 2]}
@@ -46,7 +44,9 @@ const VideoRegionsPure = ({
   const [newRegion, setNewRegion] = useState();
   const [isDrawing, setDrawingMode] = useState(false);
 
-  const selected = regions.filter((reg) => (reg.selected || reg.inSelection) && !reg.hidden && !reg.locked && !reg.readonly);
+  const selected = regions.filter(
+    reg => (reg.selected || reg.inSelection) && !reg.hidden && !reg.locked && !reg.readonly,
+  );
   const listenToEvents = !locked;
 
   // if region is not in lifespan, it's not rendered,
@@ -64,8 +64,8 @@ const VideoRegionsPure = ({
     const overshotYAmmount = (Math.abs(pan.y) - Math.abs((height - resultHeight) / 2)) * panYDirection;
     const edgeZoomOffestX = overshotX ? overshotXAmmount : 0;
     const edgeZoomOffestY = overshotY ? overshotYAmmount : 0;
-    const offsetLeft = ((width - resultWidth) / 2) + pan.x - edgeZoomOffestX;
-    const offsetTop = ((height - resultHeight) / 2) + pan.y - edgeZoomOffestY;
+    const offsetLeft = (width - resultWidth) / 2 + pan.x - edgeZoomOffestX;
+    const offsetTop = (height - resultHeight) / 2 + pan.y - edgeZoomOffestY;
 
     return {
       width: resultWidth,
@@ -78,25 +78,31 @@ const VideoRegionsPure = ({
     };
   }, [pan.x, pan.y, zoom, videoDimensions, width, height]);
 
-  const layerProps = useMemo(() => ({
-    width: workinAreaCoordinates.width,
-    height: workinAreaCoordinates.height,
-    scaleX: zoom,
-    scaleY: zoom,
-    position: {
-      x: workinAreaCoordinates.x,
-      y: workinAreaCoordinates.y,
+  const layerProps = useMemo(
+    () => ({
+      width: workinAreaCoordinates.width,
+      height: workinAreaCoordinates.height,
+      scaleX: zoom,
+      scaleY: zoom,
+      position: {
+        x: workinAreaCoordinates.x,
+        y: workinAreaCoordinates.y,
+      },
+    }),
+    [workinAreaCoordinates, zoom],
+  );
+
+  const normalizeMouseOffsets = useCallback(
+    (x, y) => {
+      const { x: offsetLeft, y: offsetTop } = workinAreaCoordinates;
+
+      return {
+        x: (x - offsetLeft) / zoom,
+        y: (y - offsetTop) / zoom,
+      };
     },
-  }), [workinAreaCoordinates, zoom]);
-
-  const normalizeMouseOffsets = useCallback((x, y) => {
-    const { x: offsetLeft, y: offsetTop } = workinAreaCoordinates;
-
-    return {
-      x: (x - offsetLeft) / zoom,
-      y: (y - offsetTop) / zoom,
-    };
-  }, [workinAreaCoordinates, zoom]);
+    [workinAreaCoordinates, zoom],
+  );
 
   useEffect(() => {
     if (!isDrawing && newRegion) {
@@ -126,10 +132,7 @@ const VideoRegionsPure = ({
   const inBounds = (x, y) => {
     if (allowRegionsOutsideWorkingArea) return true;
 
-    return x > 0 &&
-           y > 0 &&
-           x < workinAreaCoordinates.realWidth &&
-           y < workinAreaCoordinates.realHeight;
+    return x > 0 && y > 0 && x < workinAreaCoordinates.realWidth && y < workinAreaCoordinates.realHeight;
   };
 
   const limitCoordinates = ({ x, y }) => {
@@ -192,11 +195,13 @@ const VideoRegionsPure = ({
     tr.getLayer().batchDraw();
   };
 
-  const eventHandlers = listenToEvents ? {
-    onMouseDown: handleMouseDown,
-    onMouseMove: handleMouseMove,
-    onMouseUp: handleMouseUp,
-  } : {};
+  const eventHandlers = listenToEvents
+    ? {
+      onMouseDown: handleMouseDown,
+      onMouseMove: handleMouseMove,
+      onMouseUp: handleMouseUp,
+    }
+    : {};
 
   return (
     <Stage
@@ -221,9 +226,9 @@ const VideoRegionsPure = ({
       </Layer>
       {item.annotation?.editable && isDrawing ? (
         <Layer {...layerProps}>
-          <SelectionRect {...newRegion}/>
+          <SelectionRect {...newRegion} />
         </Layer>
-      ): null}
+      ) : null}
       {item.annotation?.editable && selected?.length > 0 ? (
         <Layer>
           <Transformer
@@ -235,20 +240,12 @@ const VideoRegionsPure = ({
             onDragMove={createOnDragMoveHandler(workinAreaCoordinates, !allowRegionsOutsideWorkingArea)}
           />
         </Layer>
-      ): null}
+      ) : null}
     </Stage>
   );
 };
 
-const RegionsLayer = observer(({
-  regions,
-  item,
-  locked,
-  isDrawing,
-  workinAreaCoordinates,
-  stageRef,
-  onDragMove,
-}) => {
+const RegionsLayer = observer(({ regions, item, locked, isDrawing, workinAreaCoordinates, stageRef, onDragMove }) => {
   return (
     <>
       {regions.map(reg => (
@@ -269,31 +266,29 @@ const RegionsLayer = observer(({
   );
 });
 
-const Shape = observer(({
-  reg,
-  frame,
-  stageRef,
-  ...props
-}) => {
+const Shape = observer(({ reg, frame, stageRef, ...props }) => {
   const box = reg.getShape(frame);
 
-  return reg.isInLifespan(frame) && box && (
-    <Rectangle
-      reg={reg}
-      box={box}
-      frame={frame}
-      onClick={(e) => {
-        const annotation = getParentOfType(reg, Annotation);
+  return (
+    reg.isInLifespan(frame) &&
+    box && (
+      <Rectangle
+        reg={reg}
+        box={box}
+        frame={frame}
+        onClick={e => {
+          const annotation = getParentOfType(reg, Annotation);
 
-        if (annotation && annotation.relationMode) {
-          stageRef.current.container().style.cursor = Constants.DEFAULT_CURSOR;
-        }
+          if (annotation && annotation.relationMode) {
+            stageRef.current.container().style.cursor = Constants.DEFAULT_CURSOR;
+          }
 
-        reg.setHighlight(false);
-        reg.onClickRegion(e);
-      }}
-      {...props}
-    />
+          reg.setHighlight(false);
+          reg.onClickRegion(e);
+        }}
+        {...props}
+      />
+    )
   );
 });
 

@@ -14,4 +14,18 @@ import { Contrast } from './Contrast';
 import { FloodFill } from './FloodFill';
 import { Selection } from './Selection';
 
-export { Brush, Erase, KeyPoint, Polygon, Rect, Rect3Point, Ellipse, Brightness, Contrast, Rotate, Zoom, FloodFill, Selection };
+export {
+  Brush,
+  Erase,
+  KeyPoint,
+  Polygon,
+  Rect,
+  Rect3Point,
+  Ellipse,
+  Brightness,
+  Contrast,
+  Rotate,
+  Zoom,
+  FloodFill,
+  Selection
+};

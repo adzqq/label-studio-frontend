@@ -28,13 +28,11 @@ class ToolsManager {
   }
 
   static removeAllTools() {
-    INSTANCES.forEach((manager) => manager.removeAllTools());
+    INSTANCES.forEach(manager => manager.removeAllTools());
     INSTANCES.clear();
   }
 
-  constructor({
-    name,
-  } = {}) {
+  constructor({ name } = {}) {
     this.name = name;
     this.tools = {};
     this._default_tool = null;

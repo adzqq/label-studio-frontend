@@ -42,6 +42,7 @@ function rootElement(element) {
  * @param {object} params
  */
 function configureApplication(params) {
+  console.log('production-configureApplication');
   // callbacks for back compatibility
   const osCB = params.submitAnnotation || params.onSubmitAnnotation;
   const ouCB = params.updateAnnotation || params.onUpdateAnnotation;

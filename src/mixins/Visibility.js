@@ -77,9 +77,8 @@ const VisibilityMixin = types
           const choicesList = choices?.selectedValues?.();
 
           if (choicesList?.length) {
-            for (const obj of choicesList){
-              if (obj === self.whenchoicevalue)
-                return true;
+            for (const obj of choicesList) {
+              if (obj === self.whenchoicevalue) return true;
             }
           }
         }

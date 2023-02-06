@@ -8,32 +8,49 @@ import styles from './Paragraphs.module.scss';
 const AuthorTag = ({ name, selected }) => {
   const itemStyle = { border: `2px solid ${Utils.Colors.convertToRGBA(ColorScheme.make_color({ seed: name })[0])}` };
 
-  return <span className={[styles.authorFilter__select__item, selected && styles.authorFilter__select__item_selected].join(' ')} style={itemStyle}>{name}</span>;
+  return (
+    <span
+      className={[styles.authorFilter__select__item, selected && styles.authorFilter__select__item_selected].join(' ')}
+      style={itemStyle}
+    >
+      {name}
+    </span>
+  );
 };
 
-const renderMultipleSelected = (selected) => {
+const renderMultipleSelected = selected => {
   if (selected.length === 0) return null;
 
   return (
     <div className={styles.authorFilter__select}>
-      {selected.map((name) => (<AuthorTag key={name} name={name} />))}
+      {selected.map(name => (
+        <AuthorTag key={name} name={name} />
+      ))}
     </div>
   );
 };
 
 export const AuthorFilter = observer(({ item }) => {
-  const placeholder = useMemo(() => (<span className={styles.authorFilter__placeholder}>Show all authors</span>), []);
+  const placeholder = useMemo(() => <span className={styles.authorFilter__placeholder}>Show all authors</span>, []);
   const value = item.filterByAuthor;
-  const options = useMemo(() => item._value.reduce((all, v) => all.includes(v[item.namekey]) ? all : [...all, v[item.namekey]], []).sort(), [item._value, item.namekey]);
-  const filteredOptions = item.searchAuthor ? options.filter(o => o.toLowerCase().includes(item.searchAuthor.toLowerCase())) : options;
-  const onFilterChange = useCallback((next) => {
-    // ensure this is cleared if any action promoting an empty value change is made
-    if (!next || next?.includes(null)) {
-      item.setAuthorFilter([]);
-    } else {
-      item.setAuthorFilter(next);
-    }
-  }, [item.setAuthorFilter]);
+  const options = useMemo(
+    () => item._value.reduce((all, v) => (all.includes(v[item.namekey]) ? all : [...all, v[item.namekey]]), []).sort(),
+    [item._value, item.namekey],
+  );
+  const filteredOptions = item.searchAuthor
+    ? options.filter(o => o.toLowerCase().includes(item.searchAuthor.toLowerCase()))
+    : options;
+  const onFilterChange = useCallback(
+    next => {
+      // ensure this is cleared if any action promoting an empty value change is made
+      if (!next || next?.includes(null)) {
+        item.setAuthorFilter([]);
+      } else {
+        item.setAuthorFilter(next);
+      }
+    },
+    [item.setAuthorFilter],
+  );
 
   return (
     <div className={styles.authorFilter}>
@@ -54,7 +71,7 @@ export const AuthorFilter = observer(({ item }) => {
             className={styles.authorFilter__search__input}
             name="search_author"
             placeholder="Search"
-            onInput={(e) => item.setAuthorSearch(e.target.value)}
+            onInput={e => item.setAuthorSearch(e.target.value)}
           />
         </div>
         <Select.Option value={null} key="showAllAuthors" exclude>

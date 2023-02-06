@@ -12,7 +12,7 @@ export const CommentStore = types
   })
   .volatile(() => ({
     addedCommentThisSession: false,
-    commentFormSubmit: () => {},
+    commentFormSubmit: () => { },
     currentComment: '',
     inputRef: {},
     tooltipMessage: '',
@@ -65,12 +65,13 @@ export const CommentStore = types
     },
   }))
   .actions(self => {
-    function serialize({ commentsFilter, queueComments } = { commentsFilter: 'all', queueComments: false }) { 
-
+    function serialize({ commentsFilter, queueComments } = { commentsFilter: 'all', queueComments: false }) {
       const serializedComments = getSnapshot(commentsFilter === 'queued' ? self.queuedComments : self.comments);
-      
+
       return {
-        comments: queueComments ? serializedComments.map(comment => ({ id: comment.id > 0 ? comment.id * -1 : comment.id, ...comment })): serializedComments,
+        comments: queueComments
+          ? serializedComments.map(comment => ({ id: comment.id > 0 ? comment.id * -1 : comment.id, ...comment }))
+          : serializedComments,
       };
     }
 
@@ -89,7 +90,7 @@ export const CommentStore = types
     function setLoading(loading = null) {
       self.loading = loading;
     }
-    
+
     function setTooltipMessage(tooltipMessage) {
       self.tooltipMessage = tooltipMessage;
     }
@@ -106,11 +107,11 @@ export const CommentStore = types
       if (index > -1) {
         const snapshot = getSnapshot(comments[index]);
 
-        comments[index] = { ...snapshot, id : newComment.id || snapshot.id };
+        comments[index] = { ...snapshot, id: newComment.id || snapshot.id };
       }
     }
 
-    function removeCommentById(id)  {
+    function removeCommentById(id) {
       const comments = self.comments;
 
       const index = comments.findIndex(comment => comment.id === id);
@@ -145,7 +146,7 @@ export const CommentStore = types
             self.replaceId(comment.id, persistedComment);
           }
         }
-      } catch(err) {
+      } catch (err) {
         console.error(err);
       } finally {
         self.setLoading(null);
@@ -159,7 +160,7 @@ export const CommentStore = types
 
       const now = Date.now() * -1;
 
-      const comment =  {
+      const comment = {
         id: now,
         text,
         task: self.taskId,
@@ -208,10 +209,10 @@ export const CommentStore = types
             self.setCurrentComment('');
             if (refetchList) self.listComments();
           }
-        } catch(err) {
+        } catch (err) {
           self.removeCommentById(now);
           throw err;
-        } finally{ 
+        } finally {
           self.setLoading(null);
         }
       } else {
@@ -243,7 +244,7 @@ export const CommentStore = types
       localStorage.setItem(`commentStore.${key}`, JSON.stringify(self.serialize(options)));
     }
 
-    function fromCache(key, { merge = true, queueRestored = false } = { }) {
+    function fromCache(key, { merge = true, queueRestored = false } = {}) {
       const value = localStorage.getItem(`commentStore.${key}`);
 
       if (value) {
@@ -252,22 +253,23 @@ export const CommentStore = types
         if (Array.isArray(restored?.comments)) {
           let restoreIds = [];
 
-          if (queueRestored) { 
+          if (queueRestored) {
             restoreIds = restored.comments.map(comment => comment.id);
           }
           if (merge) {
-            restored.comments = uniqBy([
-              ...restored.comments,
-              ...getSnapshot(self.comments),
-            ], 'id')
-              .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+            restored.comments = uniqBy([...restored.comments, ...getSnapshot(self.comments)], 'id').sort(
+              (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+            );
           }
           if (restoreIds.length) {
-            restored.comments = restored.comments.map((comment) =>
-              restoreIds.includes(comment.id) ? ({
-                id: comment.id > 0 ? comment.id * -1 : comment.id,
-                ...comment,
-              }): comment);
+            restored.comments = restored.comments.map(comment =>
+              restoreIds.includes(comment.id)
+                ? {
+                  id: comment.id > 0 ? comment.id * -1 : comment.id,
+                  ...comment,
+                }
+                : comment,
+            );
           }
           self.setComments(restored.comments);
         }
@@ -278,8 +280,7 @@ export const CommentStore = types
       self.fromCache(key, { merge: true, queueRestored: true });
     }
 
-    const listComments = flow((function* ({ mounted = { current: true }, suppressClearComments } = {}) {
-
+    const listComments = flow(function* ({ mounted = { current: true }, suppressClearComments } = {}) {
       if (!suppressClearComments) self.setComments([]);
       if (!self.draftId && !self.annotationId) return;
 
@@ -297,15 +298,14 @@ export const CommentStore = types
         if (mounted.current && annotation === self.annotationId) {
           self.setComments(comments);
         }
-      } catch(err) {
+      } catch (err) {
         console.error(err);
       } finally {
         if (mounted.current) {
           self.setLoading(null);
         }
       }
-    }));
-
+    });
 
     return {
       serialize,

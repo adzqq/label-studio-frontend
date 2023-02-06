@@ -7,7 +7,7 @@ import './HistoryActions.styl';
 
 export const EditingHistory = observer(({ entity }) => {
   const { history } = entity;
-  
+
   return (
     <Block name="history">
       <Tooltip title="Undo">

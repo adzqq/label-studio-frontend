@@ -27,9 +27,7 @@ const _Tool = types
         return 'Ellipse region';
       },
       get iconComponent() {
-        return self.dynamic
-          ? NodeViews.EllipseRegionModel.altIcon
-          : NodeViews.EllipseRegionModel.icon;
+        return self.dynamic ? NodeViews.EllipseRegionModel.altIcon : NodeViews.EllipseRegionModel.icon;
       },
       get defaultDimensions() {
         const { radius } = DEFAULT_DIMENSIONS.ellipse;

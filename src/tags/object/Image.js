@@ -75,11 +75,12 @@ const TagAttrs = types.model({
   showlabels: types.optional(types.boolean, false),
 
   zoomcontrol: types.optional(types.boolean, true),
-  brightnesscontrol: types.optional(types.boolean, false),
-  contrastcontrol: types.optional(types.boolean, false),
-  rotatecontrol: types.optional(types.boolean, false),
+  brightnesscontrol: types.optional(types.boolean, true),
+  contrastcontrol: types.optional(types.boolean, true),
+  rotatecontrol: types.optional(types.boolean, true),
   crosshair: types.optional(types.boolean, false),
   selectioncontrol: types.optional(types.boolean, true),
+  // rectangleToolcontrol: types.optional(types.boolean, true),
 
   // this property is just to turn lazyload off to e2e tests
   lazyoff: types.optional(types.boolean, false),
@@ -103,434 +104,461 @@ const IMAGE_CONSTANTS = {
   ellipselabels: 'ellipselabels',
 };
 
-const DrawingRegion = types.union(
-  {
-    dispatcher(sn) {
-      if (!sn) return types.null;
-      // may be a tag itself or just its name
-      const objectName = sn.object.name || sn.object;
-      // we have to use current config to detect Object tag by name
-      const tag = window.Htx.annotationStore.names.get(objectName);
-      // provide value to detect Area by data
-      const available = Registry.getAvailableAreas(tag.type, sn);
-      // union of all available Areas for this Object type
+const DrawingRegion = types.union({
+  dispatcher(sn) {
+    if (!sn) return types.null;
+    // may be a tag itself or just its name
+    const objectName = sn.object.name || sn.object;
+    // we have to use current config to detect Object tag by name
+    const tag = window.Htx.annotationStore.names.get(objectName);
+    // provide value to detect Area by data
+    const available = Registry.getAvailableAreas(tag.type, sn);
+    // union of all available Areas for this Object type
 
-      return types.union(...available, types.null);
-    },
+    return types.union(...available, types.null);
   },
-);
+});
 
 const ImageSelectionPoint = types.model({
   x: types.number,
   y: types.number,
 });
-const ImageSelection = types.model({
-  start: types.maybeNull(ImageSelectionPoint),
-  end: types.maybeNull(ImageSelectionPoint),
-}).views( self => {
-  return {
-    get obj() {
-      return getParent(self);
-    },
-    get annotation() {
-      return self.obj.annotation;
-    },
-    get highlightedNodeExists() {
-      return !!self.annotation.highlightedNode;
-    },
-    get isActive() {
-      return self.start && self.end;
-    },
-    get x() {
-      return Math.min((self.start.x * self.scale), (self.end.x * self.scale));
-    },
-    get y() {
-      return Math.min((self.start.y * self.scale), (self.end.y * self.scale));
-    },
-    get width() {
-      return Math.abs((self.end.x * self.scale) - (self.start.x * self.scale));
-    },
-    get height() {
-      return Math.abs((self.end.y * self.scale) - (self.start.y * self.scale));
-    },
-    get scale() {
-      return self.obj.zoomScale;
-    },
-    get bbox() {
-      const { start, end } = self;
+const ImageSelection = types
+  .model({
+    start: types.maybeNull(ImageSelectionPoint),
+    end: types.maybeNull(ImageSelectionPoint),
+  })
+  .views(self => {
+    return {
+      get obj() {
+        return getParent(self);
+      },
+      get annotation() {
+        return self.obj.annotation;
+      },
+      get highlightedNodeExists() {
+        return !!self.annotation.highlightedNode;
+      },
+      get isActive() {
+        return self.start && self.end;
+      },
+      get x() {
+        return Math.min(self.start.x * self.scale, self.end.x * self.scale);
+      },
+      get y() {
+        return Math.min(self.start.y * self.scale, self.end.y * self.scale);
+      },
+      get width() {
+        return Math.abs(self.end.x * self.scale - self.start.x * self.scale);
+      },
+      get height() {
+        return Math.abs(self.end.y * self.scale - self.start.y * self.scale);
+      },
+      get scale() {
+        return self.obj.zoomScale;
+      },
+      get bbox() {
+        const { start, end } = self;
 
-      return self.isActive ? {
-        left: Math.min(start.x, end.x),
-        top: Math.min(start.y, end.y),
-        right: Math.max(start.x, end.x),
-        bottom: Math.max(start.y, end.y),
-      } : null;
-    },
-    includesBbox(bbox) {
-      return self.isActive && bbox && self.bbox.left <= bbox.left && self.bbox.top <= bbox.top && self.bbox.right >= bbox.right && self.bbox.bottom >= bbox.bottom;
-    },
-    intersectsBbox(bbox) {
-      if (!self.isActive || !bbox) return false;
-      const selfCenterX = (self.bbox.left + self.bbox.right) / 2;
-      const selfCenterY = (self.bbox.top + self.bbox.bottom) / 2;
-      const selfWidth = self.bbox.right - self.bbox.left;
-      const selfHeight = self.bbox.bottom - self.bbox.top;
-      const targetCenterX = (bbox.left + bbox.right) / 2;
-      const targetCenterY = (bbox.top + bbox.bottom) / 2;
-      const targetWidth = bbox.right - bbox.left;
-      const targetHeight = bbox.bottom - bbox.top;
+        return self.isActive
+          ? {
+            left: Math.min(start.x, end.x),
+            top: Math.min(start.y, end.y),
+            right: Math.max(start.x, end.x),
+            bottom: Math.max(start.y, end.y),
+          }
+          : null;
+      },
+      includesBbox(bbox) {
+        return (
+          self.isActive &&
+                    bbox &&
+                    self.bbox.left <= bbox.left &&
+                    self.bbox.top <= bbox.top &&
+                    self.bbox.right >= bbox.right &&
+                    self.bbox.bottom >= bbox.bottom
+        );
+      },
+      intersectsBbox(bbox) {
+        if (!self.isActive || !bbox) return false;
+        const selfCenterX = (self.bbox.left + self.bbox.right) / 2;
+        const selfCenterY = (self.bbox.top + self.bbox.bottom) / 2;
+        const selfWidth = self.bbox.right - self.bbox.left;
+        const selfHeight = self.bbox.bottom - self.bbox.top;
+        const targetCenterX = (bbox.left + bbox.right) / 2;
+        const targetCenterY = (bbox.top + bbox.bottom) / 2;
+        const targetWidth = bbox.right - bbox.left;
+        const targetHeight = bbox.bottom - bbox.top;
 
-      return (Math.abs(selfCenterX - targetCenterX) * 2 < (selfWidth + targetWidth)) &&
-        (Math.abs(selfCenterY - targetCenterY) * 2 < (selfHeight + targetHeight));
+        return (
+          Math.abs(selfCenterX - targetCenterX) * 2 < selfWidth + targetWidth &&
+                    Math.abs(selfCenterY - targetCenterY) * 2 < selfHeight + targetHeight
+        );
+      },
+      get selectionBorders() {
+        return self.isActive || !self.obj.selectedRegions.length
+          ? null
+          : self.obj.selectedRegions.reduce(
+            (borders, region) => {
+              return region.bboxCoords
+                ? {
+                  left: Math.min(borders.left, region.bboxCoords.left),
+                  top: Math.min(borders.top, region.bboxCoords.top),
+                  right: Math.max(borders.right, region.bboxCoords.right),
+                  bottom: Math.max(borders.bottom, region.bboxCoords.bottom),
+                }
+                : borders;
+            },
+            {
+              left: self.obj.stageWidth,
+              top: self.obj.stageHeight,
+              right: 0,
+              bottom: 0,
+            },
+          );
+      },
+    };
+  })
+  .actions(self => {
+    return {
+      setStart(point) {
+        self.start = point;
+      },
+      setEnd(point) {
+        self.end = point;
+      },
+    };
+  });
+
+const Model = types
+  .model({
+    type: 'image',
+
+    // tools: types.array(BaseTool),
+
+    rotation: types.optional(types.number, 0),
+
+    sizeUpdated: types.optional(types.boolean, false),
+
+    /**
+             * Natural sizes of Image
+             * Constants
+             */
+    naturalWidth: types.optional(types.integer, 1),
+    naturalHeight: types.optional(types.integer, 1),
+
+    stageWidth: types.optional(types.number, 1),
+    stageHeight: types.optional(types.number, 1),
+
+    /**
+             * Zoom Scale
+             */
+    zoomScale: types.optional(types.number, 1),
+
+    /**
+             * Coordinates of left top corner
+             * Default: { x: 0, y: 0 }
+             */
+    zoomingPositionX: types.optional(types.number, 0),
+    zoomingPositionY: types.optional(types.number, 0),
+
+    /**
+             * Brightness of Canvas
+             */
+    brightnessGrade: types.optional(types.number, 100),
+
+    contrastGrade: types.optional(types.number, 100),
+
+    /**
+             * Cursor coordinates
+             */
+    cursorPositionX: types.optional(types.number, 0),
+    cursorPositionY: types.optional(types.number, 0),
+
+    brushControl: types.optional(types.string, 'brush'),
+
+    brushStrokeWidth: types.optional(types.number, 15),
+
+    /**
+             * Mode
+             * brush for Image Segmentation
+             * eraser for Image Segmentation
+             */
+    mode: types.optional(types.enumeration(['drawing', 'viewing', 'brush', 'eraser']), 'viewing'),
+
+    regions: types.array(
+      types.union(BrushRegionModel, RectRegionModel, EllipseRegionModel, PolygonRegionModel, KeyPointRegionModel),
+      [],
+    ),
+
+    drawingRegion: types.optional(DrawingRegion, null),
+    selectionArea: types.optional(ImageSelection, { start: null, end: null }),
+  })
+  .volatile(() => ({
+    currentImage: 0,
+    stageRatio: 1,
+    // Container's sizes causing limits to calculate a scale factor
+    containerWidth: 1,
+    containerHeight: 1,
+
+    stageZoom: 1,
+    stageZoomX: 1,
+    stageZoomY: 1,
+    currentZoom: 1,
+  }))
+  .views(self => ({
+    get store() {
+      return getRoot(self);
     },
-    get selectionBorders() {
-      return self.isActive || !self.obj.selectedRegions.length ? null : self.obj.selectedRegions.reduce((borders, region)=>{
-        return  region.bboxCoords ? {
-          left: Math.min(borders.left, region.bboxCoords.left),
-          top: Math.min(borders.top,region.bboxCoords.top),
-          right: Math.max(borders.right, region.bboxCoords.right),
-          bottom: Math.max(borders.bottom, region.bboxCoords.bottom),
-        } : borders;
-      }, {
-        left: self.obj.stageWidth,
-        top: self.obj.stageHeight,
-        right: 0,
-        bottom: 0,
+
+    get parsedValue() {
+      return parseValue(self.value, self.store.task.dataObj);
+    },
+
+    // @todo the name is for backward compatibility; change the name later
+    get _value() {
+      const value = self.parsedValue;
+
+      if (Array.isArray(value)) return value[self.currentImage];
+      return value;
+    },
+
+    get images() {
+      const value = self.parsedValue;
+
+      if (!value) return [];
+      if (Array.isArray(value)) return value;
+      return [value];
+    },
+
+    /**
+             * @return {boolean}
+             */
+    get hasStates() {
+      const states = self.states();
+
+      return states && states.length > 0;
+    },
+
+    get regs() {
+      return self.annotation?.regionStore.regions.filter(r => r.object === self) || [];
+    },
+
+    get selectedRegions() {
+      return self.regs.filter(region => region.inSelection);
+    },
+
+    get selectedRegionsBBox() {
+      let bboxCoords;
+
+      self.selectedRegions.forEach(region => {
+        if (bboxCoords) {
+          bboxCoords = {
+            left: Math.min(region.bboxCoords.left, bboxCoords.left),
+            top: Math.min(region.bboxCoords.top, bboxCoords.top),
+            right: Math.max(region.bboxCoords.right, bboxCoords.right),
+            bottom: Math.max(region.bboxCoords.bottom, bboxCoords.bottom),
+          };
+        } else {
+          bboxCoords = region.bboxCoords;
+        }
       });
+      return bboxCoords;
     },
-  };
-}).actions(self => {
-  return {
-    setStart(point) {
-      self.start = point;
+
+    get regionsInSelectionArea() {
+      return self.regs.filter(region => region.isInSelectionArea);
     },
-    setEnd(point) {
-      self.end = point;
+
+    get selectedShape() {
+      return self.regs.find(r => r.selected);
     },
-  };
-});
 
-const Model = types.model({
-  type: 'image',
+    get suggestions() {
+      return self.annotation?.regionStore.suggestions.filter(r => r.object === self) || [];
+    },
 
-  // tools: types.array(BaseTool),
+    get useTransformer() {
+      return self.getToolsManager().findSelectedTool()?.useTransformer === true;
+    },
 
-  rotation: types.optional(types.number, 0),
+    get stageTranslate() {
+      return {
+        0: { x: 0, y: 0 },
+        90: { x: 0, y: self.stageHeight },
+        180: { x: self.stageWidth, y: self.stageHeight },
+        270: { x: self.stageWidth, y: 0 },
+      }[self.rotation];
+    },
 
-  sizeUpdated: types.optional(types.boolean, false),
+    get stageScale() {
+      return self.zoomScale;
+    },
 
-  /**
-   * Natural sizes of Image
-   * Constants
-   */
-  naturalWidth: types.optional(types.integer, 1),
-  naturalHeight: types.optional(types.integer, 1),
+    get hasTools() {
+      return !!self.getToolsManager().allTools()?.length;
+    },
 
-  stageWidth: types.optional(types.number, 1),
-  stageHeight: types.optional(types.number, 1),
-
-  /**
-   * Zoom Scale
-   */
-  zoomScale: types.optional(types.number, 1),
-
-  /**
-   * Coordinates of left top corner
-   * Default: { x: 0, y: 0 }
-   */
-  zoomingPositionX: types.optional(types.number, 0),
-  zoomingPositionY: types.optional(types.number, 0),
-
-  /**
-   * Brightness of Canvas
-   */
-  brightnessGrade: types.optional(types.number, 100),
-
-  contrastGrade: types.optional(types.number, 100),
-
-  /**
-   * Cursor coordinates
-   */
-  cursorPositionX: types.optional(types.number, 0),
-  cursorPositionY: types.optional(types.number, 0),
-
-  brushControl: types.optional(types.string, 'brush'),
-
-  brushStrokeWidth: types.optional(types.number, 15),
-
-  /**
-   * Mode
-   * brush for Image Segmentation
-   * eraser for Image Segmentation
-   */
-  mode: types.optional(types.enumeration(['drawing', 'viewing', 'brush', 'eraser']), 'viewing'),
-
-  regions: types.array(
-    types.union(BrushRegionModel, RectRegionModel, EllipseRegionModel, PolygonRegionModel, KeyPointRegionModel),
-    [],
-  ),
-
-  drawingRegion: types.optional(DrawingRegion, null),
-  selectionArea: types.optional(ImageSelection, { start: null, end: null }),
-}).volatile(() => ({
-  currentImage: 0,
-  stageRatio: 1,
-  // Container's sizes causing limits to calculate a scale factor
-  containerWidth: 1,
-  containerHeight: 1,
-
-  stageZoom: 1,
-  stageZoomX: 1,
-  stageZoomY: 1,
-  currentZoom: 1,
-})).views(self => ({
-  get store() {
-    return getRoot(self);
-  },
-
-  get parsedValue() {
-    return parseValue(self.value, self.store.task.dataObj);
-  },
-
-  // @todo the name is for backward compatibility; change the name later
-  get _value() {
-    const value = self.parsedValue;
-
-    if (Array.isArray(value)) return value[self.currentImage];
-    return value;
-  },
-
-  get images() {
-    const value = self.parsedValue;
-
-    if (!value) return [];
-    if (Array.isArray(value)) return value;
-    return [value];
-  },
-
-  /**
-   * @return {boolean}
-   */
-  get hasStates() {
-    const states = self.states();
-
-    return states && states.length > 0;
-  },
-
-  get regs() {
-    return self.annotation?.regionStore.regions.filter(r => r.object === self) || [];
-  },
-
-  get selectedRegions() {
-    return self.regs.filter(region => region.inSelection);
-  },
-
-  get selectedRegionsBBox() {
-    let bboxCoords;
-
-    self.selectedRegions.forEach((region) => {
-      if (bboxCoords) {
-        bboxCoords = {
-          left: Math.min(region.bboxCoords.left, bboxCoords.left),
-          top: Math.min(region.bboxCoords.top, bboxCoords.top),
-          right: Math.max(region.bboxCoords.right, bboxCoords.right),
-          bottom: Math.max(region.bboxCoords.bottom, bboxCoords.bottom),
-        };
+    get fillerHeight() {
+      if (self.isSideways) {
+        return `${(self.naturalWidth / self.naturalHeight) * 100}%`;
       } else {
-        bboxCoords = region.bboxCoords;
+        return `${(self.naturalHeight / self.naturalWidth) * 100}%`;
       }
-    });
-    return bboxCoords;
-  },
+    },
 
-  get regionsInSelectionArea() {
-    return self.regs.filter(region => region.isInSelectionArea);
-  },
+    /**
+             * @return {object}
+             */
+    states() {
+      return self.annotation.toNames.get(self.name);
+    },
 
-  get selectedShape() {
-    return self.regs.find(r => r.selected);
-  },
+    activeStates() {
+      const states = self.states();
 
-  get suggestions() {
-    return self.annotation?.regionStore.suggestions.filter(r => r.object === self) || [];
-  },
+      return states && states.filter(s => s.isSelected && s.type.includes('labels'));
+    },
 
-  get useTransformer() {
-    return self.getToolsManager().findSelectedTool()?.useTransformer === true;
-  },
+    controlButton() {
+      const names = self.states();
 
-  get stageTranslate() {
-    return {
-      0: { x: 0, y: 0 },
-      90: { x: 0, y: self.stageHeight },
-      180: { x: self.stageWidth, y: self.stageHeight },
-      270: { x: self.stageWidth, y: 0 },
-    }[self.rotation];
-  },
+      if (!names || names.length === 0) return;
 
-  get stageScale() {
-    return self.zoomScale;
-  },
+      let returnedControl = names[0];
 
-  get hasTools() {
-    return !!self.getToolsManager().allTools()?.length;
-  },
+      names.forEach(item => {
+        if (
+          item.type === IMAGE_CONSTANTS.rectanglelabels ||
+                    item.type === IMAGE_CONSTANTS.brushlabels ||
+                    item.type === IMAGE_CONSTANTS.ellipselabels
+        ) {
+          returnedControl = item;
+        }
+      });
 
-  get fillerHeight() {
-    if (self.isSideways) {
-      return `${self.naturalWidth / self.naturalHeight * 100}%`;
-    } else {
-      return `${self.naturalHeight / self.naturalWidth * 100}%`;
-    }
-  },
+      return returnedControl;
+    },
 
-  /**
-   * @return {object}
-   */
-  states() {
-    return self.annotation.toNames.get(self.name);
-  },
+    get controlButtonType() {
+      const name = self.controlButton();
 
-  activeStates() {
-    const states = self.states();
+      return getType(name).name;
+    },
 
-    return states && states.filter(s => s.isSelected && s.type.includes('labels'));
-  },
+    get isSideways() {
+      return (self.rotation + 360) % 180 === 90;
+    },
 
-  controlButton() {
-    const names = self.states();
-
-    if (!names || names.length === 0) return;
-
-    let returnedControl = names[0];
-
-    names.forEach(item => {
-      if (
-        item.type === IMAGE_CONSTANTS.rectanglelabels ||
-        item.type === IMAGE_CONSTANTS.brushlabels ||
-        item.type === IMAGE_CONSTANTS.ellipselabels
-      ) {
-        returnedControl = item;
+    get stageComponentSize() {
+      if (self.isSideways) {
+        return {
+          width: self.stageHeight,
+          height: self.stageWidth,
+        };
       }
-    });
-
-    return returnedControl;
-  },
-
-  get controlButtonType() {
-    const name = self.controlButton();
-
-    return getType(name).name;
-  },
-
-  get isSideways() {
-    return (self.rotation + 360) % 180 === 90;
-  },
-
-  get stageComponentSize() {
-    if (self.isSideways) {
       return {
-        width: self.stageHeight,
-        height: self.stageWidth,
+        width: self.stageWidth,
+        height: self.stageHeight,
       };
-    }
-    return {
-      width: self.stageWidth,
-      height: self.stageHeight,
-    };
-  },
+    },
 
-  get canvasSize() {
-    if (self.isSideways) {
+    get canvasSize() {
+      if (self.isSideways) {
+        return {
+          width: isFF(FF_DEV_3377)
+            ? self.naturalHeight * self.stageZoomX
+            : Math.round(self.naturalHeight * self.stageZoomX),
+          height: isFF(FF_DEV_3377)
+            ? self.naturalWidth * self.stageZoomY
+            : Math.round(self.naturalWidth * self.stageZoomY),
+        };
+      }
+
       return {
-        width: isFF(FF_DEV_3377) ? self.naturalHeight * self.stageZoomX : Math.round(self.naturalHeight * self.stageZoomX),
-        height: isFF(FF_DEV_3377) ? self.naturalWidth * self.stageZoomY : Math.round(self.naturalWidth * self.stageZoomY),
+        width: isFF(FF_DEV_3377)
+          ? self.naturalWidth * self.stageZoomX
+          : Math.round(self.naturalWidth * self.stageZoomX),
+        height: isFF(FF_DEV_3377)
+          ? self.naturalHeight * self.stageZoomY
+          : Math.round(self.naturalHeight * self.stageZoomY),
       };
-    }
+    },
 
-    return {
-      width: isFF(FF_DEV_3377) ? self.naturalWidth * self.stageZoomX : Math.round(self.naturalWidth * self.stageZoomX),
-      height: isFF(FF_DEV_3377) ? self.naturalHeight * self.stageZoomY : Math.round(self.naturalHeight * self.stageZoomY),
-    };
-  },
+    get zoomBy() {
+      return parseFloat(self.zoomby);
+    },
+    get isDrawing() {
+      return !!self.drawingRegion;
+    },
 
-  get zoomBy() {
-    return parseFloat(self.zoomby);
-  },
-  get isDrawing() {
-    return !!self.drawingRegion;
-  },
-
-  get imageTransform() {
-    const imgStyle = {
-      // scale transform leaves gaps on image border, so much better to change image sizes
-      width: `${self.stageWidth * self.zoomScale}px`,
-      height: `${self.stageHeight * self.zoomScale}px`,
-      transformOrigin: 'left top',
-      // We should always set some transform to make the image rendering in the same way all the time
-      transform: 'translate3d(0,0,0)',
-      filter: `brightness(${self.brightnessGrade}%) contrast(${self.contrastGrade}%)`,
-    };
-    const imgTransform = [];
-
-    if (self.zoomScale !== 1) {
-      const { zoomingPositionX = 0, zoomingPositionY = 0 } = self;
-
-      imgTransform.push('translate3d(' + zoomingPositionX + 'px,' + zoomingPositionY + 'px, 0)');
-    }
-
-    if (self.rotation) {
-      const translate = {
-        90: '0, -100%',
-        180: '-100%, -100%',
-        270: '-100%, 0',
+    get imageTransform() {
+      const imgStyle = {
+        // scale transform leaves gaps on image border, so much better to change image sizes
+        width: `${self.stageWidth * self.zoomScale}px`,
+        height: `${self.stageHeight * self.zoomScale}px`,
+        transformOrigin: 'left top',
+        // We should always set some transform to make the image rendering in the same way all the time
+        transform: 'translate3d(0,0,0)',
+        filter: `brightness(${self.brightnessGrade}%) contrast(${self.contrastGrade}%)`,
       };
+      const imgTransform = [];
 
-      // there is a top left origin already set for zoom; so translate+rotate
-      imgTransform.push(`rotate(${self.rotation}deg)`);
-      imgTransform.push(`translate(${translate[self.rotation] || '0, 0'})`);
+      if (self.zoomScale !== 1) {
+        const { zoomingPositionX = 0, zoomingPositionY = 0 } = self;
 
-    }
+        imgTransform.push('translate3d(' + zoomingPositionX + 'px,' + zoomingPositionY + 'px, 0)');
+      }
 
-    if (imgTransform?.length > 0) {
-      imgStyle.transform = imgTransform.join(' ');
-    }
-    return imgStyle;
-  },
+      if (self.rotation) {
+        const translate = {
+          90: '0, -100%',
+          180: '-100%, -100%',
+          270: '-100%, 0',
+        };
 
-  get maxScale() {
-    return self.isSideways
-      ? Math.min(self.containerWidth / self.naturalHeight, self.containerHeight / self.naturalWidth)
-      : Math.min(self.containerWidth / self.naturalWidth, self.containerHeight / self.naturalHeight);
-  },
+        // there is a top left origin already set for zoom; so translate+rotate
+        imgTransform.push(`rotate(${self.rotation}deg)`);
+        imgTransform.push(`translate(${translate[self.rotation] || '0, 0'})`);
+      }
 
-  get coverScale() {
-    return self.isSideways
-      ? Math.max(self.containerWidth / self.naturalHeight, self.containerHeight / self.naturalWidth)
-      : Math.max(self.containerWidth / self.naturalWidth, self.containerHeight / self.naturalHeight);
-  },
-}))
+      if (imgTransform?.length > 0) {
+        imgStyle.transform = imgTransform.join(' ');
+      }
+      return imgStyle;
+    },
 
-  // actions for the tools
+    get maxScale() {
+      return self.isSideways
+        ? Math.min(self.containerWidth / self.naturalHeight, self.containerHeight / self.naturalWidth)
+        : Math.min(self.containerWidth / self.naturalWidth, self.containerHeight / self.naturalHeight);
+    },
+
+    get coverScale() {
+      return self.isSideways
+        ? Math.max(self.containerWidth / self.naturalHeight, self.containerHeight / self.naturalWidth)
+        : Math.max(self.containerWidth / self.naturalWidth, self.containerHeight / self.naturalHeight);
+    },
+  }))
+
+// actions for the tools
   .actions(self => {
     const manager = ToolsManager.getInstance({ name: self.name });
     const env = { manager, control: self, object: self };
 
     function afterAttach() {
-      if (self.selectioncontrol)
-        manager.addTool('MoveTool', Tools.Selection.create({}, env));
 
-      if (self.zoomcontrol)
-        manager.addTool('ZoomPanTool', Tools.Zoom.create({}, env));
+      if (self.selectioncontrol) manager.addTool('MoveTool', Tools.Selection.create({}, env));
 
-      if (self.brightnesscontrol)
-        manager.addTool('BrightnessTool', Tools.Brightness.create({}, env));
+      if (self.zoomcontrol) manager.addTool('ZoomPanTool', Tools.Zoom.create({}, env));
 
-      if (self.contrastcontrol)
-        manager.addTool('ContrastTool', Tools.Contrast.create({}, env));
+      if (self.brightnesscontrol) manager.addTool('BrightnessTool', Tools.Brightness.create({}, env));
 
-      if (self.rotatecontrol)
-        manager.addTool('RotateTool', Tools.Rotate.create({}, env));
+      if (self.contrastcontrol) manager.addTool('ContrastTool', Tools.Contrast.create({}, env));
+
+      if (self.rotatecontrol) manager.addTool('RotateTool', Tools.Rotate.create({}, env));
+      // // 新添加矩形配置
+      // if (self.rectangleToolcontrol) manager.addTool('RectangleTool', Tools.Rect.create({}, env));
     }
 
     function getToolsManager() {
@@ -538,7 +566,8 @@ const Model = types.model({
     }
 
     return { afterAttach, getToolsManager };
-  }).extend((self) => {
+  })
+  .extend(self => {
     let skipInteractions = false;
 
     return {
@@ -565,7 +594,8 @@ const Model = types.model({
         },
       },
     };
-  }).actions(self => ({
+  })
+  .actions(self => ({
     freezeHistory() {
       //self.annotation.history.freeze();
     },
@@ -620,9 +650,9 @@ const Model = types.model({
     },
 
     /**
-     * Update brightnessGrade of Image
-     * @param {number} value
-     */
+             * Update brightnessGrade of Image
+             * @param {number} value
+             */
     setBrightnessGrade(value) {
       self.brightnessGrade = value;
     },
@@ -640,8 +670,8 @@ const Model = types.model({
     },
 
     /**
-     * Set pointer of X and Y
-     */
+             * Set pointer of X and Y
+             */
     setPointerPosition({ x, y }) {
       self.freezeHistory();
       self.cursorPositionX = x;
@@ -649,8 +679,8 @@ const Model = types.model({
     },
 
     /**
-     * Set zoom
-     */
+             * Set zoom
+             */
     setZoom(scale) {
       self.currentZoom = clamp(scale, 1, Infinity);
 
@@ -658,19 +688,24 @@ const Model = types.model({
       const maxScale = self.maxScale;
       const coverScale = self.coverScale;
 
-      if (maxScale > 1) { // image < container
-        if (scale < maxScale) { // scale = 1 or before stage size is max
+      if (maxScale > 1) {
+        // image < container
+        if (scale < maxScale) {
+          // scale = 1 or before stage size is max
           self.stageZoom = scale; // scale stage
           self.zoomScale = 1; // don't scale image
         } else {
           self.stageZoom = maxScale; // scale stage to max
           self.zoomScale = scale / maxScale; // scale image for the rest scale
         }
-      } else { // image > container
-        if (scale > maxScale) { // scale = 1 or any other zoom bigger then viewport
+      } else {
+        // image > container
+        if (scale > maxScale) {
+          // scale = 1 or any other zoom bigger then viewport
           self.stageZoom = maxScale; // stage squizzed
           self.zoomScale = scale; // scale image for the rest scale : scale image usually
-        } else { // negative zoom bigger than image negative scale
+        } else {
+          // negative zoom bigger than image negative scale
           self.stageZoom = scale; // squize stage more
           self.zoomScale = 1; // don't scale image
         }
@@ -710,8 +745,12 @@ const Model = types.model({
 
     setZoomPosition(x, y) {
       const min = {
-        x: (isFF(FF_DEV_3377) ? self.canvasSize.width : self.containerWidth) - self.stageComponentSize.width * self.zoomScale,
-        y: (isFF(FF_DEV_3377) ? self.canvasSize.height : self.containerHeight) - self.stageComponentSize.height * self.zoomScale,
+        x:
+                    (isFF(FF_DEV_3377) ? self.canvasSize.width : self.containerWidth) -
+                    self.stageComponentSize.width * self.zoomScale,
+        y:
+                    (isFF(FF_DEV_3377) ? self.canvasSize.height : self.containerHeight) -
+                    self.stageComponentSize.height * self.zoomScale,
       };
 
       self.zoomingPositionX = clamp(x, min.x, 0);
@@ -791,9 +830,9 @@ const Model = types.model({
     },
 
     /**
-     * Set mode of Image (drawing and viewing)
-     * @param {string} mode
-     */
+             * Set mode of Image (drawing and viewing)
+             * @param {string} mode
+             */
     setMode(mode) {
       self.mode = mode;
     },
@@ -836,15 +875,15 @@ const Model = types.model({
         this.setZoomPosition(
           self.zoomingPositionY * ratioK,
           self.stageComponentSize.height -
-          self.zoomingPositionX * ratioK -
-          self.stageComponentSize.height * self.zoomScale,
+                    self.zoomingPositionX * ratioK -
+                    self.stageComponentSize.height * self.zoomScale,
         );
       }
       if (degree === 90) {
         this.setZoomPosition(
           self.stageComponentSize.width -
-          self.zoomingPositionY * ratioK -
-          self.stageComponentSize.width * self.zoomScale,
+                    self.zoomingPositionY * ratioK -
+                    self.stageComponentSize.width * self.zoomScale,
           self.zoomingPositionX * ratioK,
         );
       }
@@ -853,8 +892,12 @@ const Model = types.model({
     },
 
     _recalculateImageParams() {
-      self.stageWidth = isFF(FF_DEV_3377) ? self.naturalWidth * self.stageZoom : Math.round(self.naturalWidth * self.stageZoom);
-      self.stageHeight = isFF(FF_DEV_3377) ? self.naturalHeight * self.stageZoom : Math.round(self.naturalHeight * self.stageZoom);
+      self.stageWidth = isFF(FF_DEV_3377)
+        ? self.naturalWidth * self.stageZoom
+        : Math.round(self.naturalWidth * self.stageZoom);
+      self.stageHeight = isFF(FF_DEV_3377)
+        ? self.naturalHeight * self.stageZoom
+        : Math.round(self.naturalHeight * self.stageZoom);
     },
 
     _updateImageSize({ width, height, userResize }) {
@@ -900,7 +943,7 @@ const Model = types.model({
       setTimeout(self.annotation.history.unfreeze, 0);
 
       //sometimes when user zoomed in, annotation was creating a new history. This fix that in case the user has nothing in the history yet
-      if (_historyLength <= 1){
+      if (_historyLength <= 1) {
         // Don't force unselection of regions during the updateObjects callback from history reinit
         setTimeout(() => self.annotation.reinitHistory(false), 0);
       }
@@ -950,7 +993,11 @@ const Model = types.model({
       }
 
       // good official way, but maybe a bit slower and with repeating cloning
-      const p = self.stageRef.getAbsoluteTransform().copy().invert().point({ x, y });
+      const p = self.stageRef
+        .getAbsoluteTransform()
+        .copy()
+        .invert()
+        .point({ x, y });
 
       return [p.x, p.y];
     },
@@ -963,22 +1010,22 @@ const Model = types.model({
     },
 
     /**
-     * @typedef {number[]|{ x: number, y: number }} Point
-     */
+             * @typedef {number[]|{ x: number, y: number }} Point
+             */
 
     /**
-     * @callback PointFn
-     * @param {Point} point
-     * @returns Point
-     */
+             * @callback PointFn
+             * @param {Point} point
+             * @returns Point
+             */
 
     /**
-     * Wrap point operations to convert zoomed coords from screen to image and back
-     * Good for event handlers, receiving screen coords, but working with image coords
-     * Accepts both [x, y] and {x, y} points; preserves this format
-     * @param {PointFn} fn wrapped function do some math with image coords
-     * @return {PointFn} outer function do some math with screen coords
-     */
+             * Wrap point operations to convert zoomed coords from screen to image and back
+             * Good for event handlers, receiving screen coords, but working with image coords
+             * Accepts both [x, y] and {x, y} points; preserves this format
+             * @param {PointFn} fn wrapped function do some math with image coords
+             * @return {PointFn} outer function do some math with screen coords
+             */
     fixForZoom(fn) {
       return p => this.fixForZoomWrapper(p, fn);
     },
@@ -992,10 +1039,10 @@ const Model = types.model({
     },
 
     /**
-     * Resize of image canvas
-     * @param {*} width
-     * @param {*} height
-     */
+             * Resize of image canvas
+             * @param {*} width
+             * @param {*} height
+             */
     onResize(width, height, userResize) {
       self._updateImageSize({ width, height, userResize });
     },
@@ -1005,8 +1052,8 @@ const Model = types.model({
     },
 
     /**
-     * Transform JSON data (annotations and predictions) to format
-     */
+             * Transform JSON data (annotations and predictions) to format
+             */
     fromStateJSON(obj, fromModel) {
       const tools = self.getToolsManager().allTools();
 

@@ -8,30 +8,28 @@ import './GroundTruth.styl';
 const { Block, Elem } = BemWithSpecifiContext();
 
 export const GroundTruth = observer(({ entity, disabled = false, size = 'md' }) => {
-  const title = entity.ground_truth
-    ? 'Unset this result as a ground truth'
-    : 'Set this result as a ground truth';
+  const title = entity.ground_truth ? 'Unset this result as a ground truth' : 'Set this result as a ground truth';
 
-  return (!entity.skipped && !entity.userGenerate && entity.type !== 'prediction') && (
-    <Block name="ground-truth" mod={{ disabled, size }}>
-      <Tooltip placement="topLeft" title={title}>
-        <Elem
-          tag={Button}
-          name="toggle"
-          size="small"
-          type="link"
-          onClick={ev => {
-            ev.preventDefault();
-            entity.setGroundTruth(!entity.ground_truth);
-          }}
-        >
+  return (
+    !entity.skipped &&
+    !entity.userGenerate &&
+    entity.type !== 'prediction' && (
+      <Block name="ground-truth" mod={{ disabled, size }}>
+        <Tooltip placement="topLeft" title={title}>
           <Elem
-            name="indicator"
-            tag={LsStar}
-            mod={{ active: entity.ground_truth }}
-          />
-        </Elem>
-      </Tooltip>
-    </Block>
+            tag={Button}
+            name="toggle"
+            size="small"
+            type="link"
+            onClick={ev => {
+              ev.preventDefault();
+              entity.setGroundTruth(!entity.ground_truth);
+            }}
+          >
+            <Elem name="indicator" tag={LsStar} mod={{ active: entity.ground_truth }} />
+          </Elem>
+        </Tooltip>
+      </Block>
+    )
   );
 });

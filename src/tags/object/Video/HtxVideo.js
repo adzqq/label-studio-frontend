@@ -12,7 +12,12 @@ import { Block, Elem } from '../../../utils/bem';
 import { clamp, isDefined } from '../../../utils/utilities';
 
 import { IconZoomIn } from '../../../assets/icons';
-import { MAX_ZOOM_WHEEL, MIN_ZOOM_WHEEL, ZOOM_STEP, ZOOM_STEP_WHEEL } from '../../../components/VideoCanvas/VideoConstants';
+import {
+  MAX_ZOOM_WHEEL,
+  MIN_ZOOM_WHEEL,
+  ZOOM_STEP,
+  ZOOM_STEP_WHEEL
+} from '../../../components/VideoCanvas/VideoConstants';
 import { useFullscreen } from '../../../hooks/useFullscreen';
 import ResizeObserver from '../../../utils/resize-observer';
 import './Video.styl';
@@ -40,38 +45,47 @@ const HtxVideoView = ({ item, store }) => {
   const [panMode, setPanMode] = useState(false);
   const [isFullScreen, enterFullscreen, exitFullscren, handleFullscreenToggle] = useToggle(false);
   const fullscreen = useFullscreen({
-    onEnterFullscreen() { enterFullscreen(); },
-    onExitFullscreen() { exitFullscren(); },
+    onEnterFullscreen() {
+      enterFullscreen();
+    },
+    onExitFullscreen() {
+      exitFullscren();
+    },
   });
   const limitCanvasDrawingBoundaries = !store.settings.videoDrawOutside;
 
-  const setPosition = useCallback((value) => {
-    if (value !== position) {
-      _setPosition(clamp(value, 1, videoLength));
-    }
-  }, [position, videoLength, playing]);
+  const setPosition = useCallback(
+    value => {
+      if (value !== position) {
+        _setPosition(clamp(value, 1, videoLength));
+      }
+    },
+    [position, videoLength, playing],
+  );
 
-  const setVideoLength = useCallback((value) => {
-    if (value !== videoLength) _setVideoLength(value);
-  }, [videoLength]);
+  const setVideoLength = useCallback(
+    value => {
+      if (value !== videoLength) _setVideoLength(value);
+    },
+    [videoLength],
+  );
 
   const supportsRegions = useMemo(() => {
     return isDefined(item?.videoControl());
   }, [item]);
 
-  const setZoom = useCallback((value) => {
-    return _setZoom((currentZoom) => {
-      const newZoom = (value instanceof Function) ? value(currentZoom) : value;
+  const setZoom = useCallback(value => {
+    return _setZoom(currentZoom => {
+      const newZoom = value instanceof Function ? value(currentZoom) : value;
 
       return clampZoom(newZoom);
     });
   }, []);
 
-
   useEffect(() => {
     const container = videoContainerRef.current;
 
-    const cancelWheel = (e) => {
+    const cancelWheel = e => {
       if (!e.shiftKey) return;
       e.preventDefault();
     };
@@ -86,21 +100,18 @@ const HtxVideoView = ({ item, store }) => {
       const block = videoContainerRef.current;
 
       if (block) {
-        setVideoSize([
-          block.clientWidth,
-          block.clientHeight,
-        ]);
+        setVideoSize([block.clientWidth, block.clientHeight]);
       }
     };
 
-    const onKeyDown = (e) => {
+    const onKeyDown = e => {
       if (e.code.startsWith('Shift')) {
         e.preventDefault();
 
         if (!panMode) {
           setPanMode(true);
 
-          const cancelPan = (e) => {
+          const cancelPan = e => {
             if (e.code.startsWith('Shift')) {
               setPanMode(false);
               document.removeEventListener('keyup', cancelPan);
@@ -138,53 +149,53 @@ const HtxVideoView = ({ item, store }) => {
     }
   }, [isFullScreen]);
 
-  const onZoomChange = useCallback((e) => {
-    if (!e.shiftKey || !stageRef.current) return;
-    const { width: containerWidth, height: containerHeight } = stageRef.current.content.getBoundingClientRect();
-    // because its possible the shiftKey is the modifier, we need to check the appropriate delta
-    const wheelDelta = Math.abs(e.deltaY) === 0 ? e.deltaX : e.deltaY;
-    const polarity = wheelDelta > 0 ? 1 : -1;
-    const padding = 50;
-    const stepDelta = Math.abs(wheelDelta * ZOOM_STEP_WHEEL);
-    const delta = polarity * clamp(stepDelta, MIN_ZOOM_WHEEL, MAX_ZOOM_WHEEL);
-    const zoomCenteredY = containerHeight + padding > videoDimensions.height * zoom;
-    const zoomCenteredX = containerWidth + padding > videoDimensions.width * zoom;
-    const panValues = item.ref.current.adjustPan(
-      zoomCenteredX ? 0 : pan.x,
-      zoomCenteredY ? 0 : pan.y,
-    );
-
-    requestAnimationFrame(() => {
-      setZoom(prev => prev + delta);
-      if (zoomCenteredY || zoomCenteredX) setPan(panValues);
-    });
-  }, [zoom]);
-
-  const handlePan = useCallback((e) => {
-    if (!panMode) return;
-
-    const startX = e.pageX;
-    const startY = e.pageY;
-
-    const onMouseMove = (e) => {
-      const position = item.ref.current.adjustPan(
-        pan.x + (e.pageX - startX),
-        pan.y + (e.pageY - startY),
-      );
+  const onZoomChange = useCallback(
+    e => {
+      if (!e.shiftKey || !stageRef.current) return;
+      const { width: containerWidth, height: containerHeight } = stageRef.current.content.getBoundingClientRect();
+      // because its possible the shiftKey is the modifier, we need to check the appropriate delta
+      const wheelDelta = Math.abs(e.deltaY) === 0 ? e.deltaX : e.deltaY;
+      const polarity = wheelDelta > 0 ? 1 : -1;
+      const padding = 50;
+      const stepDelta = Math.abs(wheelDelta * ZOOM_STEP_WHEEL);
+      const delta = polarity * clamp(stepDelta, MIN_ZOOM_WHEEL, MAX_ZOOM_WHEEL);
+      const zoomCenteredY = containerHeight + padding > videoDimensions.height * zoom;
+      const zoomCenteredX = containerWidth + padding > videoDimensions.width * zoom;
+      const panValues = item.ref.current.adjustPan(zoomCenteredX ? 0 : pan.x, zoomCenteredY ? 0 : pan.y);
 
       requestAnimationFrame(() => {
-        setPan(position);
+        setZoom(prev => prev + delta);
+        if (zoomCenteredY || zoomCenteredX) setPan(panValues);
       });
-    };
+    },
+    [zoom],
+  );
 
-    const onMouseUp = () => {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-    };
+  const handlePan = useCallback(
+    e => {
+      if (!panMode) return;
 
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-  }, [panMode, pan]);
+      const startX = e.pageX;
+      const startY = e.pageY;
+
+      const onMouseMove = e => {
+        const position = item.ref.current.adjustPan(pan.x + (e.pageX - startX), pan.y + (e.pageY - startY));
+
+        requestAnimationFrame(() => {
+          setPan(position);
+        });
+      };
+
+      const onMouseUp = () => {
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+      };
+
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    },
+    [panMode, pan],
+  );
 
   const zoomIn = useCallback(() => {
     setZoom(zoom + ZOOM_STEP);
@@ -213,26 +224,32 @@ const HtxVideoView = ({ item, store }) => {
   });
 
   // VIDEO EVENT HANDLERS
-  const handleFrameChange = useCallback((position, length) => {
-    setPosition(position);
-    setVideoLength(length);
-    item.setOnlyFrame(position);
-  }, [item, setPosition, setVideoLength]);
+  const handleFrameChange = useCallback(
+    (position, length) => {
+      setPosition(position);
+      setVideoLength(length);
+      item.setOnlyFrame(position);
+    },
+    [item, setPosition, setVideoLength],
+  );
 
-  const handleVideoLoad = useCallback(({ length, videoDimensions }) => {
-    setLoaded(true);
-    setZoom(videoDimensions.ratio);
-    setVideoDimensions(videoDimensions);
-    setVideoLength(length);
-    item.setOnlyFrame(1);
-    item.setLength(length);
-    item.setReady(true);
-    if (isFFDev2715) {
-      item.setSyncedDuration(item.ref.current?.duration);
-    }
-  }, [item, setVideoLength]);
+  const handleVideoLoad = useCallback(
+    ({ length, videoDimensions }) => {
+      setLoaded(true);
+      setZoom(videoDimensions.ratio);
+      setVideoDimensions(videoDimensions);
+      setVideoLength(length);
+      item.setOnlyFrame(1);
+      item.setLength(length);
+      item.setReady(true);
+      if (isFFDev2715) {
+        item.setSyncedDuration(item.ref.current?.duration);
+      }
+    },
+    [item, setVideoLength],
+  );
 
-  const handleVideoResize = useCallback((videoDimensions) => {
+  const handleVideoResize = useCallback(videoDimensions => {
     setVideoDimensions(videoDimensions);
   }, []);
 
@@ -243,7 +260,7 @@ const HtxVideoView = ({ item, store }) => {
 
   // TIMELINE EVENT HANDLERS
   const handlePlay = useCallback(() => {
-    setPlaying((_playing) => {
+    setPlaying(_playing => {
       // Audio v3
       if (isFFDev2715) {
         if (item.isCurrentlyPlaying === false) {
@@ -251,7 +268,7 @@ const HtxVideoView = ({ item, store }) => {
           return true;
         }
         return item.isCurrentlyPlaying;
-      } 
+      }
       // Audio v1,v2
       else {
         if (_playing === false) {
@@ -265,7 +282,7 @@ const HtxVideoView = ({ item, store }) => {
   }, []);
 
   const handlePause = useCallback(() => {
-    setPlaying((_playing) => {
+    setPlaying(_playing => {
       // Audio v3
       if (isFFDev2715) {
         if (item.isCurrentlyPlaying === true) {
@@ -273,7 +290,7 @@ const HtxVideoView = ({ item, store }) => {
           return false;
         }
         return item.isCurrentlyPlaying;
-      } 
+      }
       // Audio v1,v2
       else {
         if (_playing === true) {
@@ -286,47 +303,58 @@ const HtxVideoView = ({ item, store }) => {
     });
   }, []);
 
+  const handleSelectRegion = useCallback(
+    (_, id, select) => {
+      const region = item.findRegion(id);
+      const selected = region?.selected || region?.inSelection;
 
-  const handleSelectRegion = useCallback((_, id, select) => {
-    const region = item.findRegion(id);
-    const selected = region?.selected || region?.inSelection;
+      if (!region || (isDefined(select) && selected === select)) return;
 
-    if (!region || (isDefined(select) && selected === select)) return;
+      region.onClickRegion();
+    },
+    [item],
+  );
 
-    region.onClickRegion();
-  }, [item]);
+  const handleAction = useCallback(
+    (_, action, data) => {
+      const regions = item.regs.filter(reg => reg.selected || reg.inSelection);
 
-  const handleAction = useCallback((_, action, data) => {
-    const regions = item.regs.filter(reg => reg.selected || reg.inSelection);
+      regions.forEach(region => {
+        switch (action) {
+          case 'lifespan_add':
+          case 'lifespan_remove':
+            region.toggleLifespan(data.frame);
+            break;
+          case 'keypoint_add':
+            region.addKeypoint(data.frame);
+            break;
+          case 'keypoint_remove':
+            region.removeKeypoint(data.frame);
+            break;
+          default:
+            console.warn('unknown action');
+        }
+      });
+    },
+    [item.regs],
+  );
 
-    regions.forEach(region => {
-      switch(action) {
-        case 'lifespan_add':
-        case 'lifespan_remove':
-          region.toggleLifespan(data.frame);
-          break;
-        case 'keypoint_add':
-          region.addKeypoint(data.frame);
-          break;
-        case 'keypoint_remove':
-          region.removeKeypoint(data.frame);
-          break;
-        default:
-          console.warn('unknown action');
+  const handleTimelinePositionChange = useCallback(
+    newPosition => {
+      if (position !== newPosition) {
+        item.setFrame(newPosition);
+        setPosition(newPosition);
       }
-    });
-  }, [item.regs]);
+    },
+    [item, position],
+  );
 
-  const handleTimelinePositionChange = useCallback((newPosition) => {
-    if (position !== newPosition) {
-      item.setFrame(newPosition);
-      setPosition(newPosition);
-    }
-  }, [item, position]);
-
-  useEffect(() => () => {
-    item.ref.current = null;
-  }, []);
+  useEffect(
+    () => () => {
+      item.ref.current = null;
+    },
+    [],
+  );
 
   const regions = item.regs.map(reg => {
     const color = reg.style?.fillcolor ?? reg.tag?.fillcolor ?? defaultStyle.fillcolor;
@@ -434,7 +462,9 @@ const HtxVideoView = ({ item, store }) => {
                         </Menu>
                       )}
                     >
-                      <Button size="small" nopadding><IconZoomIn/></Button>
+                      <Button size="small" nopadding>
+                        <IconZoomIn />
+                      </Button>
                     </Dropdown.Trigger>
                   );
                 },

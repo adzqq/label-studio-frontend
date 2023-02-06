@@ -24,16 +24,16 @@ export const LabelItem = observer(({ item, regions, regionStore }) => {
             <Label color={color} empty={item.isEmpty}>
               {item._value}
             </Label>
-          ) : <>Not labeled</>}
-          <Elem name="counter">
-            {`${count} Region${(count === 0 || count > 1) ? 's' : ''}`}
-          </Elem>
+          ) : (
+            <>Not labeled</>
+          )}
+          <Elem name="counter">{`${count} Region${count === 0 || count > 1 ? 's' : ''}`}</Elem>
         </Elem>
         <Elem
           name="visibility"
           tag={Button}
           type="text"
-          icon={isHidden ? <LsInvisible/> : <LsVisible/>}
+          icon={isHidden ? <LsInvisible /> : <LsVisible />}
           onClick={() => regionStore.setHiddenByLabel(!isHidden, item)}
           mod={{ hidden: isHidden }}
         />

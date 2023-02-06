@@ -1,4 +1,3 @@
-
 import { inject, observer } from 'mobx-react';
 import { Fragment } from 'react';
 import { ErrorMessage } from '../../../components/ErrorMessage/ErrorMessage';

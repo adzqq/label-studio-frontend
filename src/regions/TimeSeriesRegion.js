@@ -42,7 +42,6 @@ const Model = types
     getRegionElement() {
       return self._brushRef;
     },
-
   }))
   .actions(self => ({
     growRight(size) {

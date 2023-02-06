@@ -1,7 +1,8 @@
 import { types } from 'mobx-state-tree';
 
-export const KonvaRegionMixin = types.model({})
-  .views((self) => {
+export const KonvaRegionMixin = types
+  .model({})
+  .views(self => {
     return {
       get bboxCoords() {
         console.warn('KonvaRegionMixin needs to implement bboxCoords getter in regions');
@@ -27,7 +28,7 @@ export const KonvaRegionMixin = types.model({})
       checkSizes() {
         const { naturalWidth, naturalHeight, stageWidth: width, stageHeight: height } = self.parent;
 
-        if (width>1 && height>1) {
+        if (width > 1 && height > 1) {
           self.updateImageSize?.(width / naturalWidth, height / naturalHeight, width, height);
         }
       },

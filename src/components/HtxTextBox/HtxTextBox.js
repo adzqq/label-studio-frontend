@@ -39,10 +39,11 @@ export class HtxTextBox extends React.Component {
     }
   }
 
-  handleGlobalClick = (e) => {
+  handleGlobalClick = e => {
     const el = e?.target;
     const isShortcut = el?.dataset?.shortcut;
-    const shouldSkip = !this.state.editing || this.props.ignoreShortcuts && isShortcut || el === this.inputRef.current;
+    const shouldSkip =
+      !this.state.editing || (this.props.ignoreShortcuts && isShortcut) || el === this.inputRef.current;
 
     if (!shouldSkip) {
       this.setEditing(false);
@@ -104,9 +105,11 @@ export class HtxTextBox extends React.Component {
       autoFocus: true,
       ref: this.inputRef,
       value,
-      onBlur: isFF(FF_DEV_1566) ? ()=>{
-        onChange(this.state.value);
-      } : this.save,
+      onBlur: isFF(FF_DEV_1566)
+        ? () => {
+          onChange(this.state.value);
+        }
+        : this.save,
       onFocus,
       onChange: e => {
         this.setValue(e.target.value);

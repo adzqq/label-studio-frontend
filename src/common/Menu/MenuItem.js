@@ -33,12 +33,15 @@ export const MenuItem = ({
     }
   })();
 
-  const linkContent = useMemo(() => (
-    <>
-      {icon && <span className={rootClass.elem('item-icon')}>{icon}</span>}
-      {children ?? label}
-    </>
-  ), [children, label, icon]);
+  const linkContent = useMemo(
+    () => (
+      <>
+        {icon && <span className={rootClass.elem('item-icon')}>{icon}</span>}
+        {children ?? label}
+      </>
+    ),
+    [children, label, icon],
+  );
 
   const linkAttributes = {
     className: rootClass

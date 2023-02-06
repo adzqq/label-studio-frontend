@@ -52,7 +52,8 @@ const Model = types
     toolNames: isFF(FF_DEV_2132) ? ['Rect', 'Rect3Point'] : ['Rect'],
   }));
 
-const RectangleModel = types.compose('RectangleModel',
+const RectangleModel = types.compose(
+  'RectangleModel',
   ControlBase,
   AnnotationMixin,
   SeparatedControlMixin,

@@ -19,7 +19,7 @@ import chroma from 'chroma-js';
 
 const RegionItemDesc = observer(({ item, setDraggable }) => {
   const [collapsed, setCollapsed] = useState(false);
-  const toggleCollapsed = useCallback((e) => {
+  const toggleCollapsed = useCallback(e => {
     setCollapsed(val => !val);
     e.preventDefault();
     e.stopPropagation();
@@ -27,16 +27,28 @@ const RegionItemDesc = observer(({ item, setDraggable }) => {
   const controls = item.perRegionDescControls || [];
 
   return (
-    <Elem name="desc" tag="div" mod={{ collapsed, empty: !(controls?.length > 0)  }} onMouseEnter={()=>{setDraggable?.(false);}} onMouseLeave={()=>{setDraggable?.(true);}}>
+    <Elem
+      name="desc"
+      tag="div"
+      mod={{ collapsed, empty: !(controls?.length > 0) }}
+      onMouseEnter={() => {
+        setDraggable?.(false);
+      }}
+      onMouseLeave={() => {
+        setDraggable?.(true);
+      }}
+    >
       <Elem name="controls">
         {controls.map((tag, idx) => {
           const View = Registry.getPerRegionView(tag.type, PER_REGION_MODES.REGION_LIST);
 
-          return View ? <View key={idx} item={tag} area={item} collapsed={collapsed} setCollapsed={setCollapsed}/> : null;
+          return View ? (
+            <View key={idx} item={tag} area={item} collapsed={collapsed} setCollapsed={setCollapsed} />
+          ) : null;
         })}
       </Elem>
       <Elem name="collapse" tag={Button} size="small" type="text" onClick={toggleCollapsed}>
-        {collapsed ? <LsExpand/> : <LsCollapse/>}
+        {collapsed ? <LsExpand /> : <LsCollapse />}
       </Elem>
     </Elem>
   );
@@ -45,7 +57,7 @@ const RegionItemDesc = observer(({ item, setDraggable }) => {
 const RegionItemContent = observer(({ idx, item, setDraggable }) => {
   const itemElRef = useRef();
 
-  useEffect(()=>{
+  useEffect(() => {
     if (item.selected) {
       const el = itemElRef.current;
 
@@ -56,24 +68,22 @@ const RegionItemContent = observer(({ idx, item, setDraggable }) => {
     }
   }, [item.selected]);
   return (
-    <Block ref={itemElRef} name="region-item" mod={{ hidden : item.hidden }}>
+    <Block ref={itemElRef} name="region-item" mod={{ hidden: item.hidden }}>
       <Elem name="header" tag="div">
         <Elem name="counter">{isDefined(idx) ? idx + 1 : ''}</Elem>
 
-        <Elem name="title" tag={Node} node={item} mix={styles.node}/>
+        <Elem name="title" tag={Node} node={item} mix={styles.node} />
 
         <Space size="small">
           <Elem tag="span" name="id">
-            <NodeIcon node={item}/>
+            <NodeIcon node={item} />
           </Elem>
 
           <Elem name="prediction">
-            {item.origin === 'prediction' && (
-              <LsSparks style={{ width: 16, height: 16 }}/>
-            )}
+            {item.origin === 'prediction' && <LsSparks style={{ width: 16, height: 16 }} />}
           </Elem>
 
-          {!item.editable && <Badge count={'ro'} style={{ backgroundColor: '#ccc' }}/>}
+          {!item.editable && <Badge count={'ro'} style={{ backgroundColor: '#ccc' }} />}
 
           {item.score && (
             <Elem
@@ -95,18 +105,19 @@ const RegionItemContent = observer(({ idx, item, setDraggable }) => {
               type="text"
               mod={{ active: !item.hidden }}
               onClick={item.toggleHidden}
-            >{item.hidden ? <LsInvisible/> : <LsVisible/>}</Elem>
+            >
+              {item.hidden ? <LsInvisible /> : <LsVisible />}
+            </Elem>
           )}
-
         </Space>
       </Elem>
-      <RegionItemDesc item={item} setDraggable={setDraggable}/>
+      <RegionItemDesc item={item} setDraggable={setDraggable} />
     </Block>
   );
 });
 
 export const RegionItem = observer(({ item, idx, flat, setDraggable, onClick }) => {
-  const getVars = useMemo(()=>{
+  const getVars = useMemo(() => {
     let vars;
 
     return () => {
@@ -134,13 +145,15 @@ export const RegionItem = observer(({ item, idx, flat, setDraggable, onClick }) 
     <List.Item
       key={item.id}
       className={classnames.join(' ')}
-      onClick={(e)=>{onClick(e, item);}}
+      onClick={e => {
+        onClick(e, item);
+      }}
       onMouseOver={() => item.setHighlight(true)}
       onMouseOut={() => item.setHighlight(false)}
       style={vars}
       aria-label="region"
     >
-      <RegionItemContent idx={idx} item={item} setDraggable={setDraggable}/>
+      <RegionItemContent idx={idx} item={item} setDraggable={setDraggable} />
     </List.Item>
   );
 });

@@ -10,7 +10,6 @@ import SeparatedControlMixin from '../../mixins/SeparatedControlMixin';
 import { ToolManagerMixin } from '../../mixins/ToolManagerMixin';
 import { FF_DEV_2576, isFF } from '../../utils/feature-flags';
 
-
 const hotkeys = Hotkey('Polygons');
 
 /**
@@ -72,7 +71,7 @@ const Model = types
             if (self.annotation.isDrawing) self.annotation.undo();
           });
           hotkeys.addNamed('polygon:redo', () => {
-            if (self.annotation.isDrawing)  self.annotation.redo();
+            if (self.annotation.isDrawing) self.annotation.redo();
           });
         }
       },

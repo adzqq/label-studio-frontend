@@ -19,7 +19,6 @@ export function msToHMS(ms) {
   // 3- Extract minutes:
   const minutes = parseInt(seconds / 60); // 60 seconds in 1 minute
   // 4- Keep only seconds not extracted to minutes:
-  
 
   seconds = Math.floor(seconds); // % 60;
 

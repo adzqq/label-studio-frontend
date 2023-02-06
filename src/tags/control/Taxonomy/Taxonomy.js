@@ -70,7 +70,7 @@ function traverse(root) {
     const uniq = new Set();
     const result = [];
 
-    for(const child of nodes) {
+    for (const child of nodes) {
       if (uniq.has(child.value)) continue;
       uniq.add(child.value);
       result.push(visitNode(child, path));
@@ -113,14 +113,18 @@ const Model = types
     selected: [],
     loading: true,
   }))
-  .views(self => isFF(FF_DEV_3617) ? ({
-    get children() {
-      return self._children;
-    },
-    set children(val) {
-      self._children = val;
-    },
-  }) : ({}))
+  .views(self =>
+    isFF(FF_DEV_3617)
+      ? {
+        get children() {
+          return self._children;
+        },
+        set children(val) {
+          self._children = val;
+        },
+      }
+      : {},
+  )
   .views(self => ({
     get userLabels() {
       return self.annotation.store.userLabels;
@@ -239,9 +243,8 @@ const Model = types
     onDeleteLabel(path) {
       self.userLabels?.deleteLabel(self.name, path);
     },
-
   }))
-  .preProcessSnapshot((sn) => {
+  .preProcessSnapshot(sn => {
     if (isFF(FF_DEV_3617)) {
       const children = sn._children ?? sn.children;
 
@@ -256,7 +259,8 @@ const Model = types
     return sn;
   });
 
-const TaxonomyModel = types.compose('TaxonomyModel',
+const TaxonomyModel = types.compose(
+  'TaxonomyModel',
   ControlBase,
   TagAttrs,
   ...(isFF(FF_DEV_2007_DEV_2008) ? [DynamicChildrenMixin] : []),
@@ -283,9 +287,9 @@ const HtxTaxonomy = observer(({ item }) => {
 
   return (
     <div style={{ ...style, ...visibleStyle }}>
-      {(item.loading && isFF(FF_DEV_3617)) ? (
+      {item.loading && isFF(FF_DEV_3617) ? (
         <div className="lsf-taxonomy">
-          <Spin size="small"/>
+          <Spin size="small" />
         </div>
       ) : (
         <Taxonomy

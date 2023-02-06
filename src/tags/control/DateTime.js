@@ -329,7 +329,12 @@ const HtxDateTime = inject('store')(
     return (
       <div style={visibleStyle}>
         {item.showMonth && (
-          <select {...visual} name={item.name + '-date'} value={item.month} onChange={disabled ? undefined : item.onMonthChange}>
+          <select
+            {...visual}
+            name={item.name + '-date'}
+            value={item.month}
+            onChange={disabled ? undefined : item.onMonthChange}
+          >
             <option value="">Month...</option>
             {item.months.map((month, index) => (
               <option key={month} value={index + 1}>
@@ -339,7 +344,12 @@ const HtxDateTime = inject('store')(
           </select>
         )}
         {item.showYear && (
-          <select {...visual} name={item.name + '-year'} value={item.year || ''} onChange={disabled ? undefined : item.onYearChange}>
+          <select
+            {...visual}
+            name={item.name + '-year'}
+            value={item.year || ''}
+            onChange={disabled ? undefined : item.onYearChange}
+          >
             <option value="">Year...</option>
             {item.years.map(year => (
               <option key={year} value={year}>

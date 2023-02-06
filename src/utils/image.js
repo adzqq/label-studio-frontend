@@ -132,12 +132,11 @@ export function fixRectToFit(rect, stageWidth, stageHeight) {
   return { ...rect, x, y, width, height };
 }
 
-
-export function createDragBoundFunc(item, offset = { x:0, y:0 }) {
+export function createDragBoundFunc(item, offset = { x: 0, y: 0 }) {
   const { parent: imageView } = item;
 
   return function(pos) {
-    return imageView.fixForZoomWrapper(pos, (pos) => {
+    return imageView.fixForZoomWrapper(pos, pos => {
       let { x, y } = pos;
 
       x -= offset.x;

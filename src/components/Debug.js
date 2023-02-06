@@ -3,7 +3,7 @@ import { Button, Form } from 'antd';
 
 import { observer } from 'mobx-react';
 
-const toJSON = (annotation) => {
+const toJSON = annotation => {
   const id = annotation.pk || annotation.id;
   const result = annotation.serializeAnnotation();
   const draft = annotation.versions.draft;

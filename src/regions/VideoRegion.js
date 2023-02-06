@@ -15,10 +15,7 @@ export const interpolateProp = (start, end, frame, prop) => {
 };
 
 export const onlyProps = (props, obj) => {
-  return Object.fromEntries(props.map(prop => [
-    prop,
-    obj[prop],
-  ]));
+  return Object.fromEntries(props.map(prop => [prop, obj[prop]]));
 };
 
 const Model = types
@@ -29,7 +26,7 @@ const Model = types
 
     sequence: types.frozen([]),
   })
-  .preProcessSnapshot((snapshot) => {
+  .preProcessSnapshot(snapshot => {
     return { ...snapshot, sequence: snapshot.sequence || snapshot.value.sequence };
   })
   .volatile(() => ({
@@ -65,7 +62,7 @@ const Model = types
       const value = {
         framesCount,
         duration,
-        sequence: self.sequence.map((keyframe) => {
+        sequence: self.sequence.map(keyframe => {
           return { ...keyframe, time: keyframe.frame / framerate };
         }),
       };
@@ -91,7 +88,8 @@ const Model = types
       const sequence = Array.from(self.sequence);
       const closestKeypoint = self.closestKeypoint(frame);
       const newKeypoint = {
-        ...(self.getShape(frame) ?? closestKeypoint ?? {
+        ...(self.getShape(frame) ??
+          closestKeypoint ?? {
           x: 0,
           y: 0,
         }),
@@ -105,9 +103,12 @@ const Model = types
 
       self.sequence = sequence;
 
-      self.updateShape({
-        ...newKeypoint,
-      }, newKeypoint.frame);
+      self.updateShape(
+        {
+          ...newKeypoint,
+        },
+        newKeypoint.frame,
+      );
     },
 
     removeKeypoint(frame) {

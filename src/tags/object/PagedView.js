@@ -120,10 +120,10 @@ const HtxPagedView = observer(({ item }) => {
   const [page, _setPage] = useState(getQueryPage);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
-  const setPage = useCallback((_page) => {
+  const setPage = useCallback(_page => {
     _setPage(_page);
     updateQueryPage(_page, item.annotationStore?.store?.task.id);
-  },[]);
+  }, []);
 
   const totalPages = Math.ceil(item.children.length / pageSize);
 
@@ -179,7 +179,7 @@ const HtxPagedView = observer(({ item }) => {
     const pageView = [];
 
     for (let i = 0; i < pageSize; i++) {
-      pageView.push(Tree.renderChildren(item.children[i + (pageSize * (page - 1))], item.annotation));
+      pageView.push(Tree.renderChildren(item.children[i + pageSize * (page - 1)], item.annotation));
     }
 
     return pageView;
@@ -192,7 +192,7 @@ const HtxPagedView = observer(({ item }) => {
         currentPage={page}
         totalPages={totalPages}
         pageSize={pageSize}
-        pageSizeOptions={ PAGE_SIZE_OPTIONS }
+        pageSizeOptions={PAGE_SIZE_OPTIONS}
         pageSizeSelectable={false}
         size={'medium'}
         onChange={(page, maxPerPage = pageSize) => {
@@ -211,4 +211,3 @@ const HtxPagedView = observer(({ item }) => {
 Registry.addTag('pagedview', PagedViewModel, HtxPagedView);
 
 export { HtxPagedView, PagedViewModel };
-

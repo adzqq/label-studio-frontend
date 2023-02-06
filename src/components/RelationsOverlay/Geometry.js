@@ -140,7 +140,7 @@ export class Geometry {
     };
   }
 
-  static modifyBBoxCoords(bbox, modifier = x=>x) {
+  static modifyBBoxCoords(bbox, modifier = x => x) {
     const p1 = modifier([bbox.x, bbox.y]);
     const p2 = modifier([bbox.width + bbox.x, bbox.height + bbox.y]);
 
@@ -288,7 +288,9 @@ export class Geometry {
         }
       }
     }
-    return min.x <= max.x && min.y <= max.y ? { x: min.x, y: min.y, width: max.x - min.x, height: max.y - min.y } : null;
+    return min.x <= max.x && min.y <= max.y
+      ? { x: min.x, y: min.y, width: max.x - min.x, height: max.y - min.y }
+      : null;
   }
   /**
    * Combine two or more BBoxes into one

@@ -56,7 +56,8 @@ const Model = types
     toolNames: ['KeyPoint'],
   }));
 
-const KeyPointModel = types.compose('KeyPointModel',
+const KeyPointModel = types.compose(
+  'KeyPointModel',
   ControlBase,
   AnnotationMixin,
   SeparatedControlMixin,

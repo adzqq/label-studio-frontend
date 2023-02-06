@@ -31,14 +31,12 @@ import { EditableRegion } from './EditableRegion';
  * @property {number} value.channel channel identifier which was targeted
  */
 
-const EditableAudioModel = types
-  .model('EditableAudioModel', {})
-  .volatile(() => ({
-    editableFields: [
-      { property: 'start', label: 'Start' },
-      { property: 'end', label: 'End' },
-    ],
-  }));
+const EditableAudioModel = types.model('EditableAudioModel', {}).volatile(() => ({
+  editableFields: [
+    { property: 'start', label: 'Start' },
+    { property: 'end', label: 'End' },
+  ],
+}));
 
 const AudioRegionModel = types.compose(
   'AudioRegionModel',

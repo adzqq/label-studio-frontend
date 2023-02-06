@@ -39,7 +39,7 @@ const BaseTool = types
         return self.control.isSeparated;
       },
       get viewClass() {
-        return () => self.shouldRenderView ? <ToolView item={self} /> : null;
+        return () => (self.shouldRenderView ? <ToolView item={self} /> : null);
       },
       get viewTooltip() {
         return null;
@@ -72,8 +72,8 @@ const BaseTool = types
       },
     };
   })
-  .actions((self) => {
-    return  {
+  .actions(self => {
+    return {
       afterCreate() {
         if (self.smart && self.control?.smart) {
           const currentEnv = getEnv(self);
@@ -100,7 +100,6 @@ const BaseTool = types
       },
     };
   });
-
 
 export const MIN_SIZE = { X: 3, Y: 3 };
 

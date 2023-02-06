@@ -28,7 +28,10 @@ export const DraftPanel = observer(({ item }) => {
   }
   return (
     <div>
-      <Tooltip placement="topLeft" title={item.draftSelected ? 'switch to submitted result' : 'switch to current draft'}>
+      <Tooltip
+        placement="topLeft"
+        title={item.draftSelected ? 'switch to submitted result' : 'switch to current draft'}
+      >
         <Button type="link" onClick={item.toggleDraft} className={styles.draftbtn}>
           {item.draftSelected ? 'draft' : 'submitted'}
         </Button>
@@ -55,9 +58,7 @@ const Annotation = observer(({ item, store }) => {
   );
 
   const setHoney = () => {
-    const title = item.ground_truth
-      ? 'Unset this result as a ground truth'
-      : 'Set this result as a ground truth';
+    const title = item.ground_truth ? 'Unset this result as a ground truth' : 'Set this result as a ground truth';
 
     return (
       <Tooltip placement="topLeft" title={title}>
@@ -69,11 +70,7 @@ const Annotation = observer(({ item, store }) => {
             item.setGroundTruth(!item.ground_truth);
           }}
         >
-          {item.ground_truth ? (
-            <StarFilled />
-          ) : (
-            <StarOutlined />
-          )}
+          {item.ground_truth ? <StarFilled /> : <StarOutlined />}
         </Button>
       </Tooltip>
     );
@@ -101,18 +98,18 @@ const Annotation = observer(({ item, store }) => {
   };
 
   /**
-   * Default badge for saved annotations
-   */
+     * Default badge for saved annotations
+     */
   let badge = <Badge status="default" />;
 
   /**
-   *
-   */
+     *
+     */
   let annotationID;
 
   /**
-   * Title of card
-   */
+     * Title of card
+     */
   if (item.userGenerate && !item.sentUserGenerate) {
     annotationID = <span className={styles.title}>Unsaved Annotation</span>;
   } else {
@@ -124,15 +121,15 @@ const Annotation = observer(({ item, store }) => {
   }
 
   /**
-   * Badge for processing of user generate annotation
-   */
+     * Badge for processing of user generate annotation
+     */
   if (item.userGenerate) {
     badge = <Badge status="processing" />;
   }
 
   /**
-   * Badge for complete of user generate annotation
-   */
+     * Badge for complete of user generate annotation
+     */
   if (item.userGenerate && item.sentUserGenerate) {
     badge = <Badge status="success" />;
   }
@@ -147,7 +144,7 @@ const Annotation = observer(({ item, store }) => {
     return (
       <div className={styles.buttons}>
         {store.hasInterface('ground-truth') && (item.ground_truth ? removeHoney() : setHoney())}
-        &nbsp;
+                &nbsp;
         {store.hasInterface('annotations:delete') && (
           <Tooltip placement="topLeft" title="Delete selected annotation">
             <Popconfirm
@@ -233,7 +230,7 @@ class Annotations extends Component {
               </Button>
             </Tooltip>
           )}
-          &nbsp;
+                    &nbsp;
           <Tooltip placement="topLeft" title="View all annotations">
             <Button
               size="small"

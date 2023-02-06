@@ -44,11 +44,12 @@ const Store = types.optional(types.maybeNull(types.late(() => types.reference(Sh
  * Shared Stores live on the AnnotationStore level meaning that even if the user switches between annotations or
  * create new ones, they will all use the same shared store decreasing the memory footprint and computation time.
  */
-export const SharedStoreMixin = types.model('SharedStoreMixin', {
-  sharedstore: SharedStoreID,
-  store: Store,
-})
-  .views((self) => ({
+export const SharedStoreMixin = types
+  .model('SharedStoreMixin', {
+    sharedstore: SharedStoreID,
+    store: Store,
+  })
+  .views(self => ({
     get children() {
       return self.sharedChildren;
     },
@@ -82,16 +83,19 @@ export const SharedStoreMixin = types.model('SharedStoreMixin', {
       }
     },
   }))
-  .preProcessSnapshot((sn) => {
+  .preProcessSnapshot(sn => {
     const storeId = sn.sharedstore ?? sn.name;
 
     if (StoreIds.has(storeId)) {
       sn.store = storeId;
     } else {
-      Stores.set(storeId, SharedStoreModel.create({
-        id: storeId,
-        children: sn._children ?? sn.children ?? [],
-      }));
+      Stores.set(
+        storeId,
+        SharedStoreModel.create({
+          id: storeId,
+          children: sn._children ?? sn.children ?? [],
+        }),
+      );
     }
 
     return sn;
@@ -102,4 +106,3 @@ export const destroy = () => {
   Stores.clear();
   StoreIds.clear();
 };
-

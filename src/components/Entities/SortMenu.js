@@ -21,7 +21,8 @@ export const SortMenu = observer(({ regionStore }) => {
   return (
     <Block name="sort-menu" tag={Menu} selectedKeys={[regionStore.sort]}>
       <Menu.Item key="date">
-        <Elem name="option-inner"
+        <Elem
+          name="option-inner"
           onClick={ev => {
             regionStore.setSort('date');
             ev.preventDefault();
@@ -29,13 +30,17 @@ export const SortMenu = observer(({ regionStore }) => {
           }}
         >
           <Elem name="title">
-            <Elem name="icon" tag="span"><SortMenuIcon sortKey="date" /></Elem> Date
+            <Elem name="icon" tag="span">
+              <SortMenuIcon sortKey="date" />
+            </Elem>{' '}
+            Date
           </Elem>
           <span>{regionStore.sort === 'date' && (regionStore.sortOrder === 'asc' ? '↓' : '↑')}</span>
         </Elem>
       </Menu.Item>
       <Menu.Item key="score">
-        <Elem name="option-inner"
+        <Elem
+          name="option-inner"
           onClick={ev => {
             regionStore.setSort('score');
             ev.preventDefault();
@@ -43,7 +48,10 @@ export const SortMenu = observer(({ regionStore }) => {
           }}
         >
           <Elem name="title">
-            <Elem name="icon" tag="span"><SortMenuIcon sortKey="score" /></Elem> Score
+            <Elem name="icon" tag="span">
+              <SortMenuIcon sortKey="score" />
+            </Elem>{' '}
+            Score
           </Elem>
           <span>{regionStore.sort === 'score' && (regionStore.sortOrder === 'asc' ? '↓' : '↑')}</span>
         </Elem>

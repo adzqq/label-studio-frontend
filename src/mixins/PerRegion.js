@@ -1,7 +1,6 @@
 import { types } from 'mobx-state-tree';
 import { PER_REGION_MODES } from './PerRegionModes';
 
-
 /*
  * Per Region Mixin
  */
@@ -10,12 +9,13 @@ const PerRegionMixin = types
     perregion: types.optional(types.boolean, false),
     whenlabelvalue: types.maybeNull(types.string),
     displaymode: types.optional(types.enumeration(Object.values(PER_REGION_MODES)), PER_REGION_MODES.TAG),
-  }).volatile(() => {
+  })
+  .volatile(() => {
     return {
       focusable: false,
     };
-  },
-  ).views(self => ({
+  })
+  .views(self => ({
     perRegionVisible() {
       if (!self.perregion) return true;
 

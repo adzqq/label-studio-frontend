@@ -42,7 +42,7 @@ export default observer(({ store }) => {
             ev.preventDefault();
           }}
         >
-          Undo
+                    Undo
           {store.settings.enableHotkeys && store.settings.enableTooltips && <Hint>[ Ctrl+z ]</Hint>}
         </Button>
         <Button
@@ -54,7 +54,7 @@ export default observer(({ store }) => {
             ev.preventDefault();
           }}
         >
-          Redo
+                    Redo
         </Button>
         <Button
           type="ghost"
@@ -64,7 +64,7 @@ export default observer(({ store }) => {
             history && history.reset();
           }}
         >
-          Reset
+                    Reset
         </Button>
         {store.setPrelabeling && (
           <Button
@@ -74,7 +74,7 @@ export default observer(({ store }) => {
             }}
           >
             {' '}
-            Reset Prelabeling
+                        Reset Prelabeling
           </Button>
         )}
         {store.hasInterface('debug') && (
@@ -92,7 +92,7 @@ export default observer(({ store }) => {
               store.toggleDescription();
             }}
           >
-            Hide Instructions
+                        Hide Instructions
           </Button>
         )}
         {store.description && !store.showingDescription && (
@@ -101,7 +101,7 @@ export default observer(({ store }) => {
               store.toggleDescription();
             }}
           >
-            Instructions
+                        Instructions
           </Button>
         )}
 

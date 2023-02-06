@@ -10,9 +10,7 @@ export const HighlightMixin = types
   .views(self => ({
     get _hasSpans() {
       // @todo is it possible that only some spans are connected?
-      return self._spans ? (
-        self._spans.every(span => span.isConnected)
-      ) : false;
+      return self._spans ? self._spans.every(span => span.isConnected) : false;
     },
   }))
   .actions(self => ({
@@ -147,7 +145,9 @@ export const HighlightMixin = types
     beforeDestroy() {
       try {
         self._stylesheet.remove();
-      } catch(e) { /* somthing went wrong */ }
+      } catch (e) {
+        /* somthing went wrong */
+      }
     },
 
     /**
@@ -227,8 +227,6 @@ export const HighlightMixin = types
       e?.stopPropagation();
     },
   }));
-
-
 
 const stateClass = {
   active: '__active',

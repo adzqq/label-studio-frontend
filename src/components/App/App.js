@@ -1,6 +1,6 @@
 /**
-* Libraries
-*/
+ * Libraries
+ */
 import React, { Component } from 'react';
 import { Result, Spin } from 'antd';
 import { getEnv, getRoot } from 'mobx-state-tree';
@@ -80,14 +80,12 @@ class App extends Component {
         <Block name="sub__result">You have completed all tasks in the queue!</Block>
         {store.canGoPrevTask && (
           <Button onClick={() => store.prevTask()} look="outlined" style={{ margin: '16px 0' }}>
-            Go to Previous Task
+                        Go to Previous Task
           </Button>
         )}
       </Block>
     );
   }
-
-
 
   renderNoAccess() {
     return <Result status="warning" title={getEnv(this.props.store).messages.NO_ACCESS} />;
@@ -99,11 +97,7 @@ class App extends Component {
         <Elem name="annotation">
           <TreeValidation errors={this.props.store.annotationStore.validation} />
         </Elem>
-        {store.hasInterface('infobar') && (
-          <Elem name="infobar">
-            Task #{store.task.id}
-          </Elem>
-        )}
+        {store.hasInterface('infobar') && <Elem name="infobar">Task #{store.task.id}</Elem>}
       </Block>
     );
   }
@@ -130,19 +124,13 @@ class App extends Component {
     return (
       <>
         {!as.viewingAllAnnotations && !as.viewingAllPredictions && (
-          <Block
-            key={(as.selectedHistory ?? as.selected)?.id}
-            name="main-view"
-            onScrollCapture={this._notifyScroll}
-          >
+          <Block key={(as.selectedHistory ?? as.selected)?.id} name="main-view" onScrollCapture={this._notifyScroll}>
             <Elem name="annotation">
               {<Annotation root={root} annotation={as.selected} />}
               {this.renderRelations(as.selected)}
             </Elem>
             {getRoot(as).hasInterface('infobar') && this._renderInfobar(as)}
-            {as.selected.onlyTextObjects === false && (
-              <DynamicPreannotationsControl />
-            )}
+            {as.selected.onlyTextObjects === false && <DynamicPreannotationsControl />}
           </Block>
         )}
         {as.viewingAllAnnotations && this.renderAllAnnotations()}
@@ -226,7 +214,7 @@ class App extends Component {
             </Segment>
           )}
 
-          {isDefined(store) && store.hasInterface('topbar') && <TopBar store={store}/>}
+          {isDefined(store) && store.hasInterface('topbar') && <TopBar store={store} />}
           <Block name="wrapper" mod={{ viewAll: viewingAll, bsp: settings.bottomSidePanel, outliner: newUIEnabled }}>
             {newUIEnabled ? (
               <SidePanels
@@ -240,17 +228,17 @@ class App extends Component {
               <>
                 {mainContent}
 
-                {(viewingAll === false) && (
+                {viewingAll === false && (
                   <Block name="menu" mod={{ bsp: settings.bottomSidePanel }}>
                     {store.hasInterface('side-column') && (
                       <SidebarTabs active="annotation">
                         <SidebarPage name="annotation" title="Annotation">
-                          <AnnotationTab store={store}/>
+                          <AnnotationTab store={store} />
                         </SidebarPage>
 
                         {this.props.panels.map(({ name, title, Component }) => (
                           <SidebarPage key={name} name={name} title={title}>
-                            <Component/>
+                            <Component />
                           </SidebarPage>
                         ))}
                       </SidebarTabs>
@@ -259,7 +247,6 @@ class App extends Component {
                 )}
               </>
             )}
-
           </Block>
         </Provider>
         {store.hasInterface('debug') && <Debug store={store} />}

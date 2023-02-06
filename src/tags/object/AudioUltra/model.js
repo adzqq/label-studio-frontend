@@ -76,11 +76,12 @@ export const AudioModel = types.compose(
   ObjectBase,
   AnnotationMixin,
   IsReadyMixin,
-  types.model('AudioModel', {
-    type: 'audio',
-    _value: types.optional(types.string, ''),
-    regions: types.array(AudioRegionModel),
-  })
+  types
+    .model('AudioModel', {
+      type: 'audio',
+      _value: types.optional(types.string, ''),
+      regions: types.array(AudioRegionModel),
+    })
     .volatile(() => ({
       errors: [],
     }))
@@ -132,27 +133,32 @@ export const AudioModel = types.compose(
 
       return {
         afterCreate() {
-          dispose = observe(self, 'activeLabel', () => {
-            const selectedRegions = self._ws?.regions?.selected;
+          dispose = observe(
+            self,
+            'activeLabel',
+            () => {
+              const selectedRegions = self._ws?.regions?.selected;
 
-            if (!selectedRegions || selectedRegions.length === 0) return;
+              if (!selectedRegions || selectedRegions.length === 0) return;
 
-            const activeState = self.activeState;
-            const selectedColor = activeState?.selectedColor;
-            const labels = activeState?.selectedValues();
+              const activeState = self.activeState;
+              const selectedColor = activeState?.selectedColor;
+              const labels = activeState?.selectedValues();
 
-            selectedRegions.forEach(r => {
-              r.update({ color: selectedColor, labels: labels ?? [] });
+              selectedRegions.forEach(r => {
+                r.update({ color: selectedColor, labels: labels ?? [] });
 
-              const region = r.isRegion ? self.updateRegion(r) : self.addRegion(r);
+                const region = r.isRegion ? self.updateRegion(r) : self.addRegion(r);
 
-              self.annotation.selectArea(region);
-            });
+                self.annotation.selectArea(region);
+              });
 
-            if (selectedRegions.length) {
-              self.requestWSUpdate();
-            }
-          }, false);
+              if (selectedRegions.length) {
+                self.requestWSUpdate();
+              }
+            },
+            false,
+          );
         },
 
         needsUpdate() {
@@ -336,7 +342,7 @@ export const AudioModel = types.compose(
         },
 
         addRegion(wsRegion) {
-        // area id is assigned to WS region during deserealization
+          // area id is assigned to WS region during deserealization
           const find_r = self.annotation.areas.get(wsRegion.id);
 
           if (find_r) {
@@ -348,7 +354,7 @@ export const AudioModel = types.compose(
           const states = self.getAvailableStates();
 
           if (states.length === 0) {
-          // wsRegion.on("update-end", ev=> self.selectRange(ev, wsRegion));
+            // wsRegion.on("update-end", ev=> self.selectRange(ev, wsRegion));
             return;
           }
 
@@ -357,7 +363,7 @@ export const AudioModel = types.compose(
           const r = self.annotation.createResult(wsRegion, labels, control, self);
 
           r._ws_region = wsRegion;
-        
+
           return r;
         },
 

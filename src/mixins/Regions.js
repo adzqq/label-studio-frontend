@@ -21,11 +21,7 @@ const RegionsMixin = types
 
     locked: false,
 
-    origin: types.optional(types.enumeration([
-      'prediction',
-      'prediction-changed',
-      'manual',
-    ]), 'manual'),
+    origin: types.optional(types.enumeration(['prediction', 'prediction-changed', 'manual']), 'manual'),
   })
   .volatile(() => ({
     // selected: false,
@@ -80,7 +76,6 @@ const RegionsMixin = types
         return r.dynamic && r.type === self.type && r.labelName === self.labelName;
       });
     },
-
   }))
   .actions(self => {
     return {
@@ -229,10 +224,10 @@ const RegionsMixin = types
       selectRegion() {},
 
       /**
-     * @todo fix "keep selected" setting
-     * Common logic for unselection; specific actions should be in `afterUnselectRegion`
-     * @param {boolean} tryToKeepStates try to keep states selected if such settings enabled
-     */
+       * @todo fix "keep selected" setting
+       * Common logic for unselection; specific actions should be in `afterUnselectRegion`
+       * @param {boolean} tryToKeepStates try to keep states selected if such settings enabled
+       */
       unselectRegion(tryToKeepStates = false) {
         console.log('UNSELECT REGION', 'you should not be here');
         // eslint-disable-next-line no-constant-condition

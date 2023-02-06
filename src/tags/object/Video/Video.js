@@ -155,7 +155,10 @@ const Model = types
         if (isFFDev2715) {
           if (self.syncedDuration && time >= self.syncedDuration) {
             self.ref.current.currentTime = self.ref.current.duration;
-          } else if (self.ref.current && !isTimeRelativelySimilar(self.ref.current.currentTime, time, self.ref.current.duration)) {
+          } else if (
+            self.ref.current &&
+            !isTimeRelativelySimilar(self.ref.current.currentTime, time, self.ref.current.duration)
+          ) {
             self.ref.current.currentTime = time;
           }
         }
@@ -284,7 +287,8 @@ const Model = types
     };
   });
 
-export const VideoModel = types.compose('VideoModel',
+export const VideoModel = types.compose(
+  'VideoModel',
   SyncMixin,
   TagAttrs,
   ProcessAttrsMixin,

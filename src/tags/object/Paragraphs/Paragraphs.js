@@ -107,7 +107,7 @@ class HtxParagraphsView extends Component {
 
                   const walker = texts[fromIdx].ownerDocument.createTreeWalker(texts[fromIdx], NodeFilter.SHOW_ALL);
 
-                  while (walker.firstChild()) ;
+                  while (walker.firstChild());
 
                   _range.setStart(walker.currentNode, anchorOffset);
                 }
@@ -121,7 +121,7 @@ class HtxParagraphsView extends Component {
 
                   const walker = texts[curIdx].ownerDocument.createTreeWalker(texts[curIdx], NodeFilter.SHOW_ALL);
 
-                  while (walker.lastChild()) ;
+                  while (walker.lastChild());
 
                   _range.setEnd(walker.currentNode, walker.currentNode.length);
                 }
@@ -184,7 +184,7 @@ class HtxParagraphsView extends Component {
     return ranges;
   }
 
-  _selectRegions = (additionalMode) => {
+  _selectRegions = additionalMode => {
     const { item } = this.props;
     const root = this.myRef.current;
     const selection = window.getSelection();
@@ -223,7 +223,8 @@ class HtxParagraphsView extends Component {
     const item = this.props.item;
     const states = item.activeStates();
 
-    if (!states || states.length === 0 || ev.ctrlKey || ev.metaKey) return this._selectRegions(ev.ctrlKey || ev.metaKey);
+    if (!states || states.length === 0 || ev.ctrlKey || ev.metaKey)
+      return this._selectRegions(ev.ctrlKey || ev.metaKey);
 
     const selectedRanges = this.captureDocumentSelection();
 

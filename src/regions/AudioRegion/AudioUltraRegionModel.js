@@ -131,7 +131,7 @@ export const AudioUltraRegionModel = types
 
       setProperty(propName, value) {
         Super.setProperty(propName, value);
-        if ( ['start', 'end'].includes(propName) ) {
+        if (['start', 'end'].includes(propName)) {
           self.updatePosition();
         }
       },

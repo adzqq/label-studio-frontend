@@ -33,10 +33,7 @@ const Model = types
       if (!prev) return null;
       if (!next) return onlyProps(self.props, prev);
 
-      return Object.fromEntries(self.props.map(prop => [
-        prop,
-        interpolateProp(prev, next, frame, prop),
-      ]));
+      return Object.fromEntries(self.props.map(prop => [prop, interpolateProp(prev, next, frame, prop)]));
     },
 
     getVisibility() {

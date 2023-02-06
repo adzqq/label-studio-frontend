@@ -101,9 +101,7 @@ const Model = types
 
     afterCreate() {
       if (self.names.length !== 2 || self.names[0] === self.names[1]) {
-        InfoModal.error(
-          'Incorrect toName parameter on Pairwise, must be two names separated by a comma: name1,name2',
-        );
+        InfoModal.error('Incorrect toName parameter on Pairwise, must be two names separated by a comma: name1,name2');
       }
 
       let selection = {};

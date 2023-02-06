@@ -140,7 +140,6 @@ const flattenTree = (tree, parent = null, parentParentTypes = ['view'], result) 
 
   const children = tree.type === 'pagedview' ? tree.children.slice(0, 1) : tree.children;
 
-
   for (const child of children) {
     /* Create a child without children and
     assign id of the parent for quick mathcing */
@@ -216,7 +215,10 @@ const validateToNameTag = (element, model, flatTree) => {
 const validateParentTag = (element, model) => {
   const parentTypes = model.properties.parentTypes?.value;
 
-  if (!parentTypes || element.parentTypes.find(elementParentType => parentTypes.find(type => elementParentType === type.toLowerCase()))) {
+  if (
+    !parentTypes ||
+    element.parentTypes.find(elementParentType => parentTypes.find(type => elementParentType === type.toLowerCase()))
+  ) {
     return null;
   }
   return errorBuilder.parentTagUnexpected(model.name, 'parent', element.tagName, model.properties.parentTypes);

@@ -167,14 +167,22 @@ const Model = types
     },
   }));
 
-const NumberModel = types.compose('NumberModel', ControlBase, TagAttrs, Model, RequiredMixin, PerRegionMixin, AnnotationMixin);
+const NumberModel = types.compose(
+  'NumberModel',
+  ControlBase,
+  TagAttrs,
+  Model,
+  RequiredMixin,
+  PerRegionMixin,
+  AnnotationMixin,
+);
 
 const HtxNumber = inject('store')(
   observer(({ item, store }) => {
     const visibleStyle = item.perRegionVisible() ? { display: 'flex', alignItems: 'center' } : { display: 'none' };
     const sliderStyle = item.slider ? { padding: '9px 0px', border: 0 } : {};
     const disabled = !item.annotation.editable;
-      
+
     return (
       <div style={visibleStyle}>
         <input

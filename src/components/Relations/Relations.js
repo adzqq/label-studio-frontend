@@ -27,7 +27,7 @@ const RelationMeta = observer(({ rl }) => {
         style={{ width: '100%' }}
         placeholder="Please select"
         defaultValue={selected}
-        onChange={(val) => {
+        onChange={val => {
           const values = wrapArray(val);
 
           r.unselectAll();

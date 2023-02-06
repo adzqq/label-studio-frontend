@@ -26,6 +26,8 @@ export class LabelStudio {
   }
 
   constructor(root, userOptions = {}) {
+
+
     const options = Object.assign({}, defaultOptions, userOptions ?? {});
 
     if (options.keymap) {
@@ -35,7 +37,9 @@ export class LabelStudio {
     this.root = root;
     this.events = new EventInvoker();
     this.options = options ?? {};
-    this.destroy = (() => { /* noop */ });
+    this.destroy = () => {
+      /* noop */
+    };
 
     this.supportLgacyEvents(options);
     this.createApp();
@@ -47,7 +51,7 @@ export class LabelStudio {
     this.events.on(...args);
   }
 
-  off(eventName, callback){
+  off(eventName, callback) {
     if (isDefined(callback)) {
       this.events.off(eventName, callback);
     } else {
@@ -62,12 +66,7 @@ export class LabelStudio {
     this.store = store;
     window.Htx = this.store;
 
-    render((
-      <App
-        store={this.store}
-        panels={registerPanels(this.options.panels) ?? []}
-      />
-    ), rootElement);
+    render(<App store={this.store} panels={registerPanels(this.options.panels) ?? []} />, rootElement);
 
     const destructor = () => {
       unmountComponentAtNode(rootElement);

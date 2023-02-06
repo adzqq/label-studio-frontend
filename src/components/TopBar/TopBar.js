@@ -17,19 +17,14 @@ export const TopBar = observer(({ store }) => {
   return store ? (
     <Block name="topbar">
       <Elem name="group">
-        <CurrentTask store={store}/>
+        <CurrentTask store={store} />
         {!isViewAll && (
-          <Annotations
-            store={store}
-            annotationStore={store.annotationStore}
-            commentStore={store.commentStore}
-          />
+          <Annotations store={store} annotationStore={store.annotationStore} commentStore={store.commentStore} />
         )}
-        <Actions store={store}/>
+        <Actions store={store} />
       </Elem>
       <Elem name="group">
         {!isViewAll && (
-
           <Elem name="section">
             <DynamicPreannotationsToggle />
           </Elem>

@@ -43,4 +43,3 @@ export const configureStore = async (params, events) => {
 
   return { store, getRoot: env.rootElement };
 };
-

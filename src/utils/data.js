@@ -10,7 +10,7 @@ import get from 'lodash.get';
  * @param {object} task
  */
 export const parseValue = (value, task) => {
-  const reVar = /\$[\w[\].{}]+/ig;
+  const reVar = /\$[\w[\].{}]+/gi;
 
   if (!value) return '';
 
@@ -19,7 +19,7 @@ export const parseValue = (value, task) => {
     return get(task, value.substr(1)) ?? '';
   }
 
-  return value.replace(reVar, (v) => get(task, v.substr(1) ?? ''));
+  return value.replace(reVar, v => get(task, v.substr(1) ?? ''));
 };
 
 /**

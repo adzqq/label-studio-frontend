@@ -2,7 +2,7 @@ import chroma from 'chroma-js';
 import { observer } from 'mobx-react';
 import Tree from 'rc-tree';
 import { createContext, FC, MouseEvent, useCallback, useContext, useMemo, useState } from 'react';
-import { IconLockLocked, IconLockUnlocked, IconWarning, LsSparks } from '../../../assets/icons';
+import { IconLockLocked, IconLockUnlocked, IconTrash, IconWarning, LsSparks } from '../../../assets/icons';
 import { IconChevronLeft, IconEyeClosed, IconEyeOpened } from '../../../assets/icons/timeline';
 import { IconArrow } from '../../../assets/icons/tree';
 import { Button, ButtonProps } from '../../../common/Button/Button';
@@ -42,27 +42,27 @@ const OutlinerTreeComponent: FC<OutlinerTreeProps> = ({
   const eventHandlers = useEventHandlers({ regions, onHover });
   const regionsTree = useDataTree({ regions, hovered, rootClass, selectedKeys });
 
-  if( isFF(FF_DEV_2755) ) {
-    const [collapsedPos, setCollapsedPos] = useState( localStorage.getItem( localStoreName )?.split?.(',')?.filter( pos => !!pos ) ?? [] );
+  if (isFF(FF_DEV_2755)) {
+    const [collapsedPos, setCollapsedPos] = useState(localStorage.getItem(localStoreName)?.split?.(',')?.filter(pos => !!pos) ?? []);
 
-    const updateLocalStorage = ( collapsedPos: Array<string> ) => {
-      localStorage.setItem( localStoreName, collapsedPos.join(',') );
+    const updateLocalStorage = (collapsedPos: Array<string>) => {
+      localStorage.setItem(localStoreName, collapsedPos.join(','));
     };
 
-    const collapse = ( pos: string ) => {
+    const collapse = (pos: string) => {
       const newCollapsedPos = [...collapsedPos, pos];
 
-      setCollapsedPos( newCollapsedPos );
-      updateLocalStorage( newCollapsedPos );
+      setCollapsedPos(newCollapsedPos);
+      updateLocalStorage(newCollapsedPos);
     };
 
-    const expand = ( pos: string ) => {
-      const newCollapsedPos = collapsedPos.filter( cPos => cPos !== pos );
+    const expand = (pos: string) => {
+      const newCollapsedPos = collapsedPos.filter(cPos => cPos !== pos);
 
-      setCollapsedPos( newCollapsedPos );
-      updateLocalStorage( newCollapsedPos );
+      setCollapsedPos(newCollapsedPos);
+      updateLocalStorage(newCollapsedPos);
     };
-    const expandedKeys = regionsTree.filter( (item: any) => !collapsedPos.includes( item.pos ) ).map( (item: any) => item.key ) ?? [];
+    const expandedKeys = regionsTree.filter((item: any) => !collapsedPos.includes(item.pos)).map((item: any) => item.key) ?? [];
 
     return (
       <OutlinerContext.Provider value={{ regions }}>
@@ -78,10 +78,10 @@ const OutlinerTreeComponent: FC<OutlinerTreeProps> = ({
             className={rootClass.toClassName()}
             treeData={regionsTree}
             selectedKeys={selectedKeys}
-            icon={({ entity }: any) => <NodeIconComponent node={entity}/>}
-            switcherIcon={({ isLeaf }: any) => <SwitcherIcon isLeaf={isLeaf}/>}
+            icon={({ entity }: any) => <NodeIconComponent node={entity} />}
+            switcherIcon={({ isLeaf }: any) => <SwitcherIcon isLeaf={isLeaf} />}
             expandedKeys={expandedKeys}
-            onExpand={( internalExpandedKeys, { node } ) => {
+            onExpand={(internalExpandedKeys, { node }) => {
               const region = regionsTree.find((region: any) => region.key === node.key);
               const pos = region.pos;
 
@@ -107,8 +107,8 @@ const OutlinerTreeComponent: FC<OutlinerTreeProps> = ({
             className={rootClass.toClassName()}
             treeData={regionsTree}
             selectedKeys={selectedKeys}
-            icon={({ entity }: any) => <NodeIconComponent node={entity}/>}
-            switcherIcon={({ isLeaf }: any) => <SwitcherIcon isLeaf={isLeaf}/>}
+            icon={({ entity }: any) => <NodeIconComponent node={entity} />}
+            switcherIcon={({ isLeaf }: any) => <SwitcherIcon isLeaf={isLeaf} />}
             {...eventHandlers}
           />
         </Block>
@@ -156,7 +156,7 @@ const useDataTree = ({
         '--selection-color': color.alpha(0.1).css(),
       },
       className: rootClass.elem('node').mod(mods).toClassName(),
-      title: (data: any) => <RootTitle {...data}/>,
+      title: (data: any) => <RootTitle {...data} />,
     };
   }, [hovered, selectedKeys]);
 
@@ -281,11 +281,11 @@ const useEventHandlers = ({
 };
 
 const SwitcherIcon: FC<any> = observer(({ isLeaf }) => {
-  return isLeaf ? null : <IconArrow/>;
+  return isLeaf ? null : <IconArrow />;
 });
 
 const NodeIconComponent: FC<any> = observer(({ node }) => {
-  return node ? <NodeIcon node={node}/> : null;
+  return node ? <NodeIcon node={node} /> : null;
 });
 
 const RootTitle: FC<any> = observer(({
@@ -387,7 +387,7 @@ const RegionControls: FC<RegionControlsProps> = observer(({
   const onToggleHidden = useCallback(() => {
     if (type?.includes('region') || type?.includes('range')) {
       entity.toggleHidden();
-    } else if(!type || type.includes('label')) {
+    } else if (!type || type.includes('label')) {
       regionStore.setHiddenByLabel(!hidden, entity);
     }
   }, [item, item?.toggleHidden, hidden]);
@@ -400,45 +400,55 @@ const RegionControls: FC<RegionControlsProps> = observer(({
     item.setLocked((locked: boolean) => !locked);
   }, []);
 
+  const onDeleteSingle = useCallback(() => {
+    item.annotation.deleteRegion(entity);
+  }, []);
+
   return (
     <Elem name="controls" mod={{ withControls: hasControls }}>
       <Elem name="control" mod={{ type: 'score' }}>
         {isDefined(item?.score) && item.score.toFixed(2)}
       </Elem>
       <Elem name="control" mod={{ type: 'dirty' }}>
-        {/* dirtyness is not implemented yet */}
+
       </Elem>
-      <Elem name="control" mod={{ type: 'predict' }}>
-        {item?.origin === 'prediction' && (
-          <LsSparks style={{ width: 18, height: 18 }}/>
-        )}
-      </Elem>
+      {/* <Elem name="control" mod={{ type: 'predict' }}>
+                {item?.origin === 'prediction' && (
+                    <LsSparks style={{ width: 18, height: 18 }} />
+                )}
+            </Elem> */}
       <Elem name="control" mod={{ type: 'lock' }}>
-        {/* TODO: implement manual region locking */}
         {item && (hovered || !item.editable) && (
           <RegionControlButton disabled={item.readonly} onClick={onToggleLocked}>
-            {item.editable ? <IconLockUnlocked/> : <IconLockLocked/>}
+            {item.editable ? <IconLockUnlocked /> : <IconLockLocked />}
           </RegionControlButton>
         )}
       </Elem>
       <Elem name="control" mod={{ type: 'visibility' }}>
         {(hovered || hidden) && (
           <RegionControlButton onClick={onToggleHidden}>
-            {hidden ? <IconEyeClosed/> : <IconEyeOpened/>}
+            {hidden ? <IconEyeClosed /> : <IconEyeOpened />}
           </RegionControlButton>
         )}
       </Elem>
-      {hasControls && (
-        <Elem name="control" mod={{ type: 'visibility' }}>
-          <RegionControlButton onClick={onToggleCollapsed}>
-            <IconChevronLeft
-              style={{
-                transform: `rotate(${collapsed ? -90 : 90}deg)`,
-              }}
-            />
+      <Elem name="control" mod={{ type: 'delete' }}>
+        {(hovered || hidden) && (
+          <RegionControlButton danger onClick={onDeleteSingle}>
+            <IconTrash />
           </RegionControlButton>
-        </Elem>
-      )}
+        )}
+      </Elem>
+      {/* {hasControls && (
+                <Elem name="control" mod={{ type: 'visibility' }}>
+                    <RegionControlButton onClick={onToggleCollapsed}>
+                        <IconChevronLeft
+                            style={{
+                                transform: `rotate(${collapsed ? -90 : 90}deg)`,
+                            }}
+                        />
+                    </RegionControlButton>
+                </Elem>
+            )} */}
     </Elem>
   );
 });
@@ -486,7 +496,7 @@ const RegionItemDesc: FC<RegionItemOCSProps> = observer(({
   return (
     <Block
       name="ocr"
-      mod={{ collapsed, empty: !(controls?.length > 0)  }}
+      mod={{ collapsed, empty: !(controls?.length > 0) }}
       onClick={onClick}
       onDragStart={(e: any) => e.stopPropagation()}
     >
@@ -506,7 +516,7 @@ const RegionItemDesc: FC<RegionItemOCSProps> = observer(({
               color={css}
               outliner
             />
-          ): null;
+          ) : null;
         })}
       </Elem>
     </Block>

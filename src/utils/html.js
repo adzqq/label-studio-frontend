@@ -17,7 +17,8 @@ function toggleLabelsAndScores(show) {
   };
 
   toggleInDocument(document);
-  document.querySelectorAll('iframe.lsf-htx-richtext')
+  document
+    .querySelectorAll('iframe.lsf-htx-richtext')
     .forEach(iframe => toggleInDocument(iframe.contentWindow.document));
 }
 
@@ -233,7 +234,7 @@ function highlightRange(normedRange, cssClass, cssStyle) {
  * @param {Range} range
  */
 function splitBoundaries(range) {
-  let { startContainer, endContainer  } = range;
+  let { startContainer, endContainer } = range;
   const { startOffset, endOffset } = range;
 
   if (isTextNode(endContainer)) {
@@ -385,9 +386,9 @@ function moveStylesBetweenHeadTags(srcHead, destHead) {
     try {
       const rules = styleSheet.rules;
 
-      const cssTexts = rulesByStyleId[style.id] = [];
+      const cssTexts = (rulesByStyleId[style.id] = []);
 
-      for (let k = 0;k < rules.length; k++) {
+      for (let k = 0; k < rules.length; k++) {
         cssTexts.push(rules[k].cssText);
       }
     } finally {
@@ -395,7 +396,7 @@ function moveStylesBetweenHeadTags(srcHead, destHead) {
     }
   }
   destHead.appendChild(fragment);
-  applyHighlightStylesToDoc(destHead.ownerDocument,rulesByStyleId);
+  applyHighlightStylesToDoc(destHead.ownerDocument, rulesByStyleId);
 }
 
 function applyHighlightStylesToDoc(destDoc, rulesByStyleId) {
@@ -409,7 +410,7 @@ function applyHighlightStylesToDoc(destDoc, rulesByStyleId) {
       const rules = rulesByStyleId[style.id];
 
       if (!rules) continue;
-      for (let k = 0;k < rules.length; k++) {
+      for (let k = 0; k < rules.length; k++) {
         style.sheet.insertRule(rules[k]);
       }
     } catch {

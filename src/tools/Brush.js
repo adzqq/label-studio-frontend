@@ -16,13 +16,15 @@ const MAX_SIZE = 50;
 
 const IconDot = ({ size }) => {
   return (
-    <span style={{
-      display: 'block',
-      width: size,
-      height: size,
-      background: 'rgba(0, 0, 0, 0.25)',
-      borderRadius: '100%',
-    }}/>
+    <span
+      style={{
+        display: 'block',
+        width: size,
+        height: size,
+        background: 'rgba(0, 0, 0, 0.25)',
+        borderRadius: '100%',
+      }}
+    />
   );
 };
 
@@ -59,9 +61,7 @@ const _Tool = types
       return () => <ToolView item={self} />;
     },
     get iconComponent() {
-      return self.dynamic
-        ? NodeViews.BrushRegionModel.altIcon
-        : NodeViews.BrushRegionModel.icon;
+      return self.dynamic ? NodeViews.BrushRegionModel.altIcon : NodeViews.BrushRegionModel.icon;
     },
     get tagTypes() {
       return {
@@ -78,9 +78,9 @@ const _Tool = types
           max={MAX_SIZE}
           reverse
           align="vertical"
-          minIcon={<IconDot size={8}/>}
-          maxIcon={<IconDot size={16}/>}
-          onChange={(value) => {
+          minIcon={<IconDot size={8} />}
+          maxIcon={<IconDot size={16} />}
+          onChange={value => {
             self.setStroke(value);
           }}
         />,
@@ -88,12 +88,18 @@ const _Tool = types
     },
     get extraShortcuts() {
       return {
-        '[': ['Decrease size', () => {
-          self.setStroke(clamp(self.strokeWidth - 5, MIN_SIZE, MAX_SIZE));
-        }],
-        ']': ['Increase size', () => {
-          self.setStroke(clamp(self.strokeWidth + 5, MIN_SIZE, MAX_SIZE));
-        }],
+        '[': [
+          'Decrease size',
+          () => {
+            self.setStroke(clamp(self.strokeWidth - 5, MIN_SIZE, MAX_SIZE));
+          },
+        ],
+        ']': [
+          'Increase size',
+          () => {
+            self.setStroke(clamp(self.strokeWidth + 5, MIN_SIZE, MAX_SIZE));
+          },
+        ],
       };
     },
   }))
@@ -160,7 +166,7 @@ const _Tool = types
         brush.setDrawing(false);
         brush.endPath();
         if (isFirstBrushStroke) {
-          setTimeout(()=>{
+          setTimeout(() => {
             const newBrush = self.commitDrawingRegion();
 
             self.obj.annotation.selectArea(newBrush);

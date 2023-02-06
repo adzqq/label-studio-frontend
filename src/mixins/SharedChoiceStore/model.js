@@ -7,12 +7,13 @@ import Types from '../../core/Types';
  * Every tag that uses the SharedStoreMixin will have a reference to the same store
  * defined by `sharedStore` attribute.
  */
-export const SharedStoreModel = types.model('SharedStoreModel', {
-  id: types.identifier,
-  locked: false,
-  children: Types.unionArray(['choice']),
-})
-  .actions((self) => ({
+export const SharedStoreModel = types
+  .model('SharedStoreModel', {
+    id: types.identifier,
+    locked: false,
+    children: Types.unionArray(['choice']),
+  })
+  .actions(self => ({
     setChildren(val) {
       self.children = val;
     },

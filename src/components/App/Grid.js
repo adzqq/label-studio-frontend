@@ -20,16 +20,18 @@ This triggers next rerender with next annotation until all the annotations are r
 
 class Item extends Component {
   componentDidMount() {
-    Promise.all(this.props.annotation.objects.map(o => {
-      return o.isReady
-        ? Promise.resolve(o.isReady)
-        : new Promise(resolve => {
-          const dispose = observe(o, 'isReady', ()=>{
-            dispose();
-            resolve();
+    Promise.all(
+      this.props.annotation.objects.map(o => {
+        return o.isReady
+          ? Promise.resolve(o.isReady)
+          : new Promise(resolve => {
+            const dispose = observe(o, 'isReady', () => {
+              dispose();
+              resolve();
+            });
           });
-        });
-    })).then(()=>{
+      }),
+    ).then(() => {
       // ~2 ticks for canvas to be rendered and resized completely
       setTimeout(this.props.onFinish, 32);
     });
@@ -48,7 +50,11 @@ export default class Grid extends Component {
   container = React.createRef();
 
   shouldComponentUpdate(nextProps, nexState) {
-    return !nextProps.store.selected.selected || nexState.item >= nextProps.annotations.length || nextProps.annotations[nexState.item] === nextProps.store.selected;
+    return (
+      !nextProps.store.selected.selected ||
+      nexState.item >= nextProps.annotations.length ||
+      nextProps.annotations[nexState.item] === nextProps.store.selected
+    );
   }
 
   componentDidMount() {
@@ -62,15 +68,13 @@ export default class Grid extends Component {
   }
 
   renderNext(idx) {
-    this.setState(
-      { item: isDefined(idx) ? idx : this.state.item + 1 },
-      () => {
-        if (this.state.item < this.props.annotations.length) {
-          this.props.store._selectItem(this.props.annotations[this.state.item]);
-        } else {
-          this.props.store._unselectAll();
-        }
-      });
+    this.setState({ item: isDefined(idx) ? idx : this.state.item + 1 }, () => {
+      if (this.state.item < this.props.annotations.length) {
+        this.props.store._selectItem(this.props.annotations[this.state.item]);
+      } else {
+        this.props.store._unselectAll();
+      }
+    });
   }
 
   onFinish = () => {
@@ -108,7 +112,7 @@ export default class Grid extends Component {
       moveStylesBetweenHeadTags(sourceIframe[idx].contentDocument.head, iframe.contentDocument.head);
     });
 
-    this.setState((state) => {
+    this.setState(state => {
       return {
         ...state,
         loaded: new Set([...state.loaded, this.props.store.selected.id]),
@@ -125,10 +129,10 @@ export default class Grid extends Component {
     const current = Array.from(children).findIndex(child => container.scrollLeft <= child.offsetLeft);
 
     if (!container) return;
-    
+
     const count = this.props.annotations.length;
-    const next = current + delta; 
-    
+    const next = current + delta;
+
     if (next < 0 || next > count - 1) return;
     const newPosition = children[next].offsetLeft;
 
@@ -149,7 +153,6 @@ export default class Grid extends Component {
     c.type === 'annotation' ? store.selectAnnotation(c.id) : store.selectPrediction(c.id);
   };
 
-
   render() {
     const i = this.state.item;
     const { annotations } = this.props;
@@ -159,34 +162,39 @@ export default class Grid extends Component {
     return (
       <div className={styles.container}>
         <div ref={this.container} className={styles.grid}>
-          {annotations.filter(c => !c.hidden).map((c) => (
-            <div id={`c-${c.id}`} key={`anno-${c.id}`} style={{ position: 'relative' }}>
-              <EntityTab
-                entity={c}
-                onClick={() => this.select(c)}
-                prediction={c.type === 'prediction'}
-                bordered={false}
-                style={{ height: 44 }}
-              />
-              {isFF(FF_DEV_3391)
-                ? <Annotation root={this.props.root} annotation={c} />
-                : !this.state.loaded.has(c.id) && (
-                  <div style={{
-                    top: 0,
-                    left: 0,
-                    position: 'absolute',
-                    width: '100%',
-                    height: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}>
-                    <Spin size="large" />
-                  </div>
-                )
-              }
-            </div>
-          ))}
+          {annotations
+            .filter(c => !c.hidden)
+            .map(c => (
+              <div id={`c-${c.id}`} key={`anno-${c.id}`} style={{ position: 'relative' }}>
+                <EntityTab
+                  entity={c}
+                  onClick={() => this.select(c)}
+                  prediction={c.type === 'prediction'}
+                  bordered={false}
+                  style={{ height: 44 }}
+                />
+                {isFF(FF_DEV_3391) ? (
+                  <Annotation root={this.props.root} annotation={c} />
+                ) : (
+                  !this.state.loaded.has(c.id) && (
+                    <div
+                      style={{
+                        top: 0,
+                        left: 0,
+                        position: 'absolute',
+                        width: '100%',
+                        height: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Spin size="large" />
+                    </div>
+                  )
+                )}
+              </div>
+            ))}
           {isRenderingNext && (
             <div id={'c-tmp'} key={'anno-tmp'} style={{ opacity: 0, position: 'relative', right: 99999 }}>
               <EntityTab

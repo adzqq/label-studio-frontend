@@ -19,7 +19,6 @@ import { AliveRegion } from './AliveRegion';
 import { EditableRegion } from './EditableRegion';
 import { RegionWrapper } from './RegionWrapper';
 
-
 /**
  * Rectangle object for Bounding Box
  *
@@ -92,7 +91,7 @@ const Model = types
       return self.object;
     },
     get bboxCoords() {
-      const bboxCoords= {
+      const bboxCoords = {
         left: self.x,
         top: self.y,
         right: self.x + self.width,
@@ -103,12 +102,11 @@ const Model = types
     },
   }))
   .actions(self => ({
-
     afterCreate() {
       self.startX = self.x;
       self.startY = self.y;
 
-      switch (self.coordstype)  {
+      switch (self.coordstype) {
         case 'perc': {
           self.relativeX = self.x;
           self.relativeY = self.y;
@@ -142,17 +140,17 @@ const Model = types
       const dx1 = pointB.x - pointA.x;
       const dy1 = pointB.y - pointA.y;
       const dy2 = pointB.y - cursor.y;
-      const dx2 = dy2 / dx1 * dy1; // dx2 / dy1 = dy2 / dx1 (triangle is rotated)
+      const dx2 = (dy2 / dx1) * dy1; // dx2 / dy1 = dy2 / dx1 (triangle is rotated)
       const dx3 = cursor.x - pointB.x - dx2;
       const d2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
-      const d3 = dx3 / d2 * dx2; // dx3 / d2 = d3 / dx2 (triangle is inverted)
+      const d3 = (dx3 / d2) * dx2; // dx3 / d2 = d3 / dx2 (triangle is inverted)
       const h = d2 + d3;
 
       return Math.abs(h);
     },
 
-    isAboveTheLine(a, b, c){
-      return ((b.x - a.x)*(c.y - a.y) - (b.y - a.y)*(c.x - a.x)) < 0;
+    isAboveTheLine(a, b, c) {
+      return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x) < 0;
     },
 
     draw(x, y, points) {
@@ -160,7 +158,7 @@ const Model = types
 
       if (points.length === 1) {
         self.width = self.getDistanceBetweenPoints({ x, y }, self);
-        self.rotation = self.rotationAtCreation = Math.atan2( y - self.y, x - self.x ) * ( 180 / Math.PI );
+        self.rotation = self.rotationAtCreation = Math.atan2(y - self.y, x - self.x) * (180 / Math.PI);
       } else if (points.length === 2) {
         const { y: firstPointY, x: firstPointX } = points[0];
         const { y: secondPointY, x: secondPointX } = points[1];
@@ -175,7 +173,6 @@ const Model = types
           self.rotation = self.rotationAtCreation;
         }
         self.height = self.getHeightOnPerpendicular(points[0], points[1], { x, y });
-
       }
 
       self.setPosition(self.x, self.y, self.width, self.height, self.rotation);
@@ -300,10 +297,10 @@ const Model = types
         original_height: self.parent.naturalHeight,
         image_rotation: self.parent.rotation,
         value: {
-          x: (self.parent.stageWidth > 1) ? self.convertXToPerc(self.x) : self.x,
-          y: (self.parent.stageWidth > 1) ? self.convertYToPerc(self.y) : self.y,
-          width: (self.parent.stageWidth > 1) ? self.convertHDimensionToPerc(self.width) : self.width,
-          height: (self.parent.stageWidth > 1) ? self.convertVDimensionToPerc(self.height) : self.height,
+          x: self.parent.stageWidth > 1 ? self.convertXToPerc(self.x) : self.x,
+          y: self.parent.stageWidth > 1 ? self.convertYToPerc(self.y) : self.y,
+          width: self.parent.stageWidth > 1 ? self.convertHDimensionToPerc(self.width) : self.width,
+          height: self.parent.stageWidth > 1 ? self.convertVDimensionToPerc(self.height) : self.height,
           rotation: self.rotation,
         },
       };
@@ -337,7 +334,7 @@ const HtxRectangleView = ({ item }) => {
       target.setAttr('skewX', 0);
       target.setAttr('skewY', 0);
     };
-    eventHandlers.onTransformEnd = (e) => {
+    eventHandlers.onTransformEnd = e => {
       const t = e.target;
 
       item.setPosition(
@@ -354,7 +351,7 @@ const HtxRectangleView = ({ item }) => {
       item.notifyDrawingFinished();
     };
 
-    eventHandlers.onDragStart = (e) => {
+    eventHandlers.onDragStart = e => {
       if (item.parent.getSkipInteractions()) {
         e.currentTarget.stopDrag(e.evt);
         return;
@@ -362,23 +359,20 @@ const HtxRectangleView = ({ item }) => {
       item.annotation.history.freeze(item.id);
     };
 
-    eventHandlers.onDragEnd = (e) => {
+    eventHandlers.onDragEnd = e => {
       const t = e.target;
 
-      item.setPosition(
-        t.getAttr('x'),
-        t.getAttr('y'),
-        t.getAttr('width'),
-        t.getAttr('height'),
-        t.getAttr('rotation'),
-      );
+      item.setPosition(t.getAttr('x'), t.getAttr('y'), t.getAttr('width'), t.getAttr('height'), t.getAttr('rotation'));
       item.setScale(t.getAttr('scaleX'), t.getAttr('scaleY'));
       item.annotation.history.unfreeze(item.id);
 
       item.notifyDrawingFinished();
     };
 
-    eventHandlers.dragBoundFunc = createDragBoundFunc(item, { x: item.x - item.bboxCoords.left, y: item.y - item.bboxCoords.top });
+    eventHandlers.dragBoundFunc = createDragBoundFunc(item, {
+      x: item.x - item.bboxCoords.left,
+      y: item.y - item.bboxCoords.top,
+    });
   }
 
   return (

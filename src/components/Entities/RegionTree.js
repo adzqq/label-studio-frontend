@@ -18,7 +18,7 @@ export const RegionTree = observer(({ regionStore }) => {
   }, [renderNow]);
 
   const canDrag = useRef(true);
-  const setDraggable = useCallback((isDraggable)=>{
+  const setDraggable = useCallback(isDraggable => {
     canDrag.current = isDraggable;
   }, []);
 
@@ -33,14 +33,14 @@ export const RegionTree = observer(({ regionStore }) => {
   const regions = regionStore.asTree((item, idx, onClick) => {
     return {
       key: item.id,
-      title: <RegionItem item={item} idx={idx} flat={isFlat} setDraggable={setDraggable} onClick={onClick}/>,
+      title: <RegionItem item={item} idx={idx} flat={isFlat} setDraggable={setDraggable} onClick={onClick} />,
     };
   });
 
   const classifications = regionStore.classifications.map(item => ({
     classification: true,
     key: item.id,
-    title: <RegionItem item={item} flat  setDraggable={setDraggable} />,
+    title: <RegionItem item={item} flat setDraggable={setDraggable} />,
   }));
 
   const treeData = [...classifications, ...regions];
@@ -54,7 +54,7 @@ export const RegionTree = observer(({ regionStore }) => {
       blockNode={true}
       defaultExpandAll={true}
       autoExpandParent={true}
-      switcherIcon={<LsChevron opacity="0.25"/>}
+      switcherIcon={<LsChevron opacity="0.25" />}
       onDragStart={({ event, node }) => {
         if (node.classification || !canDrag.current) {
           event.preventDefault();

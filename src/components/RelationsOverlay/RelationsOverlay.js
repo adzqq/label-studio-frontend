@@ -134,12 +134,8 @@ const RelationItem = ({ id, startNode, endNode, direction, rootRef, highlight, d
  */
 const RelationItemObserver = observer(({ relation, startNode, endNode, visible, ...rest }) => {
   const nodes = [
-    startNode.getRegionElement
-      ? startNode.getRegionElement()
-      : startNode,
-    endNode.getRegionElement
-      ? endNode.getRegionElement()
-      : endNode,
+    startNode.getRegionElement ? startNode.getRegionElement() : startNode,
+    endNode.getRegionElement ? endNode.getRegionElement() : endNode,
   ];
 
   const [render, setRender] = useState(nodes[0] && nodes[1]);
@@ -152,7 +148,7 @@ const RelationItemObserver = observer(({ relation, startNode, endNode, visible, 
 
       if (render !== nodesExist) {
         setRender(nodesExist);
-      } else if(render === false) {
+      } else if (render === false) {
         timer = setTimeout(watchRegionAppear, 30);
       }
     };
@@ -209,9 +205,7 @@ class RelationsOverlay extends PureComponent {
       <AutoSizer onResize={this.onResize}>
         {() => (
           <svg className="relations-overlay" ref={this.rootNode} xmlns="http://www.w3.org/2000/svg" style={style}>
-            {(this.state.shouldRender) && (
-              this.renderRelations(relations, visible, hasHighlight, highlighted)
-            )}
+            {this.state.shouldRender && this.renderRelations(relations, visible, hasHighlight, highlighted)}
           </svg>
         )}
       </AutoSizer>
@@ -291,16 +285,14 @@ const EnsureTagsReady = observer(
     const [ready, setReady] = useState(false);
 
     useEffect(() => {
-      checkTagsAreReady(tags, (readyState) => {
+      checkTagsAreReady(tags, readyState => {
         setReady(readyState);
       });
 
       return () => clearTimeout(readinessTimer);
     }, [taskData, tags]);
 
-    return ready && (
-      <RelationsOverlayObserver ref={ref} {...props} />
-    );
+    return ready && <RelationsOverlayObserver ref={ref} {...props} />;
   }),
 );
 

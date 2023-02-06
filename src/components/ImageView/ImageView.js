@@ -27,7 +27,7 @@ Konva.showWarnings = false;
 
 const hotkeys = Hotkey('Image');
 
-const splitRegions = (regions) => {
+const splitRegions = regions => {
   const brushRegions = [];
   const shapeRegions = [];
   const l = regions.length;
@@ -50,21 +50,15 @@ const splitRegions = (regions) => {
 };
 
 const Region = memo(({ region, showSelected = false }) => {
-  return useObserver(() => region.inSelection !== showSelected ? null : Tree.renderItem(region, region.annotation, false));
+  return useObserver(() =>
+    region.inSelection !== showSelected ? null : Tree.renderItem(region, region.annotation, false),
+  );
 });
 
 const RegionsLayer = memo(({ regions, name, useLayers, showSelected = false }) => {
-  const content = regions.map((el) => (
-    <Region key={`region-${el.id}`} region={el} showSelected={showSelected} />
-  ));
+  const content = regions.map(el => <Region key={`region-${el.id}`} region={el} showSelected={showSelected} />);
 
-  return useLayers === false ? (
-    content
-  ) : (
-    <Layer name={name}>
-      {content}
-    </Layer>
-  );
+  return useLayers === false ? content : <Layer name={name}>{content}</Layer>;
 });
 
 const Regions = memo(({ regions, useLayers = true, chunkSize = 15, suggestion = false, showSelected = false }) => {
@@ -87,11 +81,7 @@ const DrawingRegion = observer(({ item }) => {
   const { drawingRegion } = item;
   const Wrapper = drawingRegion && drawingRegion.type === 'brushregion' ? Fragment : Layer;
 
-  return (
-    <Wrapper>
-      {drawingRegion ? <Region key={'drawing'} region={drawingRegion} /> : drawingRegion}
-    </Wrapper>
-  );
+  return <Wrapper>{drawingRegion ? <Region key={'drawing'} region={drawingRegion} /> : drawingRegion}</Wrapper>;
 });
 
 const SELECTION_COLOR = '#40A9FF';
@@ -103,27 +93,29 @@ const SelectionBorders = observer(({ item, selectionArea }) => {
 
   bbox.left = bbox.left * item.stageScale;
   bbox.right = bbox.right * item.stageScale;
-  bbox.top = bbox.top * item.stageScale ;
-  bbox.bottom = bbox.bottom * item.stageScale ;
+  bbox.top = bbox.top * item.stageScale;
+  bbox.bottom = bbox.bottom * item.stageScale;
 
-  const points = bbox ? [
-    {
-      x: bbox.left,
-      y: bbox.top,
-    },
-    {
-      x: bbox.right,
-      y: bbox.top,
-    },
-    {
-      x: bbox.left,
-      y: bbox.bottom,
-    },
-    {
-      x: bbox.right,
-      y: bbox.bottom,
-    },
-  ] : [];
+  const points = bbox
+    ? [
+      {
+        x: bbox.left,
+        y: bbox.top,
+      },
+      {
+        x: bbox.right,
+        y: bbox.top,
+      },
+      {
+        x: bbox.left,
+        y: bbox.bottom,
+      },
+      {
+        x: bbox.right,
+        y: bbox.bottom,
+      },
+    ]
+    : [];
 
   return (
     <>
@@ -172,17 +164,8 @@ const SelectionRect = observer(({ item }) => {
 
   return (
     <>
-      <Rect
-        {...positionProps}
-        stroke={SELECTION_COLOR}
-        dash={SELECTION_DASH}
-      />
-      <Rect
-        {...positionProps}
-        stroke={SELECTION_SECOND_COLOR}
-        dash={SELECTION_DASH}
-        dashOffset={SELECTION_DASH[0]}
-      />
+      <Rect {...positionProps} stroke={SELECTION_COLOR} dash={SELECTION_DASH} />
+      <Rect {...positionProps} stroke={SELECTION_SECOND_COLOR} dash={SELECTION_DASH} dashOffset={SELECTION_DASH[0]} />
     </>
   );
 });
@@ -201,37 +184,37 @@ const TransformerBack = observer(({ item }) => {
           id={TRANSFORMER_BACK_ID}
           fill="rgba(0,0,0,0)"
           draggable
-          onClick={()=>{
+          onClick={() => {
             item.annotation.unselectAreas();
           }}
-          onMouseOver={(ev) => {
+          onMouseOver={ev => {
             if (!item.annotation.relationMode) {
               ev.target.getStage().container().style.cursor = Constants.POINTER_CURSOR;
             }
           }}
-          onMouseOut={(ev) => {
+          onMouseOut={ev => {
             ev.target.getStage().container().style.cursor = Constants.DEFAULT_CURSOR;
           }}
-          onDragStart={e=>{
+          onDragStart={e => {
             dragStartPointRef.current = {
               x: e.target.getAttr('x'),
               y: e.target.getAttr('y'),
             };
           }}
-          dragBoundFunc={(pos) => {
+          dragBoundFunc={pos => {
             let { x, y } = pos;
-            const { top, left, right, bottom } =  item.selectedRegionsBBox;
+            const { top, left, right, bottom } = item.selectedRegionsBBox;
             const { stageHeight, stageWidth } = item;
 
             const offset = {
-              x: dragStartPointRef.current.x-left,
-              y: dragStartPointRef.current.y-top,
+              x: dragStartPointRef.current.x - left,
+              y: dragStartPointRef.current.y - top,
             };
 
-            x -=offset.x;
-            y -=offset.y;
+            x -= offset.x;
+            y -= offset.y;
 
-            const bbox = { x, y, width: right - left, height: bottom  - top };
+            const bbox = { x, y, width: right - left, height: bottom - top };
 
             const fixed = fixRectToFit(bbox, stageWidth, stageHeight);
 
@@ -243,8 +226,8 @@ const TransformerBack = observer(({ item }) => {
               y += (fixed.height - bbox.height) * (fixed.y !== bbox.y ? -1 : 1);
             }
 
-            x +=offset.x;
-            y +=offset.y;
+            x += offset.x;
+            y += offset.y;
             return { x, y };
           }}
         />
@@ -259,44 +242,30 @@ const SelectedRegions = observer(({ item, selectedRegions }) => {
 
   return (
     <>
-      <TransformerBack item={item}/>
+      <TransformerBack item={item} />
       {brushRegions.length > 0 && (
-        <Regions
-          key="brushes"
-          name="brushes"
-          regions={brushRegions}
-          useLayers={false}
-          showSelected
-          chankSize={0}
-        />
+        <Regions key="brushes" name="brushes" regions={brushRegions} useLayers={false} showSelected chankSize={0} />
       )}
 
       {shapeRegions.length > 0 && (
-        <Regions
-          key="shapes"
-          name="shapes"
-          regions={shapeRegions}
-          showSelected
-          chankSize={0}
-        />
+        <Regions key="shapes" name="shapes" regions={shapeRegions} showSelected chankSize={0} />
       )}
     </>
   );
 });
 
 const SelectionLayer = observer(({ item, selectionArea }) => {
-
   const scale = 1 / (item.zoomScale || 1);
 
   const [isMouseWheelClick, setIsMouseWheelClick] = useState(false);
   const [shift, setShift] = useState(false);
   const isPanTool = item.getToolsManager().findSelectedTool()?.fullName === 'ZoomPanTool';
 
-  const dragHandler = (e) => setIsMouseWheelClick(e.buttons === 4);
+  const dragHandler = e => setIsMouseWheelClick(e.buttons === 4);
 
-  const handleKey = (e) => setShift(e.shiftKey);
+  const handleKey = e => setShift(e.shiftKey);
 
-  useEffect(()=>{
+  useEffect(() => {
     window.addEventListener('keydown', handleKey);
     window.addEventListener('keyup', handleKey);
     window.addEventListener('mousedown', dragHandler);
@@ -307,7 +276,7 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
       window.removeEventListener('mousedown', dragHandler);
       window.removeEventListener('mouseup', dragHandler);
     };
-  },[]);
+  }, []);
 
   const disableTransform = item.zoomScale > 1 && (shift || isPanTool || isMouseWheelClick);
 
@@ -322,9 +291,9 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
   });
 
   supportsTransform =
-    supportsTransform &&
-    (item.selectedRegions.length > 1 ||
-      ((item.useTransformer || item.selectedShape?.preferTransformer) && item.selectedShape?.useTransformer));
+        supportsTransform &&
+        (item.selectedRegions.length > 1 ||
+            ((item.useTransformer || item.selectedShape?.preferTransformer) && item.selectedShape?.useTransformer));
 
   return (
     <Layer scaleX={scale} scaleY={scale}>
@@ -348,92 +317,89 @@ const SelectionLayer = observer(({ item, selectionArea }) => {
 });
 
 const Selection = observer(({ item, selectionArea }) => {
-
   return (
     <>
       <SelectedRegions key="selected-regions" item={item} selectedRegions={item.selectedRegions} />
-      <SelectionLayer item={item} selectionArea={selectionArea}/>
+      <SelectionLayer item={item} selectionArea={selectionArea} />
     </>
   );
 });
 
-const Crosshair = memo(forwardRef(({ width, height }, ref) => {
-  const [pointsV, setPointsV] = useState([50, 0, 50, height]);
-  const [pointsH, setPointsH] = useState([0, 100, width, 100]);
-  const [x, setX] = useState(100);
-  const [y, setY] = useState(50);
+const Crosshair = memo(
+  forwardRef(({ width, height }, ref) => {
+    const [pointsV, setPointsV] = useState([50, 0, 50, height]);
+    const [pointsH, setPointsH] = useState([0, 100, width, 100]);
+    const [x, setX] = useState(100);
+    const [y, setY] = useState(50);
 
-  const [visible, setVisible] = useState(false);
-  const strokeWidth = 1;
-  const dashStyle = [3, 3];
-  let enableStrokeScale = true;
+    const [visible, setVisible] = useState(false);
+    const strokeWidth = 1;
+    const dashStyle = [3, 3];
+    let enableStrokeScale = true;
 
-  if (isFF(FF_DEV_1285)) {
-    enableStrokeScale = false;
-  }
+    if (isFF(FF_DEV_1285)) {
+      enableStrokeScale = false;
+    }
 
-  if (ref) {
-    ref.current = {
-      updatePointer(newX, newY) {
-        if (newX !== x) {
-          setX(newX);
-          setPointsV([newX, 0, newX, height]);
-        }
+    if (ref) {
+      ref.current = {
+        updatePointer(newX, newY) {
+          if (newX !== x) {
+            setX(newX);
+            setPointsV([newX, 0, newX, height]);
+          }
 
-        if (newY !== y) {
-          setY(newY);
-          setPointsH([0, newY, width, newY]);
-        }
-      },
-      updateVisibility(visibility) {
-        setVisible(visibility);
-      },
-    };
-  }
+          if (newY !== y) {
+            setY(newY);
+            setPointsH([0, newY, width, newY]);
+          }
+        },
+        updateVisibility(visibility) {
+          setVisible(visibility);
+        },
+      };
+    }
 
-  return (
-    <Layer
-      name="crosshair"
-      listening={false}
-      opacity={visible ? 0.6 : 0}
-    >
-      <Group>
-        <Line
-          name="v-white"
-          points={pointsH}
-          stroke="#fff"
-          strokeWidth={strokeWidth}
-          strokeScaleEnabled={enableStrokeScale}
-        />
-        <Line
-          name="v-black"
-          points={pointsH}
-          stroke="#000"
-          strokeWidth={strokeWidth}
-          dash={dashStyle}
-          strokeScaleEnabled={enableStrokeScale}
-        />
-      </Group>
-      <Group>
-        <Line
-          name="h-white"
-          points={pointsV}
-          stroke="#fff"
-          strokeWidth={strokeWidth}
-          strokeScaleEnabled={enableStrokeScale}
-        />
-        <Line
-          name="h-black"
-          points={pointsV}
-          stroke="#000"
-          strokeWidth={strokeWidth}
-          dash={dashStyle}
-          strokeScaleEnabled={enableStrokeScale}
-        />
-      </Group>
-    </Layer>
-  );
-}));
+    return (
+      <Layer name="crosshair" listening={false} opacity={visible ? 0.6 : 0}>
+        <Group>
+          <Line
+            name="v-white"
+            points={pointsH}
+            stroke="#fff"
+            strokeWidth={strokeWidth}
+            strokeScaleEnabled={enableStrokeScale}
+          />
+          <Line
+            name="v-black"
+            points={pointsH}
+            stroke="#000"
+            strokeWidth={strokeWidth}
+            dash={dashStyle}
+            strokeScaleEnabled={enableStrokeScale}
+          />
+        </Group>
+        <Group>
+          <Line
+            name="h-white"
+            points={pointsV}
+            stroke="#fff"
+            strokeWidth={strokeWidth}
+            strokeScaleEnabled={enableStrokeScale}
+          />
+          <Line
+            name="h-black"
+            points={pointsV}
+            stroke="#000"
+            strokeWidth={strokeWidth}
+            dash={dashStyle}
+            strokeScaleEnabled={enableStrokeScale}
+          />
+        </Group>
+      </Layer>
+    );
+  }),
+);
 
 export default observer(
   class ImageView extends Component {
@@ -456,8 +422,7 @@ export default observer(
     constructor(props) {
       super(props);
 
-      if (typeof props.item.smoothing === 'boolean')
-        props.store.settings.setSmoothing(props.item.smoothing);
+      if (typeof props.item.smoothing === 'boolean') props.store.settings.setSmoothing(props.item.smoothing);
     }
 
     handleOnClick = e => {
@@ -478,7 +443,7 @@ export default observer(
 
     resetDeferredClickTimeout = () => {
       if (this.deferredClickTimeout.length > 0) {
-        this.deferredClickTimeout = this.deferredClickTimeout.filter((timeout) => {
+        this.deferredClickTimeout = this.deferredClickTimeout.filter(timeout => {
           clearTimeout(timeout);
           return false;
         });
@@ -493,9 +458,14 @@ export default observer(
         handleDeferredMouseDownCallback();
       };
       this.resetDeferredClickTimeout();
-      this.deferredClickTimeout.push(setTimeout(() => {
-        this.handleDeferredMouseDown?.();
-      }, this.props.item.annotation.isDrawing ? 0 : 100));
+      this.deferredClickTimeout.push(
+        setTimeout(
+          () => {
+            this.handleDeferredMouseDown?.();
+          },
+          this.props.item.annotation.isDrawing ? 0 : 100,
+        ),
+      );
     };
 
     handleMouseDown = e => {
@@ -513,11 +483,11 @@ export default observer(
         if (
         // create regions over another regions with Cmd/Ctrl pressed
           item.getSkipInteractions() ||
-          e.target === item.stageRef ||
-          findClosestParent(
-            e.target,
-            el => el.nodeType === 'Group' && ['ruler', 'segmentation'].indexOf(el?.attrs?.name) > -1,
-          )
+                    e.target === item.stageRef ||
+                    findClosestParent(
+                      e.target,
+                      el => el.nodeType === 'Group' && ['ruler', 'segmentation'].indexOf(el?.attrs?.name) > -1,
+                    )
         ) {
           window.addEventListener('mousemove', this.handleGlobalMouseMove);
           window.addEventListener('mouseup', this.handleGlobalMouseUp);
@@ -568,8 +538,8 @@ export default observer(
     };
 
     /**
-     * Mouse up outside the canvas
-     */
+         * Mouse up outside the canvas
+         */
     handleGlobalMouseUp = e => {
       window.removeEventListener('mousemove', this.handleGlobalMouseMove);
       window.removeEventListener('mouseup', this.handleGlobalMouseUp);
@@ -594,8 +564,8 @@ export default observer(
     };
 
     /**
-     * Mouse up on Stage
-     */
+         * Mouse up on Stage
+         */
     handleMouseUp = e => {
       const { item } = this.props;
 
@@ -640,7 +610,7 @@ export default observer(
       }
     };
 
-    updateCrosshair = (e) => {
+    updateCrosshair = e => {
       if (this.crosshairRef.current) {
         const { x, y } = e.currentTarget.getPointerPosition();
 
@@ -669,18 +639,18 @@ export default observer(
     };
 
     /**
-     * Handle to zoom
-     */
+         * Handle to zoom
+         */
     handleZoom = e => {
       /**
-       * Disable if user doesn't use ctrl
-       */
+             * Disable if user doesn't use ctrl
+             */
       if (e.evt && !e.evt.ctrlKey) {
         return;
       } else if (e.evt && e.evt.ctrlKey) {
         /**
-         * Disable scrolling page
-         */
+                 * Disable scrolling page
+                 */
         e.evt.preventDefault();
       }
       if (e.evt) {
@@ -749,7 +719,7 @@ export default observer(
       hotkeys.addDescription('shift', 'Pan image');
     }
 
-    attachObserver = (node) => {
+    attachObserver = node => {
       if (this.resizeObserver) this.detachObserver();
 
       if (node) {
@@ -787,19 +757,17 @@ export default observer(
 
     renderTools() {
       const { item, store } = this.props;
+
       const cs = store.annotationStore;
 
       if (cs.viewingAllAnnotations || cs.viewingAllPredictions) return null;
 
       const tools = item.getToolsManager().allTools();
 
-      return (
-        <Toolbar tools={tools} />
-      );
+      return <Toolbar tools={tools} />;
     }
 
     render() {
-
       const { item, store } = this.props;
 
       // @todo stupid but required check for `resetState()`
@@ -822,30 +790,23 @@ export default observer(
         containerStyle['height'] = item.height;
       }
 
-      if (!this.props.store.settings.enableSmoothing && item.zoomScale > 1){
+      if (!this.props.store.settings.enableSmoothing && item.zoomScale > 1) {
         containerStyle['imageRendering'] = 'pixelated';
       }
 
-      const imagePositionClassnames =  [
+      const imagePositionClassnames = [
         styles['image_position'],
         styles[`image_position__${item.verticalalignment === 'center' ? 'middle' : item.verticalalignment}`],
         styles[`image_position__${item.horizontalalignment}`],
       ];
 
-      const wrapperClasses = [
-        styles.wrapperComponent,
-        item.images.length > 1 ? styles.withGallery : styles.wrapper,
-      ];
+      const wrapperClasses = [styles.wrapperComponent, item.images.length > 1 ? styles.withGallery : styles.wrapper];
 
-      const {
-        brushRegions,
-        shapeRegions,
-      } = splitRegions(regions);
+      const { brushRegions, shapeRegions } = splitRegions(regions);
 
-      const {
-        brushRegions: suggestedBrushRegions,
-        shapeRegions: suggestedShapeRegions,
-      } = splitRegions(item.suggestions);
+      const { brushRegions: suggestedBrushRegions, shapeRegions: suggestedShapeRegions } = splitRegions(
+        item.suggestions,
+      );
 
       const renderableRegions = Object.entries({
         brush: brushRegions,
@@ -855,10 +816,7 @@ export default observer(
       });
 
       return (
-        <ObjectTag
-          item={item}
-          className={wrapperClasses.join(' ')}
-        >
+        <ObjectTag item={item} className={wrapperClasses.join(' ')}>
           <div
             ref={node => {
               item.setContainerRef(node);
@@ -874,19 +832,13 @@ export default observer(
               className={styles.filler}
               style={{ width: '100%', marginTop: item.fillerHeight }}
             />
-            <div
-              className={[
-                styles.frame,
-                ...imagePositionClassnames,
-              ].join(' ')}
-              style={item.canvasSize}
-            >
+            <div className={[styles.frame, ...imagePositionClassnames].join(' ')} style={item.canvasSize}>
               <img
                 ref={ref => {
                   item.setImageRef(ref);
                   this.imageRef.current = ref;
                 }}
-                loading={(isFF(FF_DEV_3077) && !item.lazyoff) && 'lazy'}
+                loading={isFF(FF_DEV_3077) && !item.lazyoff && 'lazy'}
                 style={item.imageTransform}
                 src={item._value}
                 onLoad={item.updateImageSize}
@@ -895,14 +847,18 @@ export default observer(
               />
             </div>
             {/* @todo this is dirty hack; rewrite to proper async waiting for data to load */}
-            {item.stageWidth <= 1 ? (item.hasTools ? <div className={styles.loading}><LoadingOutlined /></div> : null) : (
+            {item.stageWidth <= 1 ? (
+              item.hasTools ? (
+                <div className={styles.loading}>
+                  <LoadingOutlined />
+                </div>
+              ) : null
+            ) : (
               <Stage
                 ref={ref => {
                   item.setStageRef(ref);
                 }}
-                className={[styles['image-element'],
-                  ...imagePositionClassnames,
-                ].join(' ')}
+                className={[styles['image-element'], ...imagePositionClassnames].join(' ')}
                 width={item.canvasSize.width}
                 height={item.canvasSize.height}
                 scaleX={item.zoomScale}
@@ -918,7 +874,7 @@ export default observer(
                     this.crosshairRef.current.updateVisibility(true);
                   }
                 }}
-                onMouseLeave={(e) => {
+                onMouseLeave={e => {
                   if (this.crosshairRef.current) {
                     this.crosshairRef.current.updateVisibility(false);
                   }
@@ -943,8 +899,7 @@ export default observer(
                 onMouseDown={this.handleMouseDown}
                 onMouseMove={this.handleMouseMove}
                 onMouseUp={this.handleMouseUp}
-                onWheel={item.zoom ? this.handleZoom : () => {
-                }}
+                onWheel={item.zoom ? this.handleZoom : () => { }}
               >
                 {/* Hack to keep stage in place when there's no regions */}
                 {regions.length === 0 && (
@@ -966,7 +921,9 @@ export default observer(
                       useLayers={isBrush === false}
                       suggestion={isSuggestion}
                     />
-                  ) : <Fragment key={groupName} />;
+                  ) : (
+                    <Fragment key={groupName} />
+                  );
                 })}
                 <Selection item={item} selectionArea={item.selectionArea} isPanning={this.state.isPanning} />
                 <DrawingRegion item={item} />

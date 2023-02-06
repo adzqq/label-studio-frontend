@@ -137,7 +137,6 @@ function rootElement(element) {
  * @param {object} params
  */
 function configureApplication(params) {
-
   const options = {
     settings: params.settings || {},
     alert: m => console.log(m), // Noop for demo: window.alert(m)

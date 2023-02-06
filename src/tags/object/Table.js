@@ -102,7 +102,9 @@ const TableModel = types.compose('TableModel', Base, ProcessAttrsMixin, Annotati
 
 const HtxTable = inject('store')(
   observer(({ item }) => {
-    return <Table bordered dataSource={item.dataSource} columns={item.columns} pagination={{ hideOnSinglePage: true }} />;
+    return (
+      <Table bordered dataSource={item.dataSource} columns={item.columns} pagination={{ hideOnSinglePage: true }} />
+    );
   }),
 );
 

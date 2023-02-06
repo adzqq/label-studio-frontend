@@ -49,7 +49,8 @@ const Model = types
       ? {
         id: types.identifier,
         name: types.string,
-      } : {
+      }
+      : {
         name: types.identifier,
       }),
     toname: types.maybeNull(types.string),

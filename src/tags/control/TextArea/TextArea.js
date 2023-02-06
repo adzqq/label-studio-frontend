@@ -72,232 +72,241 @@ const TagAttrs = types.model({
   transcription: false,
 });
 
-const Model = types.model({
-  type: 'textarea',
-  regions: types.array(TextAreaRegionModel),
+const Model = types
+  .model({
+    type: 'textarea',
+    regions: types.array(TextAreaRegionModel),
 
-  _value: types.optional(types.string, ''),
-  children: Types.unionArray(['shortcut']),
-
-}).volatile(() => {
-  return {
-    focusable: true,
-    textareaRef: createRef(),
-  };
-}).views(self => ({
-  get isEditable() {
-    return self.editable && self.annotation.editable;
-  },
-
-  get isDeleteable() {
-    return self.annotation.editable;
-  },
-
-  get valueType() {
-    return 'text';
-  },
-
-  get holdsState() {
-    return self.regions.length > 0;
-  },
-
-  get submissionsNum() {
-    return self.regions.length;
-  },
-
-  get showSubmit() {
-    if (self.maxsubmissions) {
-      const num = parseInt(self.maxsubmissions);
-
-      return self.submissionsNum < num;
-    } else {
-      return true;
-    }
-  },
-
-  get serializableValue() {
-    if (!self.regions.length) return null;
-    return { text: self.selectedValues() };
-  },
-
-  selectedValues() {
-    return self.regions.map(r => r._value);
-  },
-
-  get area() {
-    if (self.perregion) {
-      return self.annotation.highlightedNode;
-    }
-    return null;
-  },
-
-  get result() {
-    return self.annotation.results.find(r => r.from_name === self && (!self.area || r.area === self.area));
-  },
-})).actions(self => {
-  let lastActiveElement = null;
-  let lastActiveElementModel = null;
-
-  const isAvailableElement = (element, elementModel) => {
-    if (!element || !elementModel || !isAlive(elementModel)) return false;
-    // Not available if active element is disappeared
-    if (self === elementModel && !self.showSubmit) return false;
-    if (!element.parentElement) return false;
-    return true;
-  };
-
-  return {
-    getSerializableValue() {
-      const texts = self.regions.map(s => s._value);
-
-      if (texts.length === 0) return;
-
-      return { text: texts };
+    _value: types.optional(types.string, ''),
+    children: Types.unionArray(['shortcut']),
+  })
+  .volatile(() => {
+    return {
+      focusable: true,
+      textareaRef: createRef(),
+    };
+  })
+  .views(self => ({
+    get isEditable() {
+      return self.editable && self.annotation.editable;
     },
 
-    needsUpdate() {
-      self.updateFromResult(self.result?.mainValue);
+    get isDeleteable() {
+      return self.annotation.editable;
     },
 
-    requiredModal() {
-      InfoModal.warning(self.requiredmessage || `Input for the textarea "${self.name}" is required.`);
+    get valueType() {
+      return 'text';
     },
 
-    setResult(value) {
-      const values = Array.isArray(value) ? value : [value];
-
-      values.forEach(v => self.createRegion(v));
+    get holdsState() {
+      return self.regions.length > 0;
     },
 
-    updateFromResult(value) {
-      self.regions = [];
-      value && self.setResult(value);
+    get submissionsNum() {
+      return self.regions.length;
     },
 
-    setValue(value) {
-      self._value = value;
-    },
+    get showSubmit() {
+      if (self.maxsubmissions) {
+        const num = parseInt(self.maxsubmissions);
 
-    remove(region) {
-      const index = self.regions.indexOf(region);
-
-      if (index < 0) return;
-      self.regions.splice(index, 1);
-      destroy(region);
-      self.onChange();
-    },
-
-    copyState(obj) {
-      self.regions = obj.regions.map(r => cloneNode(r));
-    },
-
-    perRegionCleanup() {
-      self.regions = [];
-    },
-
-    createRegion(text, pid) {
-      const r = TextAreaRegionModel.create({ pid, _value: text });
-
-      self.regions.push(r);
-
-      return r;
-    },
-
-    onChange() {
-      if (self.result) {
-        self.result.area.setValue(self);
+        return self.submissionsNum < num;
       } else {
-        if (self.perregion) {
-          const area = self.annotation.highlightedNode;
+        return true;
+      }
+    },
 
-          if (!area) return null;
-          area.setValue(self);
+    get serializableValue() {
+      if (!self.regions.length) return null;
+      return { text: self.selectedValues() };
+    },
+
+    selectedValues() {
+      return self.regions.map(r => r._value);
+    },
+
+    get area() {
+      if (self.perregion) {
+        return self.annotation.highlightedNode;
+      }
+      return null;
+    },
+
+    get result() {
+      return self.annotation.results.find(r => r.from_name === self && (!self.area || r.area === self.area));
+    },
+  }))
+  .actions(self => {
+    let lastActiveElement = null;
+    let lastActiveElementModel = null;
+
+    const isAvailableElement = (element, elementModel) => {
+      if (!element || !elementModel || !isAlive(elementModel)) return false;
+      // Not available if active element is disappeared
+      if (self === elementModel && !self.showSubmit) return false;
+      if (!element.parentElement) return false;
+      return true;
+    };
+
+    return {
+      getSerializableValue() {
+        const texts = self.regions.map(s => s._value);
+
+        if (texts.length === 0) return;
+
+        return { text: texts };
+      },
+
+      needsUpdate() {
+        self.updateFromResult(self.result?.mainValue);
+      },
+
+      requiredModal() {
+        InfoModal.warning(self.requiredmessage || `Input for the textarea "${self.name}" is required.`);
+      },
+
+      setResult(value) {
+        const values = Array.isArray(value) ? value : [value];
+
+        values.forEach(v => self.createRegion(v));
+      },
+
+      updateFromResult(value) {
+        self.regions = [];
+        value && self.setResult(value);
+      },
+
+      setValue(value) {
+        self._value = value;
+      },
+
+      remove(region) {
+        const index = self.regions.indexOf(region);
+
+        if (index < 0) return;
+        self.regions.splice(index, 1);
+        destroy(region);
+        self.onChange();
+      },
+
+      copyState(obj) {
+        self.regions = obj.regions.map(r => cloneNode(r));
+      },
+
+      perRegionCleanup() {
+        self.regions = [];
+      },
+
+      createRegion(text, pid) {
+        const r = TextAreaRegionModel.create({ pid, _value: text });
+
+        self.regions.push(r);
+
+        return r;
+      },
+
+      onChange() {
+        if (self.result) {
+          self.result.area.setValue(self);
         } else {
-          self.annotation.createResult({}, { text: self.selectedValues() }, self, self.toname);
+          if (self.perregion) {
+            const area = self.annotation.highlightedNode;
+
+            if (!area) return null;
+            area.setValue(self);
+          } else {
+            self.annotation.createResult({}, { text: self.selectedValues() }, self, self.toname);
+          }
         }
-      }
-    },
+      },
 
-    addText(text, pid) {
-      self.createRegion(text, pid);
-      self.onChange();
-    },
+      addText(text, pid) {
+        self.createRegion(text, pid);
+        self.onChange();
+      },
 
-    beforeSend() {
-      if (self._value && self._value.length) {
-        self.addText(self._value);
-        self._value = '';
-      }
-    },
+      beforeSend() {
+        if (self._value && self._value.length) {
+          self.addText(self._value);
+          self._value = '';
+        }
+      },
 
-    // add unsubmitted text when user switches region
-    submitChanges() {
-      self.beforeSend();
-    },
+      // add unsubmitted text when user switches region
+      submitChanges() {
+        self.beforeSend();
+      },
 
-    deleteText(text) {
-      destroy(text);
-    },
+      deleteText(text) {
+        destroy(text);
+      },
 
-    onShortcut(value) {
-      if (isFF(FF_DEV_1564_DEV_1565)) {
-        if (!isAvailableElement(lastActiveElement, lastActiveElementModel)) {
-          if (isFF(FF_DEV_3730)) {
-          // Try to use main textarea element
-            const textareaElement = self.textareaRef.current?.input || self.textareaRef.current?.resizableTextArea?.textArea;
-          
-            if (isAvailableElement(textareaElement, self)) {
-              lastActiveElement = textareaElement;
-              lastActiveElementModel = self;
+      onShortcut(value) {
+        if (isFF(FF_DEV_1564_DEV_1565)) {
+          if (!isAvailableElement(lastActiveElement, lastActiveElementModel)) {
+            if (isFF(FF_DEV_3730)) {
+              // Try to use main textarea element
+              const textareaElement =
+                self.textareaRef.current?.input || self.textareaRef.current?.resizableTextArea?.textArea;
+
+              if (isAvailableElement(textareaElement, self)) {
+                lastActiveElement = textareaElement;
+                lastActiveElementModel = self;
+              } else {
+                return;
+              }
             } else {
               return;
             }
-          } else {
-            return;
           }
+          lastActiveElement.setRangeText(
+            value,
+            lastActiveElement.selectionStart,
+            lastActiveElement.selectionEnd,
+            'end',
+          );
+          lastActiveElementModel.setValue(lastActiveElement.value);
+        } else {
+          self.setValue(self._value + value);
         }
-        lastActiveElement.setRangeText(value, lastActiveElement.selectionStart, lastActiveElement.selectionEnd, 'end');
-        lastActiveElementModel.setValue(lastActiveElement.value);
-      } else {
-        self.setValue(self._value + value);
-      }
-    },
+      },
 
-    toStateJSON() {
-      if (!self.regions.length) return;
+      toStateJSON() {
+        if (!self.regions.length) return;
 
-      const toname = self.toname || self.name;
-      const tree = {
-        id: self.pid,
-        from_name: self.name,
-        to_name: toname,
-        type: 'textarea',
-        value: {
-          text: self.regions.map(r => r._value),
-        },
-      };
+        const toname = self.toname || self.name;
+        const tree = {
+          id: self.pid,
+          from_name: self.name,
+          to_name: toname,
+          type: 'textarea',
+          value: {
+            text: self.regions.map(r => r._value),
+          },
+        };
 
-      return tree;
-    },
+        return tree;
+      },
 
-    fromStateJSON(obj) {
-      let { text } = obj.value;
+      fromStateJSON(obj) {
+        let { text } = obj.value;
 
-      if (!Array.isArray(text)) text = [text];
+        if (!Array.isArray(text)) text = [text];
 
-      text.forEach(t => self.addText(t, obj.id));
-    },
+        text.forEach(t => self.addText(t, obj.id));
+      },
 
-    setLastFocusedElement(element, model = self) {
-      lastActiveElement = element;
-      lastActiveElementModel = model;
-    },
+      setLastFocusedElement(element, model = self) {
+        lastActiveElement = element;
+        lastActiveElementModel = model;
+      },
 
-    returnFocus() {
-      lastActiveElement?.focus?.();
-    },
-  };
-});
+      returnFocus() {
+        lastActiveElement?.focus?.();
+      },
+    };
+  });
 
 const TextAreaModel = types.compose(
   'TextAreaModel',
@@ -312,11 +321,14 @@ const TextAreaModel = types.compose(
 
 const HtxTextArea = observer(({ item }) => {
   const rows = parseInt(item.rows);
-  const onFocus = useCallback((ev, model) => {
-    if (isFF(FF_DEV_1564_DEV_1565)) {
-      item.setLastFocusedElement(ev.target, model);
-    }
-  }, [item]);
+  const onFocus = useCallback(
+    (ev, model) => {
+      if (isFF(FF_DEV_1564_DEV_1565)) {
+        item.setLastFocusedElement(ev.target, model);
+      }
+    },
+    [item],
+  );
 
   const props = {
     name: item.name,
@@ -338,13 +350,7 @@ const HtxTextArea = observer(({ item }) => {
   if (rows > 1) {
     // allow to add multiline text with shift+enter
     props.onKeyDown = e => {
-      if (
-        e.key === 'Enter' &&
-        e.shiftKey &&
-        item.allowsubmit &&
-        item._value &&
-        item.annotation.editable
-      ) {
+      if (e.key === 'Enter' && e.shiftKey && item.allowsubmit && item._value && item.annotation.editable) {
         e.preventDefault();
         e.stopPropagation();
         item.addText(item._value);
@@ -364,7 +370,7 @@ const HtxTextArea = observer(({ item }) => {
 
   visibleStyle['marginTop'] = '4px';
 
-  return (item.displaymode === PER_REGION_MODES.TAG ? (
+  return item.displaymode === PER_REGION_MODES.TAG ? (
     <div style={visibleStyle}>
       {Tree.renderChildren(item, item.annotation)}
 
@@ -384,7 +390,7 @@ const HtxTextArea = observer(({ item }) => {
             {showAddButton && (
               <Form.Item>
                 <Button style={{ marginTop: '10px' }} type="primary" htmlType="submit">
-                    Add
+                  Add
                 </Button>
               </Form.Item>
             )}
@@ -395,91 +401,94 @@ const HtxTextArea = observer(({ item }) => {
       {item.regions.length > 0 && (
         <div style={{ marginBottom: '1em' }}>
           {item.regions.map(t => (
-            <HtxTextAreaRegion key={t.id} item={t} onFocus={onFocus}/>
+            <HtxTextAreaRegion key={t.id} item={t} onFocus={onFocus} />
           ))}
         </div>
       )}
     </div>
-  ) : null
-  );
+  ) : null;
 });
 
-const HtxTextAreaResultLine = forwardRef(({ idx, value, readOnly, onChange, onDelete, onFocus, control, collapsed }, ref) => {
-  const rows = parseInt(control.rows);
-  const isTextarea = rows > 1;
-  const inputRef = useRef();
-  const displayValue = useMemo(() => {
-    if (collapsed) {
-      return (value ?? '').split(/\n/)[0] ?? '';
+const HtxTextAreaResultLine = forwardRef(
+  ({ idx, value, readOnly, onChange, onDelete, onFocus, control, collapsed }, ref) => {
+    const rows = parseInt(control.rows);
+    const isTextarea = rows > 1;
+    const inputRef = useRef();
+    const displayValue = useMemo(() => {
+      if (collapsed) {
+        return (value ?? '').split(/\n/)[0] ?? '';
+      }
+
+      return value;
+    }, [value, collapsed]);
+
+    const inputProps = {
+      ref: inputRef,
+      className: 'ant-input ' + styles.input,
+      value: displayValue,
+      autoSize: isTextarea ? { minRows: 1 } : null,
+      onChange: e => {
+        if (!collapsed) onChange(idx, e.target.value);
+      },
+      readOnly: readOnly || collapsed,
+      onFocus,
+    };
+
+    if (isTextarea) {
+      inputProps.onKeyDown = e => {
+        if ((e.key === 'Enter' && !e.shiftKey) || e.key === 'Escape') {
+          e.preventDefault();
+          e.stopPropagation();
+          e.target?.blur?.();
+        }
+      };
     }
 
-    return value;
-  }, [value, collapsed]);
+    return (
+      <Elem name="item">
+        <Elem name="input" tag={isTextarea ? TextArea : Input} {...inputProps} ref={ref} />
+        {!collapsed && !readOnly && (
+          <Elem
+            name="action"
+            tag={Button}
+            icon={<IconTrash />}
+            size="small"
+            type="text"
+            onClick={() => {
+              onDelete(idx);
+            }}
+          />
+        )}
+      </Elem>
+    );
+  },
+);
 
-  const inputProps = {
-    ref: inputRef,
-    className: 'ant-input ' + styles.input,
-    value: displayValue,
-    autoSize: isTextarea ? { minRows: 1 } : null,
-    onChange: e => {
-      if (!collapsed) onChange(idx, e.target.value);
-    },
-    readOnly: readOnly || collapsed,
-    onFocus,
-  };
-
-  if (isTextarea) {
-    inputProps.onKeyDown = e => {
-      if ((e.key === 'Enter' && !e.shiftKey) || e.key === 'Escape') {
-        e.preventDefault();
-        e.stopPropagation();
-        e.target?.blur?.();
-      }
-    };
-  }
-
-  return (
-    <Elem name="item">
-      <Elem name="input" tag={isTextarea ? TextArea : Input} {...inputProps} ref={ref}/>
-      { (!collapsed && !readOnly) && (
-        <Elem
-          name="action"
-          tag={Button}
-          icon={<IconTrash />}
-          size="small"
-          type="text"
-          onClick={()=>{onDelete(idx);}}
-        />
-      ) }
-    </Elem>
-  );
-});
-
-const HtxTextAreaResult = observer(({
-  item,
-  control,
-  firstResultInputRef,
-  onFocus,
-  collapsed,
-}) => {
+const HtxTextAreaResult = observer(({ item, control, firstResultInputRef, onFocus, collapsed }) => {
   const value = item.mainValue;
   const editable = item.editable && item.from_name.editable && !item.area.readonly;
 
-  const changeHandler = useCallback((idx, val) => {
-    if (!item.from_name.isEditable) return;
-    const newValue = value.toJSON();
+  const changeHandler = useCallback(
+    (idx, val) => {
+      if (!item.from_name.isEditable) return;
+      const newValue = value.toJSON();
 
-    newValue.splice(idx, 1, val);
-    item.setValue(newValue);
-  }, [value]);
+      newValue.splice(idx, 1, val);
+      item.setValue(newValue);
+    },
+    [value],
+  );
 
-  const deleteHandler = useCallback((idx) => {
-    if (!item.from_name.isDeleteable) return;
-    const newValue = value.toJSON();
+  const deleteHandler = useCallback(
+    idx => {
+      if (!item.from_name.isDeleteable) return;
+      const newValue = value.toJSON();
 
-    newValue.splice(idx, 1);
-    item.setValue(newValue);
-  }, [value]);
+      newValue.splice(idx, 1);
+      item.setValue(newValue);
+    },
+    [value],
+  );
 
   return value.map((line, idx) => {
     return (
@@ -534,9 +543,11 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed, o
   const firstResultInputRef = useRef();
   const lastFocusRequest = useRef(0);
   const styles = useMemo(() => {
-    return color ? {
-      '--border-color': color,
-    } : {};
+    return color
+      ? {
+        '--border-color': color,
+      }
+      : {};
   }, [color]);
 
   useEffect(() => {
@@ -567,7 +578,7 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed, o
 
       item.setValue(value);
     },
-    onFocus: (ev) => {
+    onFocus: ev => {
       ev.stopPropagation();
       ev.preventDefault();
       if (!area.isSelected) {
@@ -598,42 +609,53 @@ const HtxTextAreaRegionView = observer(({ item, area, collapsed, setCollapsed, o
 
   if (showAddButton) itemStyle['marginBottom'] = 0;
 
-  const showSubmit = (!result || !result?.mainValue?.length || (item.maxsubmissions && result.mainValue.length < parseInt(item.maxsubmissions)))
-  && !area.readonly;
+  const showSubmit =
+    (!result ||
+      !result?.mainValue?.length ||
+      (item.maxsubmissions && result.mainValue.length < parseInt(item.maxsubmissions))) &&
+    !area.readonly;
 
   if (!isAlive(item) || !isAlive(area)) return null;
 
-  return (result || showSubmit) && (
-    <Block name="textarea-tag" mod={{ mode: item.mode, outliner }} style={styles}>
-      {result ? (
-        <HtxTextAreaResult
-          control={item}
-          item={result}
-          collapsed={collapsed}
-          firstResultInputRef={firstResultInputRef}
-          onFocus={expand}
-        />
-      ) : null}
+  return (
+    (result || showSubmit) && (
+      <Block name="textarea-tag" mod={{ mode: item.mode, outliner }} style={styles}>
+        {result ? (
+          <HtxTextAreaResult
+            control={item}
+            item={result}
+            collapsed={collapsed}
+            firstResultInputRef={firstResultInputRef}
+            onFocus={expand}
+          />
+        ) : null}
 
-      {showSubmit && (
-        <Elem name="form"
-          tag={Form}
-          onFinish={() => {
-            if (item.allowsubmit && item._value && item.annotation.editable) {
-              submitValue();
-            }
-            return false;
-          }}
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
-        >
-          <Elem name="input" tag={isTextArea ? TextArea : Input} {...props} onClick={(e) => {
-            e.stopPropagation();
-          }} />
-        </Elem>
-      )}
-    </Block>
+        {showSubmit && (
+          <Elem
+            name="form"
+            tag={Form}
+            onFinish={() => {
+              if (item.allowsubmit && item._value && item.annotation.editable) {
+                submitValue();
+              }
+              return false;
+            }}
+            onClick={e => {
+              e.stopPropagation();
+            }}
+          >
+            <Elem
+              name="input"
+              tag={isTextArea ? TextArea : Input}
+              {...props}
+              onClick={e => {
+                e.stopPropagation();
+              }}
+            />
+          </Elem>
+        )}
+      </Block>
+    )
   );
 });
 

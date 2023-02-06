@@ -13,13 +13,18 @@ export const Menu = forwardRef(
       return new Set(selectedKeys ?? []);
     }, [selectedKeys]);
 
-    const clickHandler = useCallback((e) => {
-      const elem = cn('menu').elem('item').closest(e.target);
+    const clickHandler = useCallback(
+      e => {
+        const elem = cn('menu')
+          .elem('item')
+          .closest(e.target);
 
-      if (dropdown && elem && closeDropdownOnItemClick !== false) {
-        dropdown.close();
-      }
-    }, [dropdown]);
+        if (dropdown && elem && closeDropdownOnItemClick !== false) {
+          dropdown.close();
+        }
+      },
+      [dropdown],
+    );
 
     const collapsed = useMemo(() => {
       return !!dropdown;
@@ -31,7 +36,15 @@ export const Menu = forwardRef(
 
     return (
       <MenuContext.Provider value={contextValue}>
-        <Block ref={ref} tag="ul" name="menu" mod={{ size, collapsed }} mix={className} style={style} onClick={clickHandler}>
+        <Block
+          ref={ref}
+          tag="ul"
+          name="menu"
+          mod={{ size, collapsed }}
+          mix={className}
+          style={style}
+          onClick={clickHandler}
+        >
           {children}
         </Block>
       </MenuContext.Provider>

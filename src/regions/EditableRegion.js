@@ -12,7 +12,7 @@ export const EditableRegion = types
       // { property: "x", label: "X" },
     ],
   }))
-  .views((self) => ({
+  .views(self => ({
     getProperty(name) {
       return self[name];
     },
@@ -25,7 +25,7 @@ export const EditableRegion = types
       return self.editableFields.length > 0;
     },
   }))
-  .actions((self) => ({
+  .actions(self => ({
     setProperty(propName, value) {
       if (self.isPropertyEditable(propName)) {
         self[propName] = value;

@@ -102,7 +102,7 @@ const Model = types
     },
 
     get isReady() {
-      return self.isLoaded  && self._isReady;
+      return self.isLoaded && self._isReady;
     },
   }))
   .volatile(() => ({
@@ -134,7 +134,7 @@ const Model = types
         self._loadedForAnnotation = self.annotation?.id;
       },
 
-      updateValue: flow(function * (store) {
+      updateValue: flow(function*(store) {
         const valueFromTask = parseValue(self.value, store.task.dataObj);
         const value = yield self.resolveValue(valueFromTask);
 
@@ -178,11 +178,14 @@ const Model = types
         // clean up the html — remove scripts and iframes
         // nodes count better be the same, so replace them with stubs
 
-
         val = val
           .toString()
-          .replace(/(<head.*?>)(.*?)(<\/head>)/,(match, opener, body, closer) => {
-            return [opener,body.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script\s*>/gi,'<!--ls-stub></ls-stub-->'),closer].join('');
+          .replace(/(<head.*?>)(.*?)(<\/head>)/, (match, opener, body, closer) => {
+            return [
+              opener,
+              body.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script\s*>/gi, '<!--ls-stub></ls-stub-->'),
+              closer,
+            ].join('');
           })
           .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script\s*>/gi, '<ls-stub></ls-stub>')
           .replace(/<iframe\b.*?(?:\/>|<\/iframe>)/g, '<ls-stub></ls-stub>')
@@ -301,4 +304,13 @@ const Model = types
     };
   });
 
-export const RichTextModel = types.compose('RichTextModel', ProcessAttrsMixin, ObjectBase, RegionsMixin, AnnotationMixin, IsReadyMixin, TagAttrs, Model);
+export const RichTextModel = types.compose(
+  'RichTextModel',
+  ProcessAttrsMixin,
+  ObjectBase,
+  RegionsMixin,
+  AnnotationMixin,
+  IsReadyMixin,
+  TagAttrs,
+  Model,
+);

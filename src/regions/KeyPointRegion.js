@@ -173,7 +173,7 @@ const HtxKeyPointView = ({ item }) => {
     includeFill: true,
     defaultFillColor: '#000',
     defaultStrokeColor: '#fff',
-    defaultOpacity: (item.style ?? item.tag) ? 0.6 : 1,
+    defaultOpacity: item.style ?? item.tag ? 0.6 : 1,
     // avoid size glitching when user select/unselect region
     sameStrokeWidthForSelected: true,
   });
@@ -221,10 +221,7 @@ const HtxKeyPointView = ({ item }) => {
         onTransformEnd={e => {
           const t = e.target;
 
-          item.setPosition(
-            t.getAttr('x'),
-            t.getAttr('y'),
-          );
+          item.setPosition(t.getAttr('x'), t.getAttr('y'));
 
           t.setAttr('scaleX', 1);
           t.setAttr('scaleY', 1);
@@ -258,7 +255,7 @@ const HtxKeyPointView = ({ item }) => {
         draggable={item.editable}
         listening={!suggestion}
       />
-      <LabelOnKP item={item} color={regionStyles.strokeColor}/>
+      <LabelOnKP item={item} color={regionStyles.strokeColor} />
     </Fragment>
   );
 };

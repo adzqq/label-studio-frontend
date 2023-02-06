@@ -202,15 +202,21 @@ const Model = types
     },
 
     setResult(values) {
-      self.tiedChildren.forEach(choice => choice.setSelected(
-        !choice.isSkipped && values?.some?.((value) => {
-          if (Array.isArray(value) && Array.isArray(choice.resultValue)) {
-            return value.length === choice.resultValue.length && value.every?.((val, idx) => val === choice.resultValue?.[idx]);
-          } else {
-            return value === choice.resultValue;
-          }
-        }),
-      ));
+      self.tiedChildren.forEach(choice =>
+        choice.setSelected(
+          !choice.isSkipped &&
+            values?.some?.(value => {
+              if (Array.isArray(value) && Array.isArray(choice.resultValue)) {
+                return (
+                  value.length === choice.resultValue.length &&
+                  value.every?.((val, idx) => val === choice.resultValue?.[idx])
+                );
+              } else {
+                return value === choice.resultValue;
+              }
+            }),
+        ),
+      );
     },
 
     // update result in the store with current selected choices
@@ -313,10 +319,10 @@ const HtxChoices = observer(({ item }) => {
     <Block name="choices" mod={{ hidden: !item.isVisible || !item.perRegionVisible(), layout: item.layout }}>
       {item.layout === 'select' ? (
         <ChoicesSelectLayout item={item} />
+      ) : !isFF(FF_DEV_2007) ? (
+        <Form layout={item.layout}>{Tree.renderChildren(item, item.annotation)}</Form>
       ) : (
-        !isFF(FF_DEV_2007)
-          ? <Form layout={item.layout}>{Tree.renderChildren(item, item.annotation)}</Form>
-          : Tree.renderChildren(item, item.annotation)
+        Tree.renderChildren(item, item.annotation)
       )}
     </Block>
   );

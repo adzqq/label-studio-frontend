@@ -251,8 +251,10 @@ const labelToSVG = (function() {
  * }
  * }}
  */
-const trim = (canvas) => {
-  let copy, width = canvas.width, height = canvas.height;
+const trim = canvas => {
+  let copy,
+    width = canvas.width,
+    height = canvas.height;
   const ctx = canvas.getContext('2d');
   const bbox = {
     top: null,
@@ -268,9 +270,9 @@ const trim = (canvas) => {
     let i, x, y;
 
     for (i = 0; i < l; i += 4) {
-      if (pixels.data[i+3] !== 0) {
+      if (pixels.data[i + 3] !== 0) {
         x = (i / 4) % canvas.width;
-        y = ~ ~ ((i / 4) / canvas.width);
+        y = ~ ~ (i / 4 / canvas.width);
 
         if (bbox.top === null) {
           bbox.top = y;

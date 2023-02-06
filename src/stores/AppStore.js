@@ -26,38 +26,41 @@ const isFFDev2715 = isFF(FF_DEV_2715);
 export default types
   .model('AppStore', {
     /**
-     * XML config
-     */
+             * XML config
+             */
     config: types.string,
 
     /**
-     * Task with data, id and project
-     */
+             * Task with data, id and project
+             */
     task: types.maybeNull(Task),
 
     project: types.maybeNull(Project),
 
     /**
-     * History of task {taskId, annotationId}:
-    */
-    taskHistory: types.array(types.model({
-      taskId: types.number,
-      annotationId: types.maybeNull(types.string),
-    }), []),
+             * History of task {taskId, annotationId}:
+             */
+    taskHistory: types.array(
+      types.model({
+        taskId: types.number,
+        annotationId: types.maybeNull(types.string),
+      }),
+      [],
+    ),
 
     /**
-     * Configure the visual UI shown to the user
-     */
+             * Configure the visual UI shown to the user
+             */
     interfaces: types.array(types.string),
 
     /**
-     * Flag for labeling of tasks
-     */
+             * Flag for labeling of tasks
+             */
     explore: types.optional(types.boolean, false),
 
     /**
-     * Annotations Store
-     */
+             * Annotations Store
+             */
     annotationStore: types.optional(AnnotationStore, {
       annotations: [],
       predictions: [],
@@ -65,88 +68,88 @@ export default types
     }),
 
     /**
-     * Comments Store
-     */
+             * Comments Store
+             */
     commentStore: types.optional(CommentStore, {
       comments: [],
     }),
 
     /**
-     * User of Label Studio
-     */
+             * User of Label Studio
+             */
     user: types.optional(types.maybeNull(types.safeReference(UserExtended)), null),
 
     /**
-     * Debug for development environment
-     */
+             * Debug for development environment
+             */
     debug: window.HTX_DEBUG === true,
 
     /**
-     * Settings of Label Studio
-     */
+             * Settings of Label Studio
+             */
     settings: types.optional(Settings, {}),
 
     /**
-     * Data of description flag
-     */
+             * Data of description flag
+             */
     description: types.maybeNull(types.string),
     // apiCalls: types.optional(types.boolean, true),
 
     /**
-     * Flag for settings
-     */
+             * Flag for settings
+             */
     showingSettings: types.optional(types.boolean, false),
     /**
-     * Flag
-     * Description of task in Label Studio
-     */
+             * Flag
+             * Description of task in Label Studio
+             */
     showingDescription: types.optional(types.boolean, false),
     /**
-     * Loading of Label Studio
-     */
+             * Loading of Label Studio
+             */
     isLoading: types.optional(types.boolean, false),
     /**
-     * Submitting task; used to prevent from duplicating requests
-     */
+             * Submitting task; used to prevent from duplicating requests
+             */
     isSubmitting: false,
     /**
-     * Flag for disable task in Label Studio
-     */
+             * Flag for disable task in Label Studio
+             */
     noTask: types.optional(types.boolean, false),
     /**
-     * Flag for no access to specific task
-     */
+             * Flag for no access to specific task
+             */
     noAccess: types.optional(types.boolean, false),
     /**
-     * Finish of labeling
-     */
+             * Finish of labeling
+             */
     labeledSuccess: types.optional(types.boolean, false),
 
     /**
-     * Show or hide comments section
-     */
+             * Show or hide comments section
+             */
     showComments: false,
 
     /**
-     * Dynamic preannotations
-     */
+             * Dynamic preannotations
+             */
     _autoAnnotation: false,
 
     /**
-     * Auto accept suggested annotations
-     */
+             * Auto accept suggested annotations
+             */
     _autoAcceptSuggestions: false,
 
     /**
-     * Indicator for suggestions awaiting
-     */
+             * Indicator for suggestions awaiting
+             */
     awaitingSuggestions: false,
 
     users: types.optional(types.array(UserExtended), []),
 
     userLabels: isFF(FF_DEV_1536) ? types.optional(UserLabels, { controls: {} }) : types.undefined,
   })
-  .preProcessSnapshot((sn) => {
+  .preProcessSnapshot(sn => {
     // This should only be handled if the sn.user value is an object, and converted to a reference id for other
     // entities.
     if (typeof sn.user !== 'number') {
@@ -156,12 +159,10 @@ export default types
       if (currentUser) {
         sn.user = currentUser.id;
 
-        sn.users = sn.users?.length ? [
-          currentUser,
-          ...sn.users.filter(({ id }) => id !== currentUser.id),
-        ] : [currentUser];
+        sn.users = sn.users?.length
+          ? [currentUser, ...sn.users.filter(({ id }) => id !== currentUser.id)]
+          : [currentUser];
       }
-
     }
     return {
       ...sn,
@@ -177,8 +178,8 @@ export default types
   }))
   .views(self => ({
     /**
-     * Get alert
-     */
+             * Get alert
+             */
     get alert() {
       return getEnv(self).alert;
     },
@@ -224,15 +225,15 @@ export default types
   }))
   .actions(self => {
     /**
-     * Update settings display state
-     */
+             * Update settings display state
+             */
     function toggleSettings() {
       self.showingSettings = !self.showingSettings;
     }
 
     /**
-     * Update description display state
-     */
+             * Update description display state
+             */
     function toggleDescription() {
       self.showingDescription = !self.showingDescription;
     }
@@ -253,10 +254,10 @@ export default types
     }
 
     /**
-     * Check for interfaces
-     * @param {string} name
-     * @returns {string | undefined}
-     */
+             * Check for interfaces
+             * @param {string} name
+             * @returns {string | undefined}
+             */
     function hasInterface(...names) {
       return self.interfaces.find(i => names.includes(i)) !== undefined;
     }
@@ -267,7 +268,7 @@ export default types
 
     function toggleInterface(name, value) {
       const index = self.interfaces.indexOf(name);
-      const newValue = value ?? (index < 0);
+      const newValue = value ?? index < 0;
 
       if (newValue) {
         if (index < 0) self.interfaces.push(name);
@@ -282,8 +283,8 @@ export default types
     }
 
     /**
-     * Function
-     */
+             * Function
+             */
     function afterCreate() {
       ToolsManager.setRoot(self);
 
@@ -300,8 +301,8 @@ export default types
       hotkeys.unbindAll();
 
       /**
-       * Hotkey for submit
-       */
+                   * Hotkey for submit
+                   */
       if (self.hasInterface('submit', 'update', 'review')) {
         hotkeys.addNamed('annotation:submit', () => {
           const annotationStore = self.annotationStore;
@@ -309,7 +310,6 @@ export default types
           if (annotationStore.viewingAll) return;
 
           const entity = annotationStore.selected;
-
 
           if (self.hasInterface('review')) {
             self.acceptAnnotation();
@@ -322,8 +322,8 @@ export default types
       }
 
       /**
-       * Hotkey for skip task
-       */
+                   * Hotkey for skip task
+                   */
       if (self.hasInterface('skip', 'review')) {
         hotkeys.addNamed('annotation:skip', () => {
           if (self.annotationStore.viewingAll) return;
@@ -337,8 +337,8 @@ export default types
       }
 
       /**
-       * Hotkey for delete
-       */
+                   * Hotkey for delete
+                   */
       hotkeys.addNamed('region:delete-all', () => {
         const { selected } = self.annotationStore;
 
@@ -357,7 +357,7 @@ export default types
       });
 
       // Focus fist focusable perregion when region is selected
-      hotkeys.addNamed('region:focus', (e) => {
+      hotkeys.addNamed('region:focus', e => {
         e.preventDefault();
         const c = self.annotationStore.selected;
 
@@ -424,7 +424,7 @@ export default types
       });
 
       // duplicate selected regions
-      hotkeys.addNamed('region:duplicate', (e) => {
+      hotkeys.addNamed('region:duplicate', e => {
         const { selected } = self.annotationStore;
         const { serializedSelection } = selected || {};
 
@@ -437,10 +437,10 @@ export default types
     }
 
     /**
-     *
-     * @param {*} taskObject
-     * @param {*[]} taskHistory
-     */
+             *
+             * @param {*} taskObject
+             * @param {*[]} taskHistory
+             */
     function assignTask(taskObject, taskHistory) {
       if (taskObject && !Utils.Checkers.isString(taskObject.data)) {
         taskObject = {
@@ -451,7 +451,7 @@ export default types
       self.task = Task.create(taskObject);
       if (taskHistory) {
         self.taskHistory = taskHistory;
-      } else if (!self.taskHistory.some((x) => x.taskId === self.task.id)) {
+      } else if (!self.taskHistory.some(x => x.taskId === self.task.id)) {
         self.taskHistory.push({
           taskId: self.task.id,
           annotationId: null,
@@ -584,8 +584,8 @@ export default types
     }
 
     /**
-     * Reset annotation store
-     */
+             * Reset annotation store
+             */
     function resetState() {
       // Tools are attached to the control and object tags
       // and need to be recreated when we st a new task
@@ -616,10 +616,10 @@ export default types
     }
 
     /**
-     * Function to initilaze annotation store
-     * Given annotations and predictions
-     * `completions` is a fallback for old projects; they'll be saved as `annotations` anyway
-     */
+             * Function to initilaze annotation store
+             * Given annotations and predictions
+             * `completions` is a fallback for old projects; they'll be saved as `annotations` anyway
+             */
     function initializeStore({ hydrated, annotations, completions, predictions, annotationHistory }) {
       const as = self.annotationStore;
 
@@ -641,13 +641,15 @@ export default types
         const obj = as.addPrediction(p);
 
         as.selectPrediction(obj.id);
-        obj.deserializeResults(p.result.map(r => ({
-          ...r,
-          origin: 'prediction',
-        })));
+        obj.deserializeResults(
+          p.result.map(r => ({
+            ...r,
+            origin: 'prediction',
+          })),
+        );
       });
 
-      [...(completions ?? []), ...(annotations ?? [])]?.forEach((c) => {
+      [...(completions ?? []), ...(annotations ?? [])]?.forEach(c => {
         const obj = as.addAnnotation(c);
 
         as.selectAnnotation(obj.id);
@@ -679,12 +681,12 @@ export default types
       });
     }
 
-    const setAutoAnnotation = (value) => {
+    const setAutoAnnotation = value => {
       self._autoAnnotation = value;
       localStorage.setItem('autoAnnotation', value);
     };
 
-    const setAutoAcceptSuggestions = (value) => {
+    const setAutoAcceptSuggestions = value => {
       self._autoAcceptSuggestions = value;
       localStorage.setItem('autoAcceptSuggestions', value);
     };
@@ -725,7 +727,9 @@ export default types
 
     function nextTask() {
       if (self.canGoNextTask) {
-        const { taskId, annotationId } = self.taskHistory[self.taskHistory.findIndex((x) => x.taskId === self.task.id) + 1];
+        const { taskId, annotationId } = self.taskHistory[
+          self.taskHistory.findIndex(x => x.taskId === self.task.id) + 1
+        ];
 
         getEnv(self).events.invoke('nextTask', taskId, annotationId);
       }
@@ -733,7 +737,9 @@ export default types
 
     function prevTask() {
       if (self.canGoPrevTask) {
-        const { taskId, annotationId } = self.taskHistory[self.taskHistory.findIndex((x) => x.taskId === self.task.id) - 1];
+        const { taskId, annotationId } = self.taskHistory[
+          self.taskHistory.findIndex(x => x.taskId === self.task.id) - 1
+        ];
 
         getEnv(self).events.invoke('prevTask', taskId, annotationId);
       }

@@ -11,7 +11,8 @@ const ObjectBase = types
       ? {
         id: types.identifier,
         name: types.string,
-      } : {
+      }
+      : {
         name: types.identifier,
       }),
     // TODO there should be a better way to force an update

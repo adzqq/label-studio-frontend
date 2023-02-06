@@ -10,19 +10,21 @@ import { RichTextModel } from '../tags/object/RichText/model';
 import { findRangeNative, rangeToGlobalOffset } from '../utils/selection-tools';
 import { isDefined } from '../utils/utilities';
 
-const GlobalOffsets = types.model('GlobalOffset', {
-  start: types.number,
-  end: types.number,
-  // distinguish loaded globalOffsets from user's annotation and internally calculated one;
-  // we should rely only on calculated offsets to find ranges, see initRangeAndOffsets();
-  // it should be in the model to avoid reinit on undo/redo.
-  calculated: false,
-}).views(self => ({
-  get serialized() {
-    // should never get to serialized result
-    return { start: self.start, end: self.end };
-  },
-}));
+const GlobalOffsets = types
+  .model('GlobalOffset', {
+    start: types.number,
+    end: types.number,
+    // distinguish loaded globalOffsets from user's annotation and internally calculated one;
+    // we should rely only on calculated offsets to find ranges, see initRangeAndOffsets();
+    // it should be in the model to avoid reinit on undo/redo.
+    calculated: false,
+  })
+  .views(self => ({
+    get serialized() {
+      // should never get to serialized result
+      return { start: self.start, end: self.end };
+    },
+  }));
 
 const Model = types
   .model('RichTextRegionModel', {
@@ -54,9 +56,9 @@ const Model = types
   }))
   .actions(self => ({
     beforeDestroy() {
-      try{
+      try {
         self.removeHighlight();
-      } catch(e) {
+      } catch (e) {
         console.warn(e);
       }
     },
@@ -75,13 +77,9 @@ const Model = types
         try {
           // Calculate proper XPath right before serialization
           const root = self._getRootNode(true);
-          const range = findRangeNative(
-            self.globalOffsets.start,
-            self.globalOffsets.end,
-            root,
-          );
+          const range = findRangeNative(self.globalOffsets.start, self.globalOffsets.end, root);
 
-          if (!range) throw new Error;
+          if (!range) throw new Error();
 
           const xpathRange = xpath.fromRange(range, root);
 
@@ -89,7 +87,7 @@ const Model = types
             ...xpathRange,
             globalOffsets: self.globalOffsets.serialized,
           });
-        } catch(e) {
+        } catch (e) {
           // regions may be broken, so they don't have globalOffsets
           // or they can't be applied on current html, so just keep them untouched
           const { start, end, startOffset, endOffset } = self;
@@ -129,10 +127,11 @@ const Model = types
 
       if (!root || !self.globalOffsets) return undefined;
 
-      const rangeIsMissing = !self.cachedRange
-        || self.cachedRange.collapsed
+      const rangeIsMissing =
+        !self.cachedRange ||
+        self.cachedRange.collapsed ||
         // if this range is in detached iframe it'll look like a good one, check this
-        || !self.cachedRange.startContainer?.ownerDocument?.defaultView;
+        !self.cachedRange.startContainer?.ownerDocument?.defaultView;
 
       if (rangeIsMissing) {
         const { start, end } = self.globalOffsets;
@@ -226,7 +225,7 @@ const Model = types
     _getRange({ useOriginalContent = false, useCache = true } = {}) {
       const rootNode = self._getRootNode(useOriginalContent);
       const hasCache = isDefined(self._cachedRange) && !useOriginalContent && useCache;
-      const rootNodeExists = hasCache && (rootNode && !rootNode.contains(self._cachedRange.commonAncestorContainer));
+      const rootNodeExists = hasCache && rootNode && !rootNode.contains(self._cachedRange.commonAncestorContainer);
 
       if (hasCache === false || rootNodeExists) {
         const foundRange = self._createNativeRange(useOriginalContent);

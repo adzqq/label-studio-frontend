@@ -122,9 +122,9 @@ const AnnotationStoreModel = types
     }
 
     /**
-   * Select annotation
-   * @param {*} id
-   */
+         * Select annotation
+         * @param {*} id
+         */
     function selectAnnotation(id, options = {}) {
       if (!self.annotations.length) return null;
 
@@ -149,14 +149,14 @@ const AnnotationStoreModel = types
       getEnv(self).events.invoke('deleteAnnotation', self.store, annotation);
 
       /**
-     * MST destroy annotation
-     */
+             * MST destroy annotation
+             */
       destroy(annotation);
 
       self.selected = null;
       /**
-     * Select other annotation
-     */
+             * Select other annotation
+             */
       if (self.annotations.length > 0) {
         self.selectAnnotation(self.annotations[0].id);
       }
@@ -190,7 +190,7 @@ const AnnotationStoreModel = types
       if (self.root) return;
 
       if (!config) {
-        return (self.root = ViewModel.create({ id:'empty' }));
+        return (self.root = ViewModel.create({ id: 'empty' }));
       }
 
       // convert config to mst model
@@ -323,8 +323,8 @@ const AnnotationStoreModel = types
         let actual_user;
 
         if (isFF(FF_DEV_3034)) {
-        // drafts can be created by other user, but we don't have much info
-        // so parse "id", get email and find user by it
+          // drafts can be created by other user, but we don't have much info
+          // so parse "id", get email and find user by it
           const email = item.createdBy?.replace(/,\s*\d+$/, '');
           const user = email && self.store.users.find(user => user.email === email);
 
@@ -380,7 +380,6 @@ const AnnotationStoreModel = types
       return c;
     }
 
-
     function addHistory(options = {}) {
       options.type = 'history';
 
@@ -401,7 +400,7 @@ const AnnotationStoreModel = types
     function selectHistory(item) {
       self.selectedHistory = item;
       setTimeout(() => {
-      // update classifications after render
+        // update classifications after render
         const updatedItem = item ?? self.selected;
 
         Array.from(updatedItem.names.values())
@@ -415,7 +414,7 @@ const AnnotationStoreModel = types
     }
 
     function addAnnotationFromPrediction(entity) {
-    // immutable work, because we'll change ids soon
+      // immutable work, because we'll change ids soon
       const s = entity._initialAnnotationObj.map(r => ({ ...r }));
       const c = self.addAnnotation({ userGenerate: true, result: s });
 
@@ -448,8 +447,7 @@ const AnnotationStoreModel = types
       if (entity.pk) {
         if (entity.type === 'prediction') {
           c.parent_prediction = parseInt(entity.pk);
-        }
-        else if (entity.type === 'annotation') {
+        } else if (entity.type === 'annotation') {
           c.parent_annotation = parseInt(entity.pk);
         }
       }
@@ -534,7 +532,4 @@ const AnnotationStoreModel = types
     };
   });
 
-export default types.compose('AnnotationStore',
-  AnnotationStoreModel,
-  ...(isFF(FF_DEV_3617) ? [StoreExtender] : []),
-);
+export default types.compose('AnnotationStore', AnnotationStoreModel, ...(isFF(FF_DEV_3617) ? [StoreExtender] : []));

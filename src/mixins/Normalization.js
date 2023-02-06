@@ -10,7 +10,7 @@ const NormalizationMixin = types
     meta: types.frozen({}),
     normInput: types.maybeNull(types.string),
   })
-  .preProcessSnapshot((sn) => {
+  .preProcessSnapshot(sn => {
     if (!sn.meta) return sn;
     return {
       ...sn,

@@ -45,7 +45,7 @@ const TagAttrs = types.model({
   value: types.maybeNull(types.string),
   hotkey: types.maybeNull(types.string),
   style: types.maybeNull(types.string),
-  ...(isFF(FF_DEV_2007) ? { html: types.maybeNull(types.string) } : {} ),
+  ...(isFF(FF_DEV_2007) ? { html: types.maybeNull(types.string) } : {}),
 });
 
 const Model = types
@@ -138,18 +138,19 @@ const Model = types
     setSelected(val) {
       self._sel = val;
       if (!self.isLeaf) {
-        self.children.forEach((child)=>{
+        self.children.forEach(child => {
           child.setSelected(val);
         });
       }
     },
   }))
   .actions(self => {
-    if (self.parent?.type === 'choices') return {
-      onHotKey() {
-        return self.toggleSelected();
-      },
-    };
+    if (self.parent?.type === 'choices')
+      return {
+        onHotKey() {
+          return self.toggleSelected();
+        },
+      };
     return {};
   });
 
@@ -220,7 +221,7 @@ const HtxNewChoiceView = ({ item, store }) => {
     store.settings.enableHotkeys &&
     item.hotkey;
 
-  const changeHandler = useCallback((ev) => {
+  const changeHandler = useCallback(ev => {
     if (!item.annotation.editable) return;
     item.toggleSelected();
     ev.nativeEvent.target.blur();
@@ -230,8 +231,10 @@ const HtxNewChoiceView = ({ item, store }) => {
   const toogleCollapsed = useCallback(() => setCollapsed(collapsed => !collapsed), []);
 
   return (
-    <Block name="choice"
-      mod={{ layout: item.parent.layout, leaf: item.isLeaf, notLeaf: !item.isLeaf, hidden: !item.visible }}>
+    <Block
+      name="choice"
+      mod={{ layout: item.parent.layout, leaf: item.isLeaf, notLeaf: !item.isLeaf, hidden: !item.visible }}
+    >
       <Elem name="item" mod={{ notLeaf: !item.isLeaf }} style={style}>
         <Elem
           name="checkbox"
@@ -242,20 +245,22 @@ const HtxNewChoiceView = ({ item, store }) => {
           disabled={item.parent?.readonly}
           onChange={changeHandler}
         >
-          {item.html ? <span dangerouslySetInnerHTML={{ __html: item.html }}/> :  item._value }
-          {showHotkey && (<Hint>[{item.hotkey}]</Hint>)}
+          {item.html ? <span dangerouslySetInnerHTML={{ __html: item.html }} /> : item._value}
+          {showHotkey && <Hint>[{item.hotkey}]</Hint>}
         </Elem>
         {!item.isLeaf ? (
           <Elem name="toggle" mod={{ collapsed }} component={Button} type="text" onClick={toogleCollapsed}>
             <LsChevron />
           </Elem>
-        ) : false}
+        ) : (
+          false
+        )}
       </Elem>
-      {
-        item.nestedResults && item.children?.length
-          ? <Elem name="children" mod={{ collapsed }}>{Tree.renderChildren(item, item.annotation)}</Elem>
-          : null
-      }
+      {item.nestedResults && item.children?.length ? (
+        <Elem name="children" mod={{ collapsed }}>
+          {Tree.renderChildren(item, item.annotation)}
+        </Elem>
+      ) : null}
     </Block>
   );
 };
@@ -263,7 +268,7 @@ const HtxNewChoiceView = ({ item, store }) => {
 const HtxOldChoice = inject('store')(observer(HtxChoiceView));
 const HtxNewChoice = inject('store')(observer(HtxNewChoiceView));
 
-const HtxChoice = (props) => {
+const HtxChoice = props => {
   const HtxChoiceComponent = !isFF(FF_DEV_2007) ? HtxOldChoice : HtxNewChoice;
 
   return <HtxChoiceComponent {...props} />;

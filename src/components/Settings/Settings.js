@@ -20,19 +20,27 @@ const HotkeysDescription = () => {
 
   const keyNamespaces = Hotkey.namespaces();
 
-  const getData = (descr) => Object.keys(descr)
-    .filter(k => descr[k])
-    .map(k => ({
-      key: k,
-      combo: k.split(',').map(keyGroup => {
-        return (
-          <Elem name="key-group" key={keyGroup}>
-            {keyGroup.trim().split('+').map((k) => <Elem tag="kbd" name="key" key={k}>{k}</Elem>)}
-          </Elem>
-        );
-      }),
-      descr: descr[k],
-    }));
+  const getData = descr =>
+    Object.keys(descr)
+      .filter(k => descr[k])
+      .map(k => ({
+        key: k,
+        combo: k.split(',').map(keyGroup => {
+          return (
+            <Elem name="key-group" key={keyGroup}>
+              {keyGroup
+                .trim()
+                .split('+')
+                .map(k => (
+                  <Elem tag="kbd" name="key" key={k}>
+                    {k}
+                  </Elem>
+                ))}
+            </Elem>
+          );
+        }),
+        descr: descr[k],
+      }));
 
   return (
     <Block name="keys">
@@ -53,12 +61,10 @@ const HotkeysDescription = () => {
   );
 };
 
-
-
 const GeneralSettings = observer(({ store }) => {
   return (
     <Block name="settings">
-      {Object.keys(EditorSettings).map((obj, index)=> {
+      {Object.keys(EditorSettings).map((obj, index) => {
         return (
           <Elem name="field" key={index}>
             <Checkbox
@@ -87,13 +93,13 @@ const LayoutSettings = observer(({ store }) => {
             setTimeout(triggerResizeEvent);
           }}
         >
-              Move sidepanel to the bottom
+          Move sidepanel to the bottom
         </Checkbox>
       </Elem>
 
       <Elem name="field">
         <Checkbox checked={store.settings.displayLabelsByDefault} onChange={store.settings.toggleSidepanelModel}>
-            Display Labels by default in Results panel
+          Display Labels by default in Results panel
         </Checkbox>
       </Elem>
 
@@ -105,7 +111,7 @@ const LayoutSettings = observer(({ store }) => {
             store.settings.toggleAnnotationsPanel();
           }}
         >
-            Show Annotations panel
+          Show Annotations panel
         </Checkbox>
       </Elem>
 
@@ -117,7 +123,7 @@ const LayoutSettings = observer(({ store }) => {
             store.settings.togglePredictionsPanel();
           }}
         >
-              Show Predictions panel
+          Show Predictions panel
         </Checkbox>
       </Elem>
 
@@ -175,9 +181,9 @@ export default observer(({ store }) => {
             {React.createElement(component, { store })}
           </Tabs.TabPane>
         ))}
-        {availableSettings.map((Page) => (
+        {availableSettings.map(Page => (
           <Tabs.TabPane tab={Page.title} key={Page.tagName}>
-            <Page store={store}/>
+            <Page store={store} />
           </Tabs.TabPane>
         ))}
       </Tabs>

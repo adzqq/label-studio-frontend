@@ -108,7 +108,6 @@ const RelationStore = types
     get size() {
       return self.relations.length;
     },
-
   }))
   .actions(self => ({
     findRelations(node1, node2) {
@@ -142,7 +141,7 @@ const RelationStore = types
     },
 
     deleteRelation(rl) {
-      self._relations = self._relations.filter( r => r.id !== rl.id);
+      self._relations = self._relations.filter(r => r.id !== rl.id);
       destroy(rl);
     },
 

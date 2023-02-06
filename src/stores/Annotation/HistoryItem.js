@@ -15,23 +15,29 @@ import { Annotation } from './Annotation';
 //   'propagated_annotation',
 // ])
 
-export const HistoryItem = types.compose('HistoryItem', Annotation, types.model({
-  /**
-   * Optional comment
-   */
-  comment: types.optional(types.maybeNull(types.string), null),
+export const HistoryItem = types
+  .compose(
+    'HistoryItem',
+    Annotation,
+    types.model({
+      /**
+       * Optional comment
+       */
+      comment: types.optional(types.maybeNull(types.string), null),
 
-  /**
-   * Action associated with the history item
-   */
-  actionType: types.optional(types.maybeNull(types.string), null),
-})).preProcessSnapshot(snapshot => {
-  return {
-    ...snapshot,
-    pk: guidGenerator(),
-    user: snapshot.created_by,
-    createdDate: snapshot.created_at,
-    actionType: snapshot.action ?? snapshot.action_type ?? snapshot.actionType,
-    editable: false,
-  };
-});
+      /**
+       * Action associated with the history item
+       */
+      actionType: types.optional(types.maybeNull(types.string), null),
+    }),
+  )
+  .preProcessSnapshot(snapshot => {
+    return {
+      ...snapshot,
+      pk: guidGenerator(),
+      user: snapshot.created_by,
+      createdDate: snapshot.created_at,
+      actionType: snapshot.action ?? snapshot.action_type ?? snapshot.actionType,
+      editable: false,
+    };
+  });

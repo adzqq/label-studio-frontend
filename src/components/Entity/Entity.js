@@ -17,7 +17,6 @@ import { PER_REGION_MODES } from '../../mixins/PerRegion';
 import { Hotkey } from '../../core/Hotkey';
 import { IconWarning } from '../../assets/icons';
 
-
 const { Paragraph, Text } = Typography;
 
 const renderLabels = element => {
@@ -42,7 +41,10 @@ const renderResult = result => {
     return renderLabels(result);
   } else if (result.type === 'rating') {
     return <Paragraph>Rating: {result.mainValue}</Paragraph>;
-  } else if (result.type === 'textarea' && !(result.from_name.perregion && result.from_name.displaymode === PER_REGION_MODES.REGION_LIST)) {
+  } else if (
+    result.type === 'textarea' &&
+    !(result.from_name.perregion && result.from_name.displaymode === PER_REGION_MODES.REGION_LIST)
+  ) {
     return (
       <Paragraph className={styles.row}>
         <Text>Text: </Text>
@@ -111,7 +113,7 @@ export default observer(({ store, annotation }) => {
         }}
       >
         <CompressOutlined />
-        <Hotkey.Hint name="region:unselect"/>
+        <Hotkey.Hint name="region:unselect" />
       </Button>
     </Hotkey.Tooltip>,
   );
@@ -122,11 +124,11 @@ export default observer(({ store, annotation }) => {
         <Elem name="node">
           {node ? (
             <>
-              <Node node={node} />
-              {' '}
-              (ID: {node.id})
+              <Node node={node} /> (ID: {node.id})
             </>
-          ) : `${selectionSize} Region${(selectionSize > 1) ? 's are' : ' is'} selected` }
+          ) : (
+            `${selectionSize} Region${selectionSize > 1 ? 's are' : ' is'} selected`
+          )}
         </Elem>
         {!hasEditableNodes && <Badge count={'readonly'} style={{ backgroundColor: '#ccc' }} />}
       </Elem>
@@ -165,9 +167,7 @@ export default observer(({ store, annotation }) => {
 
       <div className={styles.block + ' ls-entity-buttons'}>
         <Space spread>
-          <Space>
-            {entityButtons}
-          </Space>
+          <Space>{entityButtons}</Space>
 
           {hasEditableNodes && (
             <Hotkey.Tooltip placement="topLeft" name="region:delete">
@@ -180,7 +180,7 @@ export default observer(({ store, annotation }) => {
               >
                 <DeleteOutlined />
 
-                <Hotkey.Hint name="region:delete"/>
+                <Hotkey.Hint name="region:delete" />
               </Button>
             </Hotkey.Tooltip>
           )}

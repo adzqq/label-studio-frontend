@@ -194,5 +194,4 @@ export default types
     find(span) {
       return self._spans && self._spans.indexOf(span) >= 0 ? self : undefined;
     },
-
   }));

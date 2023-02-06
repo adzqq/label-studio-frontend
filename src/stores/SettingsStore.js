@@ -98,10 +98,10 @@ const SettingsModel = types
       } else {
         const env = getEnv(self);
 
-        Object.keys(EditorSettings).map((obj) => {
-          if( typeof env.settings[obj] === 'boolean'){
+        Object.keys(EditorSettings).map(obj => {
+          if (typeof env.settings[obj] === 'boolean') {
             self[obj] = env.settings[obj];
-          }else{
+          } else {
             self[obj] = EditorSettings[obj].defaultValue;
           }
         });

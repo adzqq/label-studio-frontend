@@ -162,7 +162,15 @@ const Model = types
     },
   }));
 
-const RatingModel = types.compose('RatingModel', ControlBase, TagAttrs, Model, RequiredMixin, PerRegionMixin, AnnotationMixin);
+const RatingModel = types.compose(
+  'RatingModel',
+  ControlBase,
+  TagAttrs,
+  Model,
+  RequiredMixin,
+  PerRegionMixin,
+  AnnotationMixin,
+);
 
 const HtxRating = inject('store')(
   observer(({ item, store }) => {

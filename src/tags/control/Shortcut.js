@@ -98,8 +98,8 @@ const HtxShortcutView = inject('store')(
 
     return (
       <Tag
-        {... (isFF(FF_DEV_1566) ? { 'data-shortcut': true } : {})}
-        onClick={(e) => {
+        {...(isFF(FF_DEV_1566) ? { 'data-shortcut': true } : {})}
+        onClick={e => {
           if (isFF(FF_DEV_1564_DEV_1565)) {
             e.preventDefault();
             e.stopPropagation();

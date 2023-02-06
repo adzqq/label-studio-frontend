@@ -22,7 +22,7 @@ class RichTextPieceView extends Component {
   // store value of first selected label during double click to apply it later
   doubleClickSelection;
 
-  _selectRegions = (additionalMode) => {
+  _selectRegions = additionalMode => {
     const { item } = this.props;
     const root = item.visibleNodeRef.current;
     const selection = window.getSelection();
@@ -49,49 +49,54 @@ class RichTextPieceView extends Component {
     }
   };
 
-  _onMouseUp = (ev) => {
+  _onMouseUp = ev => {
     const { item } = this.props;
     const states = item.activeStates();
     const rootEl = item.visibleNodeRef.current;
     const root = rootEl?.contentDocument?.body ?? rootEl;
 
-    if (!states || states.length === 0 || ev.ctrlKey || ev.metaKey) return this._selectRegions(ev.ctrlKey || ev.metaKey);
+    if (!states || states.length === 0 || ev.ctrlKey || ev.metaKey)
+      return this._selectRegions(ev.ctrlKey || ev.metaKey);
     if (item.selectionenabled === false || !item.annotation.editable) return;
     const label = states[0]?.selectedLabels?.[0];
     const value = states[0]?.selectedValues?.();
 
-    Utils.Selection.captureSelection(({ selectionText, range }) => {
-      if (!range || range.collapsed || !root.contains(range.startContainer) || !root.contains(range.endContainer)) {
-        return;
-      }
+    Utils.Selection.captureSelection(
+      ({ selectionText, range }) => {
+        if (!range || range.collapsed || !root.contains(range.startContainer) || !root.contains(range.endContainer)) {
+          return;
+        }
 
-      fixCodePointsInRange(range);
+        fixCodePointsInRange(range);
 
-      const normedRange = xpath.fromRange(range, root);
+        const normedRange = xpath.fromRange(range, root);
 
-      if (!normedRange) return;
+        if (!normedRange) return;
 
-      if (this.doubleClickSelection && (
-        Date.now() - this.doubleClickSelection.time > DBLCLICK_TIMEOUT
-        || Math.abs(ev.pageX - this.doubleClickSelection.x) > DBLCLICK_RANGE
-        || Math.abs(ev.pageY - this.doubleClickSelection.y) > DBLCLICK_RANGE
-      )) {
-        this.doubleClickSelection = undefined;
-      }
+        if (
+          this.doubleClickSelection &&
+          (Date.now() - this.doubleClickSelection.time > DBLCLICK_TIMEOUT ||
+            Math.abs(ev.pageX - this.doubleClickSelection.x) > DBLCLICK_RANGE ||
+            Math.abs(ev.pageY - this.doubleClickSelection.y) > DBLCLICK_RANGE)
+        ) {
+          this.doubleClickSelection = undefined;
+        }
 
-      normedRange._range = range;
-      normedRange.text = selectionText;
-      normedRange.isText = item.type === 'text';
-      normedRange.dynamic = this.props.store.autoAnnotation;
-      item.addRegion(normedRange, this.doubleClickSelection);
-    }, {
-      window: rootEl?.contentWindow ?? window,
-      granularity: label?.granularity ?? item.granularity,
-      beforeCleanup: () => {
-        this.doubleClickSelection = undefined;
-        this._selectionMode = true;
+        normedRange._range = range;
+        normedRange.text = selectionText;
+        normedRange.isText = item.type === 'text';
+        normedRange.dynamic = this.props.store.autoAnnotation;
+        item.addRegion(normedRange, this.doubleClickSelection);
       },
-    });
+      {
+        window: rootEl?.contentWindow ?? window,
+        granularity: label?.granularity ?? item.granularity,
+        beforeCleanup: () => {
+          this.doubleClickSelection = undefined;
+          this._selectionMode = true;
+        },
+      },
+    );
     this.doubleClickSelection = {
       time: Date.now(),
       value: value?.length ? value : undefined,
@@ -139,7 +144,7 @@ class RichTextPieceView extends Component {
   _moveElements(src, dest, withSubstitution) {
     const fragment = document.createDocumentFragment();
 
-    for (let i = 0;i < src.childNodes.length;  withSubstitution && i++){
+    for (let i = 0; i < src.childNodes.length; withSubstitution && i++) {
       const currentChild = src.childNodes[i];
 
       if (withSubstitution) {
@@ -244,10 +249,7 @@ class RichTextPieceView extends Component {
   componentDidMount() {
     const { item } = this.props;
 
-    item.setNeedsUpdateCallbacks(
-      this._moveElementsToWorkingNode,
-      this._returnElementsFromWorkingNode,
-    );
+    item.setNeedsUpdateCallbacks(this._moveElementsToWorkingNode, this._returnElementsFromWorkingNode);
 
     if (!item.inline) {
       this.dispose = observe(item, '_isReady', this.updateLoadingVisibility, true);
@@ -371,11 +373,7 @@ class RichTextPieceView extends Component {
       };
 
       return (
-        <Block
-          name="richtext"
-          tag={ObjectTag}
-          item={item}
-        >
+        <Block name="richtext" tag={ObjectTag} item={item}>
           <Elem
             key="root"
             name="container"
@@ -395,21 +393,12 @@ class RichTextPieceView extends Component {
             className="htx-richtext-orig"
             dangerouslySetInnerHTML={{ __html: val }}
           />
-          <Elem
-            key="work"
-            name="work-container"
-            ref={item.workingNodeRef}
-            className="htx-richtext-work"
-          />
+          <Elem key="work" name="work-container" ref={item.workingNodeRef} className="htx-richtext-work" />
         </Block>
       );
     } else {
       return (
-        <Block
-          name="richtext"
-          tag={ObjectTag}
-          item={item}
-        >
+        <Block name="richtext" tag={ObjectTag} item={item}>
           <Elem name="loading" ref={this.loadingRef}>
             <LoadingOutlined />
           </Elem>
@@ -458,7 +447,9 @@ const storeInjector = inject('store');
 const RPTV = storeInjector(observer(RichTextPieceView));
 
 export const HtxRichText = ({ isText = false } = {}) => {
-  return storeInjector(observer(props => {
-    return <RPTV {...props} isText={isText} />;
-  }));
+  return storeInjector(
+    observer(props => {
+      return <RPTV {...props} isText={isText} />;
+    }),
+  );
 };

@@ -43,7 +43,7 @@ export const CommentForm: FC<CommentFormProps> = observer(({
 
       await commentStore.addComment(comment);
 
-    } catch(err) {
+    } catch (err) {
       actionRef.current.update?.(comment || '');
       console.error(err);
     }

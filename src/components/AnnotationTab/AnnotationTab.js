@@ -29,22 +29,12 @@ export const AnnotationTab = observer(({ store }) => {
       {selectionSize ? (
         <Entity store={store} annotation={annotation} />
       ) : hasSegmentation ? (
-        <p style={{ marginTop: 12, marginBottom: 0, paddingInline: 15 }}>
-          No Region selected
-        </p>
+        <p style={{ marginTop: 12, marginBottom: 0, paddingInline: 15 }}>No Region selected</p>
       ) : null}
 
-      {hasSegmentation && (
-        <Entities
-          store={store}
-          annotation={annotation}
-          regionStore={annotation.regionStore}
-        />
-      )}
+      {hasSegmentation && <Entities store={store} annotation={annotation} regionStore={annotation.regionStore} />}
 
-      {hasSegmentation && (
-        <Relations store={store} item={annotation} />
-      )}
+      {hasSegmentation && <Relations store={store} item={annotation} />}
 
       {store.hasInterface('annotations:comments') && store.commentStore.isCommentable && (
         <Block name="comments-section">
@@ -53,10 +43,7 @@ export const AnnotationTab = observer(({ store }) => {
           </Elem>
 
           <Elem name="content">
-            <Comments
-              commentStore={store.commentStore}
-              cacheKey={`task.${store.task.id}`}
-            />
+            <Comments commentStore={store.commentStore} cacheKey={`task.${store.task.id}`} />
           </Elem>
         </Block>
       )}

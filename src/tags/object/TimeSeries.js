@@ -169,7 +169,7 @@ const Model = types
         data = { ...data, [self.keyColumn]: indices };
 
         // Require a timeformat for non numeric values
-      } else if(!self.timeformat && isNaN(data[self.keyColumn][0])) {
+      } else if (!self.timeformat && isNaN(data[self.keyColumn][0])) {
         const message = [
           `Looks like your <b>timeColumn</b> (${self.timecolumn}) contains non-numbers.`,
           'You have to use <b>timeFormat</b> parameter if your values are datetimes.',
@@ -195,11 +195,13 @@ const Model = types
           if (current < previous) {
             const nonSeqValues = [`seq: ${i - 1}, value: ${data[self.keyColumn][i - 1]}`, `seq: ${i}, value: ${value}`];
 
-            throw new Error([
-              `<b>timeColumn</b> (${self.timecolumn}) must be incremental and sequentially ordered.`,
-              `First wrong values: ${nonSeqValues.join(', ')}`,
-              '<br/><a href="https://labelstud.io/tags/timeseries.html" target="_blank">Read Documentation</a> for details.',
-            ].join('<br/>'));
+            throw new Error(
+              [
+                `<b>timeColumn</b> (${self.timecolumn}) must be incremental and sequentially ordered.`,
+                `First wrong values: ${nonSeqValues.join(', ')}`,
+                '<br/><a href="https://labelstud.io/tags/timeseries.html" target="_blank">Read Documentation</a> for details.',
+              ].join('<br/>'),
+            );
           }
 
           previous = current;
@@ -224,7 +226,7 @@ const Model = types
 
         data = { ...data, [self.keyColumn]: timestamps };
       }
-      
+
       return data;
     },
 
@@ -316,7 +318,6 @@ const Model = types
       }
       return self._formatDuration(duration);
     },
-
   }))
 
   .actions(self => ({
@@ -547,7 +548,7 @@ const Model = types
       self.updateTR(boundaries);
     },
 
-    onHotKey() { },
+    onHotKey() {},
   }));
 
 function useWidth() {
@@ -710,7 +711,7 @@ const Overview = observer(({ item, data, series }) => {
       .attr('x', r => x(r.start))
       .attr('width', r => Math.max(minRegionWidth, x(r.end) - x(r.start)))
       .attr('fill', r => getRegionColor(r, r.selected ? 0.8 : 0.3))
-      .style('display', r => r.hidden ? 'none' : 'block');
+      .style('display', r => (r.hidden ? 'none' : 'block'));
     rSelection.exit().remove();
   };
 
@@ -815,7 +816,14 @@ const HtxTimeSeriesViewRTS = ({ item }) => {
   );
 };
 
-const TimeSeriesModel = types.compose('TimeSeriesModel', ObjectBase, PersistentStateMixin, AnnotationMixin, TagAttrs, Model);
+const TimeSeriesModel = types.compose(
+  'TimeSeriesModel',
+  ObjectBase,
+  PersistentStateMixin,
+  AnnotationMixin,
+  TagAttrs,
+  Model,
+);
 const HtxTimeSeries = inject('store')(observer(HtxTimeSeriesViewRTS));
 
 Registry.addTag('timeseries', TimeSeriesModel, HtxTimeSeries);

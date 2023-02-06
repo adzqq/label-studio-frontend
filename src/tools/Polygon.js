@@ -43,9 +43,7 @@ const _Tool = types
         return 'Polygon region';
       },
       get iconComponent() {
-        return self.dynamic
-          ? NodeViews.PolygonRegionModel.altIcon
-          : NodeViews.PolygonRegionModel.icon;
+        return self.dynamic ? NodeViews.PolygonRegionModel.altIcon : NodeViews.PolygonRegionModel.icon;
       },
 
       get defaultDimensions() {
@@ -104,11 +102,16 @@ const _Tool = types
       },
       listenForClose() {
         closed = false;
-        disposer = observe(self.getCurrentArea(), 'closed', () => {
-          if (self.getCurrentArea()?.closed && !closed) {
-            self.finishDrawing();
-          }
-        }, true);
+        disposer = observe(
+          self.getCurrentArea(),
+          'closed',
+          () => {
+            if (self.getCurrentArea()?.closed && !closed) {
+              self.finishDrawing();
+            }
+          },
+          true,
+        );
       },
       stopListening() {
         if (disposer) disposer();

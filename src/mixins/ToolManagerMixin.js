@@ -2,7 +2,7 @@ import { types } from 'mobx-state-tree';
 import ToolsManager from '../tools/Manager';
 import * as Tools from '../tools';
 
-export const ToolManagerMixin = types.model().actions((self) => {
+export const ToolManagerMixin = types.model().actions(self => {
   return {
     afterAttach() {
       const toolNames = self.toolNames ?? [];
@@ -11,7 +11,6 @@ export const ToolManagerMixin = types.model().actions((self) => {
       const tools = {};
 
       toolNames.forEach(toolName => {
-
         if (toolName in Tools) {
           const tool = Tools[toolName].create({}, env);
 

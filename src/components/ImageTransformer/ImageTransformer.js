@@ -41,7 +41,9 @@ export default class TransformerComponent extends Component {
 
     // here we need to manually attach or detach Transformer node
     const stage = this.transformer.getStage();
-    const { item: { selectedRegions } } = this.props;
+    const {
+      item: { selectedRegions },
+    } = this.props;
 
     if (!selectedRegions?.length) {
       this.transformer.detach();
@@ -70,7 +72,8 @@ export default class TransformerComponent extends Component {
     });
     const prevNodes = this.transformer.nodes();
     // do nothing if selected node is already attached
-    const nodesWereNotChanged = selectedNodes?.length === prevNodes?.length && !selectedNodes.find((node, idx) => node !== prevNodes[idx]);
+    const nodesWereNotChanged =
+      selectedNodes?.length === prevNodes?.length && !selectedNodes.find((node, idx) => node !== prevNodes[idx]);
 
     if (nodesWereNotChanged) {
       return;
@@ -156,7 +159,7 @@ export default class TransformerComponent extends Component {
     }
   };
 
-  dragBoundFunc = (pos) => {
+  dragBoundFunc = pos => {
     const { item } = this.props;
 
     return item.fixForZoomWrapper(pos, pos => {
@@ -176,7 +179,7 @@ export default class TransformerComponent extends Component {
     });
   };
 
-  renderLSTransformer(){
+  renderLSTransformer() {
     return (
       <>
         <LSTransformer
@@ -199,7 +202,9 @@ export default class TransformerComponent extends Component {
           flipEnabled={false}
           zoomedIn={this.props.item.zoomScale > 1}
           onDragStart={e => {
-            const { item: { selectedRegionsBBox } } = this.props;
+            const {
+              item: { selectedRegionsBBox },
+            } = this.props;
 
             this.freeze();
 
@@ -222,7 +227,7 @@ export default class TransformerComponent extends Component {
     );
   }
 
-  renderOldLSTransformer(){
+  renderOldLSTransformer() {
     return (
       <>
         <LSTransformerOld
@@ -241,7 +246,9 @@ export default class TransformerComponent extends Component {
           flipEnabled={false}
           zoomedIn={this.props.item.zoomScale > 1}
           onDragStart={e => {
-            const { item: { selectedRegionsBBox } } = this.props;
+            const {
+              item: { selectedRegionsBBox },
+            } = this.props;
 
             this.freeze();
 

@@ -68,7 +68,7 @@ const _BaseNPointTool = types
     beforeCommitDrawing() {
       const s = self.getActiveShape;
 
-      return s.width > self.MIN_SIZE.X  && s.height * self.MIN_SIZE.Y;
+      return s.width > self.MIN_SIZE.X && s.height * self.MIN_SIZE.Y;
     },
   }));
 
@@ -81,12 +81,10 @@ const _Tool = types
       return 'Rectangle';
     },
     get iconComponent() {
-      return self.dynamic
-        ? NodeViews.RectRegionModel.altIcon
-        : NodeViews.RectRegionModel.icon;
+      return self.dynamic ? NodeViews.RectRegionModel.altIcon : NodeViews.RectRegionModel.icon;
     },
   }));
-  
+
 const _Tool3Point = types
   .model('Rectangle3PointTool', {
     shortcut: 'shift+R',
@@ -96,14 +94,29 @@ const _Tool3Point = types
       return '3 Point Rectangle';
     },
     get iconComponent() {
-      return self.dynamic
-        ? NodeViews.Rect3PointRegionModel.altIcon
-        : NodeViews.Rect3PointRegionModel.icon;
+      return self.dynamic ? NodeViews.Rect3PointRegionModel.altIcon : NodeViews.Rect3PointRegionModel.icon;
     },
   }));
 
-const Rect = types.compose(_Tool.name, ToolMixin, BaseTool, TwoPointsDrawingTool, _BaseNPointTool, _Tool, AnnotationMixin);
+const Rect = types.compose(
+  _Tool.name,
+  ToolMixin,
+  BaseTool,
+  TwoPointsDrawingTool,
+  _BaseNPointTool,
+  _Tool,
+  AnnotationMixin,
+);
 
-const Rect3Point = types.compose(_Tool3Point.name, ToolMixin, BaseTool, ThreePointsDrawingTool, _BaseNPointTool, _Tool3Point, AnnotationMixin);
+
+const Rect3Point = types.compose(
+  _Tool3Point.name,
+  ToolMixin,
+  BaseTool,
+  ThreePointsDrawingTool,
+  _BaseNPointTool,
+  _Tool3Point,
+  AnnotationMixin,
+);
 
 export { Rect, Rect3Point };
