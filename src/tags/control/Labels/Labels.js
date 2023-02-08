@@ -69,24 +69,24 @@ import './Labels.styl';
  * @param {string} [value]                   - Task data field containing a list of dynamically loaded labels (see example below)
  */
 const TagAttrs = types.model({
-  toname: types.maybeNull(types.string),
+    toname: types.maybeNull(types.string),
 
-  choice: types.optional(types.enumeration(['single', 'multiple']), 'single'),
-  maxusages: types.maybeNull(types.string),
-  showinline: types.optional(types.boolean, true),
+    choice: types.optional(types.enumeration(['single', 'multiple']), 'single'),
+    maxusages: types.maybeNull(types.string),
+    showinline: types.optional(types.boolean, true),
 
-  // TODO this will move away from here
-  groupdepth: types.maybeNull(types.string),
+    // TODO this will move away from here
+    groupdepth: types.maybeNull(types.string),
 
-  opacity: types.optional(customTypes.range(), '0.2'),
-  fillcolor: types.optional(customTypes.color, '#f48a42'),
+    opacity: types.optional(customTypes.range(), '0.2'),
+    fillcolor: types.optional(customTypes.color, '#f48a42'),
 
-  strokewidth: types.optional(types.string, '1'),
-  strokecolor: types.optional(customTypes.color, '#f48a42'),
-  fillopacity: types.maybeNull(customTypes.range()),
-  allowempty: types.optional(types.boolean, false),
+    strokewidth: types.optional(types.string, '1'),
+    strokecolor: types.optional(customTypes.color, '#f48a42'),
+    fillopacity: types.maybeNull(customTypes.range()),
+    allowempty: types.optional(types.boolean, false),
 
-  ...(isFF(FF_DEV_2007_DEV_2008) ? { value: types.optional(types.string, '') } : {}),
+    ...(isFF(FF_DEV_2007_DEV_2008) ? { value: types.optional(types.string, '') } : {}),
 });
 
 /**
@@ -95,75 +95,75 @@ const TagAttrs = types.model({
  * @param {string} pid
  */
 const ModelAttrs = types.model({
-  pid: types.optional(types.string, guidGenerator),
-  type: 'labels',
-  children: Types.unionArray(['label', 'header', 'view', 'text', 'hypertext', 'richtext']),
+    pid: types.optional(types.string, guidGenerator),
+    type: 'labels',
+    children: Types.unionArray(['label', 'header', 'view', 'text', 'hypertext', 'richtext']),
 
-  visible: types.optional(types.boolean, true),
+    visible: types.optional(types.boolean, true),
 });
 
 const Model = LabelMixin.views(self => ({
-  get shouldBeUnselected() {
-    return self.choice === 'single';
-  },
-  get defaultChildType() {
-    return 'label';
-  },
+    get shouldBeUnselected() {
+        return self.choice === 'single';
+    },
+    get defaultChildType() {
+        return 'label';
+    },
 })).actions(self => ({
-  afterCreate() {
-    if (self.allowempty) {
-      let empty = self.findLabel(null);
+    afterCreate() {
+        if (self.allowempty) {
+            let empty = self.findLabel(null);
 
-      if (!empty) {
-        const emptyParams = {
-          value: null,
-          type: 'label',
-          background: defaultStyle.fillcolor,
-        };
+            if (!empty) {
+                const emptyParams = {
+                    value: null,
+                    type: 'label',
+                    background: defaultStyle.fillcolor,
+                };
 
-        if (self.children) {
-          self.children.unshift(emptyParams);
-        } else {
-          self.children = cast([emptyParams]);
+                if (self.children) {
+                    self.children.unshift(emptyParams);
+                } else {
+                    self.children = cast([emptyParams]);
+                }
+                empty = self.children[0];
+            }
+            empty.setEmpty();
         }
-        empty = self.children[0];
-      }
-      empty.setEmpty();
-    }
-  },
-  validate() {
-    const regions = self.annotation.regionStore.regions;
+    },
+    validate() {
+        const regions = self.annotation.regionStore.regions;
 
-    for (const r of regions) {
-      for (const s of r.states) {
-        if (s.name === self.name) {
-          return true;
+        for (const r of regions) {
+            for (const s of r.states) {
+                if (s.name === self.name) {
+                    return true;
+                }
+            }
         }
-      }
-    }
 
-    InfoModal.warning(self.requiredmessage || `Labels "${self.name}" were not used.`);
-    return false;
-  },
+        InfoModal.warning(self.requiredmessage || `Labels "${self.name}" were not used.`);
+        return false;
+    },
 }));
 
 const LabelsModel = types.compose(
-  'LabelsModel',
-  ModelAttrs,
-  TagAttrs,
-  AnnotationMixin,
-  ...(isFF(FF_DEV_2007_DEV_2008) ? [DynamicChildrenMixin] : []),
-  Model,
-  SelectedModelMixin.props({ _child: 'LabelModel' }),
-  ControlBase,
+    'LabelsModel',
+    ModelAttrs,
+    TagAttrs,
+    AnnotationMixin,
+    ...(isFF(FF_DEV_2007_DEV_2008) ? [DynamicChildrenMixin] : []),
+    Model,
+    SelectedModelMixin.props({ _child: 'LabelModel' }),
+    ControlBase,
 );
 
 const HtxLabels = observer(({ item }) => {
-  return (
-    <Block name="labels" mod={{ hidden: !item.visible, inline: item.showinline }}>
-      {Tree.renderChildren(item, item.annotation)}
-    </Block>
-  );
+    return (
+        <Block name="labels" mod={{ hidden: !item.visible, inline: item.showinline }}>
+            {Tree.renderChildren(item, item.annotation)}
+        </Block>
+    );
 });
 
 Registry.addTag('labels', LabelsModel, HtxLabels);

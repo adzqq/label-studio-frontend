@@ -9,7 +9,9 @@
         <meta name="theme-color" content="#000000">
 
         <link rel="stylesheet" href="/styles/main.css">
+        <link rel="stylesheet" href="element.css">
         <script src="vue.global.prod.js"></script>
+        <script src="element-plus.js"></script>
         <title>LSF测试</title>
     </head>
 
@@ -21,14 +23,24 @@
 
         <div id="ls-container" class="ls-container">
             <div style="width: 180px;margin-top: 48px;">
-                <img @click="onImageClick(item)" v-for="(item, index) in tasks" :key="index" :src="item.url"
-                    class="left-pannel-img" />
+                <img @click="onImageClick(item,index)" v-for="(item, index) in tasks" :key="index"
+                    :src="item.data.image" class="left-pannel-img" />
             </div>
 
-            <div id="label-studio" class="label-studio"></div>
+
+            <div id="label-studio" class="label-studio">
+            </div>
+
+            <div style="position: fixed;bottom: 0px;right:0px;z-index: 200;margin: 0 10px 80px 0;">
+                <div>
+                    <el-input style="width: 300px;" :rows="3" v-model="description" type="textarea"
+                        placeholder="请输入诊断建议">
+                    </el-input>
+                </div>
+                <el-button style="width: 300px;margin-top:20px" type="primary">提交</el-button>
+            </div>
 
         </div>
-
         <style>
             body {
                 height: 100vh;
@@ -50,24 +62,40 @@
             }
         </style>
         <script>
+
             const { createApp } = Vue;
+            var labels = [
+                {
+                    name: "肺结节标签1",
+                    color: 'red'
+                },
+                {
+                    name: "肺结节标签2",
+                    color: 'blue'
+                }
+            ];
+            var templateLabels = [];
+            labels.forEach(x => {
+                templateLabels.push(`<label name="${x.name}" value="${x.name}" background="${x.color}"></label>`)
+            });
             var options = {
                 interfaces: [
-                    "panel",
-                    "update",
-                    "submit",
+                    // "panel",
+                    // "update",
+                    // "submit",
                     // "skip",
                     "controls",
                     // "review",
                     // "infobar",
                     "topbar",
-                    // "instruction",
+                    "instruction",
                     // "side-column",
                     // "ground-truth",
                     "annotations:tabs",
                     "annotations:menu",
                     "annotations:history",
                     "annotations:current",
+                    // "annotations:comments"
                     // "annotations:add-new",
                     // "annotations:delete",
                     // 'annotations:view-all',
@@ -83,91 +111,12 @@
                         <Image name="image" value="$image" />
                         <Rectangle name="rect-1" toName="image" />
                         <Polygon name="rect-2" toName="image" />
-                        <labels id = "123" name="lbl" toName="image">
-                          <label name="肺结节标签" value="肺结节标签" background="blue"></label>
-                          <label name="肺结节标签2" value="肺结节标签2" background="red"></label>
-                      </labels>
+                        <labels  name="lbl" toName="image">
+                          ${templateLabels}
+                        </labels>
                     </View>`,
-                task: {
-                    annotations: [
-                        {
-                            id: '1001',
-                            createdBy: '邓宏',
-                            createdDate: '2023-05-08',
-                            result: [
-                                {
-                                    id: 'Dx_aB91ISN',
-                                    source: '$image',
-                                    from_name: 'rect-1',
-                                    to_name: 'image',
-                                    type: 'rectangle',
-                                    origin: 'manual',
-                                    // hidden: true,
-                                    locked: true,
-                                    value: {
-                                        height: 10.458911419423693,
-                                        width: 12.4,
-                                        x: 5,
-                                        y: 5,
-                                    },
-                                },
-                                {
-                                    id: 'Dx_aB91ISN',
-                                    source: '$image',
-                                    from_name: 'lbl',
-                                    to_name: 'image',
-                                    type: 'labels',
-                                    origin: 'manual',
-                                    value: {
-                                        height: 10.458911419423693,
-                                        width: 12.4,
-                                        x: 5,
-                                        y: 5,
-                                        labels: [
-                                            "肺结节标签"
-                                        ],
-                                    },
-                                },
-                                {
-                                    id: 'Dx_aB91ISN1',
-                                    source: '$image',
-                                    from_name: 'rect-1',
-                                    to_name: 'image',
-                                    type: 'rectangle',
-                                    origin: 'manual',
-                                    value: {
-                                        height: 10.458911419423693,
-                                        width: 12.4,
-                                        x: 20,
-                                        y: 20,
-                                    },
-                                },
-                                {
-                                    id: 'Dx_aB91ISN1',
-                                    source: '$image',
-                                    from_name: 'lbl',
-                                    to_name: 'image',
-                                    type: 'labels',
-                                    origin: 'manual',
-                                    value: {
-                                        height: 10.458911419423693,
-                                        width: 12.4,
-                                        x: 20,
-                                        y: 20,
-                                        labels: [
-                                            "肺结节标签2"
-                                        ],
-                                    },
-                                }
-
-                            ],
-                        }
-                    ],
-                    id: 1,
-                    data: {
-                        image: "https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/images/nick-owuor-astro-nic-visuals-wDifg5xc9Z4-unsplash.jpg"
-                    }
-                },
+                task: null,
+                description: ''
             }
 
 
@@ -175,85 +124,133 @@
                 data() {
                     return {
                         ls: "",
+                        labels: labels,
+                        description: "",
+                        imageIndex: 0,
+                        selectAnnotationIndex: 0,
                         tasks: [
                             {
-                                url: "https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/images/nick-owuor-astro-nic-visuals-wDifg5xc9Z4-unsplash.jpg",
-                                result: [
+                                id: 1,
+                                data: {
+                                    image: "https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/images/nick-owuor-astro-nic-visuals-wDifg5xc9Z4-unsplash.jpg",
+                                },
+                                annotations: [
                                     {
-                                        id: 'Dx_aB91ISN',
-                                        source: '$image',
-                                        from_name: 'lbl',
-                                        to_name: 'image',
-                                        type: 'labels',
-                                        origin: 'manual',
-                                        value: {
-                                            height: 10.458911419423693,
-                                            width: 12.4,
-                                            x: 80,
-                                            y: 80,
-                                            labels: [
-                                                "肺结节标签2"
-                                            ],
-                                        },
+                                        id: '1001',
+                                        createdBy: '邓宏',
+                                        result: [
+                                            {
+                                                id: 'Dx_aB91ISN',
+                                                source: '$image',
+                                                from_name: 'lbl',
+                                                to_name: 'image',
+                                                type: 'labels',
+                                                origin: 'manual',
+                                                value: {
+                                                    height: 10.458911419423693,
+                                                    width: 12.4,
+                                                    x: 80,
+                                                    y: 80,
+                                                    labels: [
+                                                        "肺结节标签2"
+                                                    ],
+                                                },
+                                            },
+                                        ]
                                     },
-                                ]
+                                    {
+                                        id: '1002',
+                                        createdBy: '子群',
+                                        result: [
+                                            {
+                                                id: 'Dx_aB91ISN',
+                                                source: '$image',
+                                                from_name: 'lbl',
+                                                to_name: 'image',
+                                                type: 'labels',
+                                                origin: 'manual',
+                                                value: {
+                                                    height: 10.458911419423693,
+                                                    width: 12.4,
+                                                    x: 80,
+                                                    y: 80,
+                                                    labels: [
+                                                        "肺结节标签2"
+                                                    ],
+                                                },
+                                            },
+                                        ]
+                                    },
+                                ],
                             },
                             {
-                                url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQp26Bu2Le6S4w_0-yPtTPEMbGpxlUs8ATcJQ&usqp=CAU",
-                                result: [
+                                id: 2,
+                                data: {
+                                    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQp26Bu2Le6S4w_0-yPtTPEMbGpxlUs8ATcJQ&usqp=CAU",
+                                },
+                                annotations: [
                                     {
-                                        id: 'Dx_aB91ISN',
-                                        source: '$image',
-                                        from_name: 'rect-1',
-                                        to_name: 'image',
-                                        type: 'rectangle',
-                                        origin: 'manual',
-                                        // hidden: true,
-                                        locked: true,
-                                        value: {
-                                            height: 10.458911419423693,
-                                            width: 12.4,
-                                            x: 5,
-                                            y: 5,
-                                        },
+                                        id: '1002',
+                                        createdBy: '郑强',
+                                        result: [
+                                            {
+                                                id: 'Dx_aB91ISN',
+                                                source: '$image',
+                                                from_name: 'lbl',
+                                                to_name: 'image',
+                                                type: 'labels',
+                                                origin: 'manual',
+                                                value: {
+                                                    height: 10.458911419423693,
+                                                    width: 12.4,
+                                                    x: 5,
+                                                    y: 5,
+                                                    labels: [
+                                                        "肺结节标签1"
+                                                    ],
+                                                },
+                                            },
+                                        ]
                                     },
-                                    {
-                                        id: 'Dx_aB91ISN',
-                                        source: '$image',
-                                        from_name: 'lbl',
-                                        to_name: 'image',
-                                        type: 'labels',
-                                        origin: 'manual',
-                                        value: {
-                                            height: 10.458911419423693,
-                                            width: 12.4,
-                                            x: 5,
-                                            y: 5,
-                                            labels: [
-                                                "肺结节标签"
-                                            ],
-                                        },
-                                    },
-                                ]
+                                ],
                             }
                         ]
                     }
                 },
                 methods: {
-                    onImageClick(item) {
-                        console.log(this.ls);
-                        options.task.annotations[0].result = item.result;
-                        options.task.data.image = item.url;
-                        this.ls.destroy();
-                        this.initData();
+                    onImageClick(item, index) {
+                        if (!this.ls) {
+                            return;
+                        }
+
+                        if (this.imageIndex != index) {
+                            //获取所有的标签数据
+                            console.log(this.ls);
+
+                            let annotations = this.ls.store.annotationStore.annotations;
+
+                            let cacheResults = [];
+                            annotations.forEach(annotation => {
+                                let result = annotation.serializeAnnotation()
+                                cacheResults = cacheResults.concat(result);
+                            });
+                            this.tasks[this.imageIndex].annotations[this.selectAnnotationIndex].result = cacheResults;
+                            this.imageIndex = index
+                            this.selectAnnotationIndex = 0;
+                            this.ls.destroy();
+                            this.initData();
+
+
+                        }
                     },
                     initData() {
+                        options.task = this.tasks[this.imageIndex];
                         this.ls = new LabelStudio("label-studio", options);
                         this.ls.on("storageInitialized", (store) => {
-                            console.log(store);
-                            // ls.on("selectAnnotation", (next) => {
-                            //     console.log(next);
-                            // })
+                            this.ls.on("selectAnnotation", (next) => {
+                                //当地选中的anotation
+                                this.selectAnnotationIndex = this.tasks[this.imageIndex].annotations.findIndex(x.id == next.pk);
+                            })
 
                             // ls.on("regionFinishedDrawing", (region, list) => {
                             //     console.log("finish drawing", region)
@@ -273,6 +270,8 @@
                             //     console.log(annotation.serializeAnnotation())
                             // });
 
+                            console.log(LS.commentStore);
+
                             console.log(annotation.serializeAnnotation())
                         });
                     }
@@ -283,7 +282,7 @@
                     })
                 },
             });
-            app.mount("#ls-container");
+            app.use(ElementPlus).mount("#ls-container");
         </script>
     </body>
 
