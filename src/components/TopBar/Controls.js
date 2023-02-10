@@ -196,7 +196,7 @@ export const Controls = controlsInjector(
                                 store.updateAnnotation();
                             }}
                         >
-                            {isUpdate ? 'Update' : 'Submit'}
+                            {isUpdate ? '提交' : '提交'}
                         </Button>
                     </ButtonTooltip>
                 );

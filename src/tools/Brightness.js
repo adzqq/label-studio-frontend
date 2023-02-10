@@ -20,7 +20,7 @@ const ToolView = observer(({ item }) => {
             controls={[
                 <Range
                     key="brightness"
-                    align="horizontal"
+                    align="vertical"
                     reverse
                     continuous
                     minIcon={<IconBrightnessTool style={{ width: 22, height: 22, opacity: 0.2 }} />}

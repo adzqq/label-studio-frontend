@@ -34,7 +34,7 @@ export const Label = React.forwardRef(
                 }),
             };
         }, [color]);
-
+        //selected 表示 默认标签是否选中，标签被选中时不可取消选中
         return (
             <Block
                 tag="span"
@@ -43,7 +43,7 @@ export const Label = React.forwardRef(
                 mod={{ empty, hidden, selected, clickable: !!onClick, margins }}
                 mix={className}
                 style={styles}
-                onClick={onClick}
+                onClick={!selected ? onClick : ''}
                 {...rest}
             >
                 <Elem tag="span" name="text">

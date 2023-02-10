@@ -12,7 +12,9 @@
         <link rel="stylesheet" href="element.css">
         <script src="vue.global.prod.js"></script>
         <script src="element-plus.js"></script>
-        <title>LSF测试</title>
+        <script src="axios.min.js"></script>
+        <script src="qs.min.js"></script>
+        <title>图片标注工具</title>
     </head>
 
     <body>
@@ -22,24 +24,47 @@
 
 
         <div id="ls-container" class="ls-container">
-            <div style="width: 180px;margin-top: 48px;">
-                <img @click="onImageClick(item,index)" v-for="(item, index) in tasks" :key="index"
-                    :src="item.data.image" class="left-pannel-img" />
+            <div class="image-container">
+                <img style="margin-top: 20px;" @click="onImageClick(item,index)" v-for="(item, index) in tasks"
+                    :key="index" :src="item.data.image" class="left-pannel-img" />
             </div>
 
 
             <div id="label-studio" class="label-studio">
             </div>
 
-            <div style="position: fixed;bottom: 0px;right:0px;z-index: 200;margin: 0 10px 80px 0;">
+            <!-- <div style="position: fixed;bottom: 0px;right:0px;z-index: 200;margin: 0 10px 80px 0;">
                 <div>
-                    <el-input style="width: 300px;" :rows="3" v-model="description" type="textarea"
-                        placeholder="请输入诊断建议">
+                    <el-input style="width: 300px;" :rows="3" v-model="opinion" type="textarea" placeholder="请输入诊断建议">
                     </el-input>
                 </div>
-                <el-button style="width: 300px;margin-top:20px" type="primary">提交</el-button>
-            </div>
+                <el-button style="width: 300px;margin-top:20px" type="primary" :loading="submitLoading"
+                    @click="dialogVisible=true">提交</el-button>
+            </div> -->
 
+            <el-dialog v-model="dialogVisible" title="请填写标注进度和诊断建议" :width="400"
+                @closed="form.progress=1;form.opinion=''">
+
+                <el-form :model="form" :label-width="100">
+                    <el-form-item label="进度：">
+                        <el-input-number style="width:240px;" v-model="form.progress" :min="1" :max="100"
+                            controls-position="right"></el-input-number>
+                    </el-form-item>
+                    <el-form-item label="诊断建议：">
+                        <el-input style="width: 240px;" :rows="3" v-model="form.opinion" type="textarea"
+                            placeholder="请输入诊断建议">
+                        </el-input>
+                    </el-form-item>
+                </el-form>
+                <template #footer>
+                    <span class="dialog-footer">
+                        <el-button @click="dialogVisible = false">取消</el-button>
+                        <el-button type="primary" :loading="submitLoading" @click="submitAnotations()">
+                            确认
+                        </el-button>
+                    </span>
+                </template>
+            </el-dialog>
         </div>
         <style>
             body {
@@ -48,6 +73,14 @@
 
             .ls-container {
                 display: flex;
+            }
+
+            .image-container {
+                width: 180px;
+                height: 100vh;
+                box-sizing: border-box;
+                overflow-y: auto;
+                overflow-x: hidden;
             }
 
             .label-studio {
@@ -63,7 +96,54 @@
         </style>
         <script>
 
+            //引入qs
+            const qs = Qs;
+            //使用axios
+            const service = axios.create({
+                baseURL: '',
+                timeout: 10000 * 5,
+                headers: {
+                    //公共请求头配置，本项目请求头大多数接口是这个，所以这里可以配置一下，对于特殊接口单独配置
+                    "Content-Type": "application/json;charset=UTF-8"
+                }
+            });
+            // request拦截器
+            service.interceptors.request.use(
+                config => {
+                    config.headers['Authorization'] = window.token;
+                    if (config.method === 'get') {
+                        config.paramsSerializer = function (params) {
+                            return qs.stringify(params, { arrayFormat: 'indices' });
+                        };
+                    }
+                    return config
+                },
+                error => {
+                    console.log(error)
+                    Promise.reject(error)
+                }
+            )
+
+            const processErrorResponse = (response) => {
+                return Promise.reject(response.data);
+            }
+
+            /* 响应拦截器 */
+            service.interceptors.response.use((res) => {
+                // 请求成功，token自动续期
+                //B3105 接口没有做短信校验  C1004
+                if (res.data.code === '00000' || res.data.code === 'A1007' || res.data.code === 'C1004' || res.data.code === 'B3105') {
+                    return res;
+                }
+                // 处理响应错误，请求异常自动提示错误信息，如果是B0301就跳转到登录界面
+                return processErrorResponse(res);
+            }, (error) => {
+                // 处理响应错误
+                return processErrorResponse(error.response);
+            });
+
             const { createApp } = Vue;
+            const { ElMessage } = ElementPlus;
             var labels = [
                 {
                     name: "肺结节标签1",
@@ -75,14 +155,19 @@
                 }
             ];
             var templateLabels = [];
-            labels.forEach(x => {
-                templateLabels.push(`<label name="${x.name}" value="${x.name}" background="${x.color}"></label>`)
+            labels.forEach((x, index) => {
+                //selected 设置底部标签默认选中状态
+                if (index == 0) {
+                    templateLabels.push(`<label name="${x.name}" value="${x.name}" selected="true"  background="${x.color}"></label>`)
+                } else {
+                    templateLabels.push(`<label name="${x.name}" value="${x.name}"  background="${x.color}"></label>`)
+                }
             });
             var options = {
                 interfaces: [
                     // "panel",
-                    // "update",
-                    // "submit",
+                    "update",
+                    "submit",
                     // "skip",
                     "controls",
                     // "review",
@@ -124,97 +209,16 @@
                 data() {
                     return {
                         ls: "",
+                        dialogVisible: false,
+                        submitLoading: false,
                         labels: labels,
-                        description: "",
                         imageIndex: 0,
                         selectAnnotationIndex: 0,
-                        tasks: [
-                            {
-                                id: 1,
-                                data: {
-                                    image: "https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/images/nick-owuor-astro-nic-visuals-wDifg5xc9Z4-unsplash.jpg",
-                                },
-                                annotations: [
-                                    {
-                                        id: '1001',
-                                        createdBy: '邓宏',
-                                        result: [
-                                            {
-                                                id: 'Dx_aB91ISN',
-                                                source: '$image',
-                                                from_name: 'lbl',
-                                                to_name: 'image',
-                                                type: 'labels',
-                                                origin: 'manual',
-                                                value: {
-                                                    height: 10.458911419423693,
-                                                    width: 12.4,
-                                                    x: 80,
-                                                    y: 80,
-                                                    labels: [
-                                                        "肺结节标签2"
-                                                    ],
-                                                },
-                                            },
-                                        ]
-                                    },
-                                    {
-                                        id: '1002',
-                                        createdBy: '子群',
-                                        result: [
-                                            {
-                                                id: 'Dx_aB91ISN',
-                                                source: '$image',
-                                                from_name: 'lbl',
-                                                to_name: 'image',
-                                                type: 'labels',
-                                                origin: 'manual',
-                                                value: {
-                                                    height: 10.458911419423693,
-                                                    width: 12.4,
-                                                    x: 80,
-                                                    y: 80,
-                                                    labels: [
-                                                        "肺结节标签2"
-                                                    ],
-                                                },
-                                            },
-                                        ]
-                                    },
-                                ],
-                            },
-                            {
-                                id: 2,
-                                data: {
-                                    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQp26Bu2Le6S4w_0-yPtTPEMbGpxlUs8ATcJQ&usqp=CAU",
-                                },
-                                annotations: [
-                                    {
-                                        id: '1002',
-                                        createdBy: '郑强',
-                                        result: [
-                                            {
-                                                id: 'Dx_aB91ISN',
-                                                source: '$image',
-                                                from_name: 'lbl',
-                                                to_name: 'image',
-                                                type: 'labels',
-                                                origin: 'manual',
-                                                value: {
-                                                    height: 10.458911419423693,
-                                                    width: 12.4,
-                                                    x: 5,
-                                                    y: 5,
-                                                    labels: [
-                                                        "肺结节标签1"
-                                                    ],
-                                                },
-                                            },
-                                        ]
-                                    },
-                                ],
-                            }
-                        ]
+                        tasks: [],
+                        form: {
+                            progress: 1,
+                            opinion: '',
+                        }
                     }
                 },
                 methods: {
@@ -222,26 +226,144 @@
                         if (!this.ls) {
                             return;
                         }
-
                         if (this.imageIndex != index) {
-                            //获取所有的标签数据
-                            console.log(this.ls);
-
-                            let annotations = this.ls.store.annotationStore.annotations;
-
-                            let cacheResults = [];
-                            annotations.forEach(annotation => {
-                                let result = annotation.serializeAnnotation()
-                                cacheResults = cacheResults.concat(result);
-                            });
-                            this.tasks[this.imageIndex].annotations[this.selectAnnotationIndex].result = cacheResults;
+                            this.setCurrentTaskData();
                             this.imageIndex = index
                             this.selectAnnotationIndex = 0;
                             this.ls.destroy();
                             this.initData();
-
-
                         }
+                    },
+                    setCurrentTaskData() {
+                        //获取所有的标签数据
+                        let annotations = this.ls.store.annotationStore.annotations;
+                        let cacheResults = [];
+                        annotations.forEach(annotation => {
+                            let result = annotation.serializeAnnotation()
+                            cacheResults = cacheResults.concat(result);
+                        });
+                        this.tasks[this.imageIndex].annotations[this.selectAnnotationIndex].result = cacheResults;
+                    },
+                    getLabelDataFromServer() {
+                        let postData = {
+                            taskId: this.getUrlParamFromUrl("taskId"),
+                            dataId: this.getUrlParamFromUrl("dataId"),
+                            processType: this.getUrlParamFromUrl("processType"),
+                        }
+                        service.get("http://192.168.3.78:8080/api/annotation-service/annotation/task/image/data", { params: postData }).then((rsp => {
+                            this.submitLoading = false;
+                            if (rsp.status == 200 && rsp.data.success) {
+                                console.log(rsp.data);
+                                let labelDataStr = rsp.data.data.annotationData;
+                                if (labelDataStr) {
+                                    let labelData = JSON.parse(labelDataStr);
+                                    let tasks = labelData.tasks;
+                                    tasks.forEach(x => {
+                                        if (!x.annotations || (x.annotations && x.annotations.length == 0)) {
+                                            x.annotations = [{ result: [] }]
+                                        }
+                                    });
+                                    this.tasks = tasks;
+                                    this.initData();
+                                }
+                            }
+                        })).catch((error) => {
+                            console.log(error);
+                            ElMessage({
+                                showClose: true,
+                                message: error && error.message ? error.message : "请求错误请重试",
+                                type: 'error',
+                            })
+                            this.tasks = [
+                                {
+                                    id: 1,
+                                    data: {
+                                        image: "https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/images/nick-owuor-astro-nic-visuals-wDifg5xc9Z4-unsplash.jpg",
+                                    },
+                                    annotations: [
+                                        {
+                                            id: '1001',
+                                            createdBy: '邓宏',
+                                            result: [
+                                                {
+                                                    id: 'Dx_aB91ISN',
+                                                    source: '$image',
+                                                    from_name: 'lbl',
+                                                    to_name: 'image',
+                                                    type: 'labels',
+                                                    origin: 'manual',
+                                                    value: {
+                                                        height: 10.458911419423693,
+                                                        width: 12.4,
+                                                        x: 80,
+                                                        y: 80,
+                                                        labels: [
+                                                            "肺结节标签2"
+                                                        ],
+                                                    },
+                                                },
+                                            ]
+                                        },
+                                        {
+                                            id: '1002',
+                                            createdBy: '子群',
+                                            result: [
+                                                {
+                                                    id: 'Dx_aB91ISN',
+                                                    source: '$image',
+                                                    from_name: 'lbl',
+                                                    to_name: 'image',
+                                                    type: 'labels',
+                                                    origin: 'manual',
+                                                    value: {
+                                                        height: 10.458911419423693,
+                                                        width: 12.4,
+                                                        x: 80,
+                                                        y: 80,
+                                                        labels: [
+                                                            "肺结节标签2"
+                                                        ],
+                                                    },
+                                                },
+                                            ]
+                                        },
+                                    ],
+                                }
+                            ]
+                            this.initData();
+                        })
+                    },
+                    submitAnotations() {
+                        this.submitLoading = true;
+                        this.setCurrentTaskData();
+                        let postData = {
+                            taskId: this.getUrlParamFromUrl("taskId"),
+                            dataId: this.getUrlParamFromUrl("dataId"),
+                            processType: this.getUrlParamFromUrl("processType"),
+                            opinion: this.form.opinion,
+                            progress: this.form.progress,
+                            annotationData: JSON.stringify({
+                                tasks: this.tasks,
+                            })
+                        }
+                        service.post("http://localhost:8080/api/annotation-service/annotation/task/data/commit", postData).then((rsp => {
+                            this.submitLoading = false;
+                            if (rsp.status == 200 && rsp.data.success) {
+                                this.dialogVisible = false;
+                                ElMessage({
+                                    showClose: true,
+                                    message: "标注数据提交成功",
+                                    type: 'success',
+                                })
+                            }
+                        })).catch((error) => {
+                            this.submitLoading = false;
+                            ElMessage({
+                                showClose: true,
+                                message: error && error.message ? error.message : "请求错误请重试",
+                                type: 'error',
+                            })
+                        })
                     },
                     initData() {
                         options.task = this.tasks[this.imageIndex];
@@ -252,33 +374,34 @@
                                 this.selectAnnotationIndex = this.tasks[this.imageIndex].annotations.findIndex(x.id == next.pk);
                             })
 
-                            // ls.on("regionFinishedDrawing", (region, list) => {
+                            // this.ls.on("regionFinishedDrawing", (region, list) => {
                             //     console.log("finish drawing", region)
                             // })
 
                         })
 
                         this.ls.on("updateAnnotation", (LS, annotation) => {
-                            // Retrieve an annotation in JSON format
-
-                            // annotation表示当前页面的所有数据
-
-                            //获取所有的标签数据
-                            // let annotations = LS.annotationStore.annotations;
-
-                            // annotations.forEach(annotation => {
-                            //     console.log(annotation.serializeAnnotation())
-                            // });
-
-                            console.log(LS.commentStore);
-
-                            console.log(annotation.serializeAnnotation())
+                            this.dialogVisible = true;
                         });
+                    },
+                    getUrlParamFromUrl(key) {
+                        let result = "";
+                        let url = window.location.href;
+                        let urlParams = url.split('?');
+                        if (urlParams.length > 1) {
+                            let params = urlParams[1];
+                            let paramsArr = params.split('&');
+                            paramsArr.forEach(item => {
+                                if (item.includes(key)) result = item.split('=')[1];
+                            });
+                        }
+                        return result;
                     }
                 },
                 mounted() {
+                    window.token = this.getUrlParamFromUrl("token");
                     document.addEventListener('DOMContentLoaded', (e) => {
-                        this.initData();
+                        this.getLabelDataFromServer();
                     })
                 },
             });

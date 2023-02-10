@@ -19,7 +19,7 @@ const DetailsPanelComponent: FC<DetailsPanelProps> = ({ currentEntity, regions, 
     const selectedRegions = regions.selection;
 
     return (
-        <PanelBase {...props} currentEntity={currentEntity} name="details" title="Details">
+        <PanelBase {...props} currentEntity={currentEntity} name="details" title="标注详情">
             <Content selection={selectedRegions} currentEntity={currentEntity} />
         </PanelBase>
     );

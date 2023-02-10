@@ -8,166 +8,166 @@ import { observe } from 'mobx';
 import { FF_DEV_2432, isFF } from '../utils/feature-flags';
 
 const _Tool = types
-  .model('PolygonTool', {
-    group: 'segmentation',
-    shortcut: 'P',
-    isDrawingTool: true,
-  })
-  .views(self => {
-    const Super = {
-      createRegionOptions: self.createRegionOptions,
-      isIncorrectControl: self.isIncorrectControl,
-      isIncorrectLabel: self.isIncorrectLabel,
-    };
-
-    return {
-      get getActivePolygon() {
-        const poly = self.currentArea;
-
-        if (isFF(FF_DEV_2432) && poly && !isAlive(poly)) return null;
-        if (poly && poly.closed) return null;
-        if (poly === undefined) return null;
-        if (poly && poly.type !== 'polygonregion') return null;
-
-        return poly;
-      },
-
-      get tagTypes() {
-        return {
-          stateTypes: 'polygonlabels',
-          controlTagTypes: ['polygonlabels', 'polygon'],
+    .model('PolygonTool', {
+        group: 'segmentation',
+        // shortcut: 'P',
+        isDrawingTool: true,
+    })
+    .views(self => {
+        const Super = {
+            createRegionOptions: self.createRegionOptions,
+            isIncorrectControl: self.isIncorrectControl,
+            isIncorrectLabel: self.isIncorrectLabel,
         };
-      },
 
-      get viewTooltip() {
-        return 'Polygon region';
-      },
-      get iconComponent() {
-        return self.dynamic ? NodeViews.PolygonRegionModel.altIcon : NodeViews.PolygonRegionModel.icon;
-      },
-
-      get defaultDimensions() {
-        return DEFAULT_DIMENSIONS.polygon;
-      },
-
-      moreRegionParams(obj) {
         return {
-          x: obj.value.points[0][0],
-          y: obj.value.points[0][1],
+            get getActivePolygon() {
+                const poly = self.currentArea;
+
+                if (isFF(FF_DEV_2432) && poly && !isAlive(poly)) return null;
+                if (poly && poly.closed) return null;
+                if (poly === undefined) return null;
+                if (poly && poly.type !== 'polygonregion') return null;
+
+                return poly;
+            },
+
+            get tagTypes() {
+                return {
+                    stateTypes: 'polygonlabels',
+                    controlTagTypes: ['polygonlabels', 'polygon'],
+                };
+            },
+
+            get viewTooltip() {
+                return '多边形';
+            },
+            get iconComponent() {
+                return self.dynamic ? NodeViews.PolygonRegionModel.altIcon : NodeViews.PolygonRegionModel.icon;
+            },
+
+            get defaultDimensions() {
+                return DEFAULT_DIMENSIONS.polygon;
+            },
+
+            moreRegionParams(obj) {
+                return {
+                    x: obj.value.points[0][0],
+                    y: obj.value.points[0][1],
+                };
+            },
+
+            createRegionOptions({ x, y }) {
+                return Super.createRegionOptions({
+                    points: [[x, y]],
+                    width: 10,
+                    closed: false,
+                });
+            },
+
+            isIncorrectControl() {
+                return Super.isIncorrectControl() && self.current() === null;
+            },
+            isIncorrectLabel() {
+                return !self.current() && Super.isIncorrectLabel();
+            },
+            canStart() {
+                return self.current() === null;
+            },
+
+            current() {
+                return self.getActivePolygon;
+            },
         };
-      },
+    })
+    .actions(self => {
+        const Super = {
+            startDrawing: self.startDrawing,
+            _finishDrawing: self._finishDrawing,
+            deleteRegion: self.deleteRegion,
+        };
 
-      createRegionOptions({ x, y }) {
-        return Super.createRegionOptions({
-          points: [[x, y]],
-          width: 10,
-          closed: false,
-        });
-      },
+        let disposer;
+        let closed;
 
-      isIncorrectControl() {
-        return Super.isIncorrectControl() && self.current() === null;
-      },
-      isIncorrectLabel() {
-        return !self.current() && Super.isIncorrectLabel();
-      },
-      canStart() {
-        return self.current() === null;
-      },
+        return {
+            handleToolSwitch(tool) {
+                self.stopListening();
+                if (self.getCurrentArea()?.isDrawing && tool.toolName !== 'ZoomPanTool') {
+                    const shape = self.getCurrentArea()?.toJSON();
 
-      current() {
-        return self.getActivePolygon;
-      },
-    };
-  })
-  .actions(self => {
-    const Super = {
-      startDrawing: self.startDrawing,
-      _finishDrawing: self._finishDrawing,
-      deleteRegion: self.deleteRegion,
-    };
+                    if (shape?.points?.length > 2) self.finishDrawing();
+                    else self.cleanupUncloseableShape();
+                }
+            },
+            listenForClose() {
+                closed = false;
+                disposer = observe(
+                    self.getCurrentArea(),
+                    'closed',
+                    () => {
+                        if (self.getCurrentArea()?.closed && !closed) {
+                            self.finishDrawing();
+                        }
+                    },
+                    true,
+                );
+            },
+            stopListening() {
+                if (disposer) disposer();
+            },
+            closeCurrent() {
+                self.stopListening();
+                if (closed) return;
+                closed = true;
+                self.getCurrentArea().closePoly();
+            },
 
-    let disposer;
-    let closed;
+            startDrawing(x, y) {
+                if (isFF(FF_DEV_2432)) {
+                    self.mode = 'drawing';
+                    self.currentArea = self.createRegion(self.createRegionOptions({ x, y }), true);
+                    self.setDrawing(true);
+                    self.applyActiveStates(self.currentArea);
+                } else {
+                    Super.startDrawing(x, y);
+                }
+            },
 
-    return {
-      handleToolSwitch(tool) {
-        self.stopListening();
-        if (self.getCurrentArea()?.isDrawing && tool.toolName !== 'ZoomPanTool') {
-          const shape = self.getCurrentArea()?.toJSON();
+            _finishDrawing() {
+                if (isFF(FF_DEV_2432)) {
+                    const { currentArea, control } = self;
 
-          if (shape?.points?.length > 2) self.finishDrawing();
-          else self.cleanupUncloseableShape();
-        }
-      },
-      listenForClose() {
-        closed = false;
-        disposer = observe(
-          self.getCurrentArea(),
-          'closed',
-          () => {
-            if (self.getCurrentArea()?.closed && !closed) {
-              self.finishDrawing();
-            }
-          },
-          true,
-        );
-      },
-      stopListening() {
-        if (disposer) disposer();
-      },
-      closeCurrent() {
-        self.stopListening();
-        if (closed) return;
-        closed = true;
-        self.getCurrentArea().closePoly();
-      },
+                    self.currentArea.notifyDrawingFinished();
+                    self.setDrawing(false);
+                    self.currentArea = null;
+                    self.mode = 'viewing';
+                    self.annotation.afterCreateResult(currentArea, control);
+                } else {
+                    Super._finishDrawing();
+                }
+            },
 
-      startDrawing(x, y) {
-        if (isFF(FF_DEV_2432)) {
-          self.mode = 'drawing';
-          self.currentArea = self.createRegion(self.createRegionOptions({ x, y }), true);
-          self.setDrawing(true);
-          self.applyActiveStates(self.currentArea);
-        } else {
-          Super.startDrawing(x, y);
-        }
-      },
+            setDrawing(drawing) {
+                self.currentArea?.setDrawing(drawing);
+                self.annotation.setIsDrawing(drawing);
+            },
 
-      _finishDrawing() {
-        if (isFF(FF_DEV_2432)) {
-          const { currentArea, control } = self;
+            deleteRegion() {
+                if (isFF(FF_DEV_2432)) {
+                    const { currentArea } = self;
 
-          self.currentArea.notifyDrawingFinished();
-          self.setDrawing(false);
-          self.currentArea = null;
-          self.mode = 'viewing';
-          self.annotation.afterCreateResult(currentArea, control);
-        } else {
-          Super._finishDrawing();
-        }
-      },
-
-      setDrawing(drawing) {
-        self.currentArea?.setDrawing(drawing);
-        self.annotation.setIsDrawing(drawing);
-      },
-
-      deleteRegion() {
-        if (isFF(FF_DEV_2432)) {
-          const { currentArea } = self;
-
-          self.setDrawing(false);
-          self.currentArea = null;
-          if (currentArea) {
-            currentArea.deleteRegion();
-          }
-        } else {
-          Super.deleteRegion();
-        }
-      },
-    };
-  });
+                    self.setDrawing(false);
+                    self.currentArea = null;
+                    if (currentArea) {
+                        currentArea.deleteRegion();
+                    }
+                } else {
+                    Super.deleteRegion();
+                }
+            },
+        };
+    });
 
 const Polygon = types.compose(_Tool.name, ToolMixin, BaseTool, MultipleClicksDrawingTool, _Tool);
 
