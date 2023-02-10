@@ -250,20 +250,29 @@
                             dataId: this.getUrlParamFromUrl("dataId"),
                             processType: this.getUrlParamFromUrl("processType"),
                         }
-                        service.get("http://192.168.3.78:8080/api/annotation-service/annotation/task/image/data", { params: postData }).then((rsp => {
+                        service.get("http://localhost:8080/api/annotation-service/annotation/task/image/data", { params: postData }).then((rsp => {
                             this.submitLoading = false;
                             if (rsp.status == 200 && rsp.data.success) {
-                                console.log(rsp.data);
                                 let labelDataStr = rsp.data.data.annotationData;
                                 if (labelDataStr) {
                                     let labelData = JSON.parse(labelDataStr);
                                     let tasks = labelData.tasks;
+                                    console.log("originTask", tasks);
+                                    let userId = this.getUrlParamFromUrl("userId");
                                     tasks.forEach(x => {
-                                        if (!x.annotations || (x.annotations && x.annotations.length == 0)) {
-                                            x.annotations = [{ result: [] }]
+                                        console.log(x.annotations.length);
+                                        if (x.annotations && x.annotations.length == 0) {
+                                            x.annotations = [{ id: userId, result: [] }]
+                                        } else {
+                                            x.annotations.forEach(y => {
+                                                if (y.result && y.result == 0) {
+                                                    x.annotations = [{ id: userId, result: [] }]
+                                                }
+                                            })
                                         }
                                     });
                                     this.tasks = tasks;
+                                    console.log("totalTask", tasks);
                                     this.initData();
                                 }
                             }
