@@ -815,8 +815,6 @@ export default observer(
                 suggestedShape: suggestedShapeRegions,
             });
 
-            console.log("图片展示", item);
-
             return (
                 <ObjectTag item={item} className={wrapperClasses.join(' ')}>
                     <div

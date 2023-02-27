@@ -33,28 +33,43 @@
             <div id="label-studio" class="label-studio">
             </div>
 
-            <!-- <div style="position: fixed;bottom: 0px;right:0px;z-index: 200;margin: 0 10px 80px 0;">
+
+
+            <div class="advice-container" :style="`left:${dynamicLeft}px`">
+
                 <div>
-                    <el-input style="width: 300px;" :rows="3" v-model="opinion" type="textarea" placeholder="请输入诊断建议">
+                    <div style="background-color:#f2f2f2;height:40px;line-height: 40px;padding-left: 10px;">诊断意见</div>
+                    <el-input style="width: 300px;" :rows="4" v-model="form.opinion" type="textarea" disabled="isView"
+                        placeholder="请输入诊断建议" maxlength="100" show-word-limit>
                     </el-input>
                 </div>
-                <el-button style="width: 300px;margin-top:20px" type="primary" :loading="submitLoading"
-                    @click="dialogVisible=true">提交</el-button>
-            </div> -->
 
-            <el-dialog v-model="dialogVisible" title="请填写标注进度和诊断建议" :width="400"
-                @closed="form.progress=1;form.opinion=''">
+                <div style="margin-left: 20px;" v-if="false">
+                    <div style="background-color:#f2f2f2;height:40px;line-height: 40px;padding-left: 10px;">仲裁意见</div>
+                    <el-tabs v-model="activeName" type="card" size="small" style="width: 300px;">
+                        <el-tab-pane label="用户" name="first">用户管理</el-tab-pane>
+                        <el-tab-pane label="配置" name="second">配置管放大撒旦发顺丰大是大非啊手动阀发射点阿斯顿发放的理</el-tab-pane>
+                        <el-tab-pane label="角色" name="third">角色管理</el-tab-pane>
+                        <el-tab-pane label="定时" name="fourth">定时任务补偿</el-tab-pane>
+                    </el-tabs>
+                </div>
+
+
+
+            </div>
+
+            <el-dialog v-model="dialogVisible" title="请填写标注进度" :width="400" @closed="form.progress=1;">
 
                 <el-form :model="form" :label-width="100">
                     <el-form-item label="进度：">
                         <el-input-number style="width:240px;" v-model="form.progress" :min="1" :max="100"
                             controls-position="right"></el-input-number>
                     </el-form-item>
-                    <el-form-item label="诊断建议：">
+                    <!-- <el-form-item label="诊断建议：">
                         <el-input style="width: 240px;" :rows="3" v-model="form.opinion" type="textarea"
                             placeholder="请输入诊断建议">
                         </el-input>
-                    </el-form-item>
+                    </el-form-item> -->
                 </el-form>
                 <template #footer>
                     <span class="dialog-footer">
@@ -73,6 +88,7 @@
 
             .ls-container {
                 display: flex;
+                box-sizing: border-box;
             }
 
             .image-container {
@@ -84,14 +100,36 @@
             }
 
             .label-studio {
-                height: calc(100vh - 88px);
                 width: calc(100% - 180px) !important;
+                height: calc(100vh - 160px) !important;
+                box-sizing: border-box;
             }
 
             .left-pannel-img {
                 height: 140px;
                 width: 140px;
                 margin: 20px;
+            }
+
+            .advice-container {
+                position: fixed;
+                bottom: 0px;
+                left: 500px;
+                z-index: 200;
+                margin: 0 0 40px 20px;
+                display: flex;
+            }
+
+            .el-tabs__header {
+                margin: 0 0 10px;
+            }
+
+            .el-tabs {
+                --el-tabs-header-height: 30px;
+            }
+
+            .el-tabs__item {
+                height: 30px;
             }
         </style>
         <script>
@@ -144,64 +182,21 @@
 
             const { createApp } = Vue;
             const { ElMessage } = ElementPlus;
-            var labels = [
-                {
-                    name: "肺结节标签1",
-                    color: 'red'
-                },
-                {
-                    name: "肺结节标签2",
-                    color: 'blue'
-                }
-            ];
-            var templateLabels = [];
-            labels.forEach((x, index) => {
-                //selected 设置底部标签默认选中状态
-                if (index == 0) {
-                    templateLabels.push(`<label name="${x.name}" value="${x.name}" selected="true"  background="${x.color}"></label>`)
-                } else {
-                    templateLabels.push(`<label name="${x.name}" value="${x.name}"  background="${x.color}"></label>`)
-                }
-            });
+
             var options = {
                 interfaces: [
-                    // "panel",
                     "update",
                     "submit",
-                    // "skip",
                     "controls",
-                    // "review",
-                    // "infobar",
                     "topbar",
                     "instruction",
-                    // "side-column",
-                    // "ground-truth",
                     "annotations:tabs",
                     "annotations:menu",
-                    "annotations:history",
-                    "annotations:current",
-                    // "annotations:comments"
-                    // "annotations:add-new",
-                    // "annotations:delete",
-                    // 'annotations:view-all',
-                    // "predictions:tabs",
-                    // "predictions:menu",
-                    // "auto-annotation",
-                    // "edit-history",
-                    // "topbar:prevnext",
                 ],
-                config: `
-                    <View>
-                        <Ellipse name="ellipse1-1" toName="image" />
-                        <Image name="image" value="$image" />
-                        <Rectangle name="rect-1" toName="image" />
-                        <Polygon name="rect-2" toName="image" />
-                        <labels  name="lbl" toName="image">
-                          ${templateLabels}
-                        </labels>
-                    </View>`,
+                config: "",
                 task: null,
-                description: ''
+                description: '',
+                labelInfos: ""
             }
 
 
@@ -211,14 +206,20 @@
                         ls: "",
                         dialogVisible: false,
                         submitLoading: false,
-                        labels: labels,
                         imageIndex: 0,
                         selectAnnotationIndex: 0,
                         tasks: [],
                         form: {
                             progress: 1,
                             opinion: '',
-                        }
+                        },
+                        templateLabels: "",
+                        labelInfos: "",
+                        activeName: "",
+                        dynamicLeft: 500,
+                        curMode: 'label',//label(标注)/review(审核)/arbitration(仲裁)  默认查看（label）
+                        hasLabel: true,//是否包含标注 
+                        isView: false//不能提交，不能画图，输入框disable,按钮隐藏
                     }
                 },
                 methods: {
@@ -237,9 +238,11 @@
                     setCurrentTaskData() {
                         //获取所有的标签数据
                         let annotations = this.ls.store.annotationStore.annotations;
+                        console.log(annotations);
                         let cacheResults = [];
                         annotations.forEach(annotation => {
                             let result = annotation.serializeAnnotation()
+                            console.log(result);
                             cacheResults = cacheResults.concat(result);
                         });
                         this.tasks[this.imageIndex].annotations[this.selectAnnotationIndex].result = cacheResults;
@@ -257,23 +260,34 @@
                                 if (labelDataStr) {
                                     let labelData = JSON.parse(labelDataStr);
                                     let tasks = labelData.tasks;
-                                    console.log("originTask", tasks);
                                     let userId = this.getUrlParamFromUrl("userId");
+                                    if (!Array.isArray(tasks)) {
+                                        tasks = [];
+                                    }
                                     tasks.forEach(x => {
-                                        console.log(x.annotations.length);
                                         if (x.annotations && x.annotations.length == 0) {
                                             x.annotations = [{ id: userId, result: [] }]
                                         } else {
                                             x.annotations.forEach(y => {
-                                                if (y.result && y.result == 0) {
+                                                if (y.result && y.result.length == 0) {
                                                     x.annotations = [{ id: userId, result: [] }]
+                                                } else {
+                                                    if (!this.hasLabel) {//没有标注
+                                                        y.result = []
+                                                    }
+                                                    if (this.isView) {//默认只读上锁，不可编辑
+                                                        y.result.forEach(z => {
+                                                            z.locked = true
+                                                        });
+                                                    }
                                                 }
+
                                             })
                                         }
                                     });
                                     this.tasks = tasks;
-                                    console.log("totalTask", tasks);
-                                    this.initData();
+                                    console.log(this.tasks);
+                                    this.getLabelByTaskId();
                                 }
                             }
                         })).catch((error) => {
@@ -283,63 +297,7 @@
                                 message: error && error.message ? error.message : "请求错误请重试",
                                 type: 'error',
                             })
-                            this.tasks = [
-                                {
-                                    id: 1,
-                                    data: {
-                                        image: "https://htx-misc.s3.amazonaws.com/opensource/label-studio/examples/images/nick-owuor-astro-nic-visuals-wDifg5xc9Z4-unsplash.jpg",
-                                    },
-                                    annotations: [
-                                        {
-                                            id: '1001',
-                                            createdBy: '邓宏',
-                                            result: [
-                                                {
-                                                    id: 'Dx_aB91ISN',
-                                                    source: '$image',
-                                                    from_name: 'lbl',
-                                                    to_name: 'image',
-                                                    type: 'labels',
-                                                    origin: 'manual',
-                                                    value: {
-                                                        height: 10.458911419423693,
-                                                        width: 12.4,
-                                                        x: 80,
-                                                        y: 80,
-                                                        labels: [
-                                                            "肺结节标签2"
-                                                        ],
-                                                    },
-                                                },
-                                            ]
-                                        },
-                                        {
-                                            id: '1002',
-                                            createdBy: '子群',
-                                            result: [
-                                                {
-                                                    id: 'Dx_aB91ISN',
-                                                    source: '$image',
-                                                    from_name: 'lbl',
-                                                    to_name: 'image',
-                                                    type: 'labels',
-                                                    origin: 'manual',
-                                                    value: {
-                                                        height: 10.458911419423693,
-                                                        width: 12.4,
-                                                        x: 80,
-                                                        y: 80,
-                                                        labels: [
-                                                            "肺结节标签2"
-                                                        ],
-                                                    },
-                                                },
-                                            ]
-                                        },
-                                    ],
-                                }
-                            ]
-                            this.initData();
+
                         })
                     },
                     submitAnotations() {
@@ -355,6 +313,7 @@
                                 tasks: this.tasks,
                             })
                         }
+                        console.log(this.tasks);
                         service.post("http://localhost:8080/api/annotation-service/annotation/task/data/commit", postData).then((rsp => {
                             this.submitLoading = false;
                             if (rsp.status == 200 && rsp.data.success) {
@@ -375,7 +334,24 @@
                         })
                     },
                     initData() {
-                        options.task = this.tasks[this.imageIndex];
+                        let that = this;
+                        options.interfaces = this.isView ? [
+                            "topbar",
+                            "instruction",
+                            "annotations:tabs",
+                            "annotations:menu",
+                        ] : [
+                            "update",
+                            "submit",
+                            "controls",
+                            "topbar",
+                            "instruction",
+                            "annotations:tabs",
+                            "annotations:menu",
+                        ],
+                            options.task = this.tasks[this.imageIndex];
+                        options.config = this.getConfigViews();
+                        options.labelInfos = this.labelInfos;
                         this.ls = new LabelStudio("label-studio", options);
                         this.ls.on("storageInitialized", (store) => {
                             this.ls.on("selectAnnotation", (next) => {
@@ -389,7 +365,12 @@
 
                         })
 
+                        this.ls.on("detailPannelClick", (value) => {
+                            that.dynamicLeft = value ? 500 : 180;
+                        });
+
                         this.ls.on("updateAnnotation", (LS, annotation) => {
+                            console.log(annotation);
                             this.dialogVisible = true;
                         });
                     },
@@ -405,13 +386,78 @@
                             });
                         }
                         return result;
+                    },
+                    getLabelByTaskId() {
+                        let taskId = this.getUrlParamFromUrl("taskId");
+                        service.get(`http://localhost:8080/api/annotation-service/task/getLabelSet?taskId=${taskId}`).then((rsp => {
+                            this.submitLoading = false;
+                            if (rsp.status == 200 && rsp.data.success) {
+                                let result = rsp.data;
+                                if (result && result.data && Array.isArray(result.data.labels)) {
+                                    //options配置中的标签内容
+                                    result.data.labels.forEach(item => {
+                                        item.label = item.title;
+                                        item.value = item.id;
+                                    });
+                                    this.templateLabels = result.data.labels.map(x => {
+                                        return { name: x.title, value: x.id, color: x.color }
+                                    })
+                                    let totalLabels = result.data.labels;
+                                    const labelSetId = result.data.id || '';
+                                    this.getLableTreesBySetId(labelSetId, totalLabels);
+                                }
+                            }
+                        }))
+                    },
+                    getLableTreesBySetId(labelSetId, totalLabels) {
+                        service.get(`http://localhost:8080/api/data-center/labelSet/tree?id=${labelSetId}`).then((rsp => {
+                            this.submitLoading = false;
+                            if (rsp.status == 200 && rsp.data.success) {
+                                let result = rsp.data;
+                                if (result && Array.isArray(result.data)) {
+                                    let labelTrees = result.data[0];
+                                    // this.constructLabelTree(labelTrees);
+                                    this.labelInfos = JSON.stringify({ totalLabels, labelTrees })
+                                    this.initData();
+                                }
+                            }
+                        }))
+                    },
+
+
+                    getConfigViews() {
+                        var labels = [];
+                        this.templateLabels.forEach((x, index) => {
+                            //selected 设置底部标签默认选中状态
+                            if (index == 0) {
+                                labels.push(`<label name="${x.value}" value="${x.name}" selected="true"  background="${x.color}"></label>`)
+                            } else {
+                                labels.push(`<label name="${x.value}" value="${x.name}"  background="${x.color}"></label>`)
+                            }
+                        });
+                        let config = `
+                            <View>
+                                <Ellipse name="ellipse1-1" toName="image" />
+                                <Image name="image" value="$image" />
+                                <Rectangle name="rect-1" toName="image" />
+                                <Polygon name="rect-2" toName="image" />
+                                <labels  name="lbl" toName="image">
+                                ${labels}
+                                </labels>
+                            </View>`
+                        return config
                     }
                 },
+
+
                 mounted() {
                     window.token = this.getUrlParamFromUrl("token");
-                    document.addEventListener('DOMContentLoaded', (e) => {
-                        this.getLabelDataFromServer();
-                    })
+                    this.hasLabel = this.getUrlParamFromUrl("hasLabel") === "false" ? false : true,
+                        this.curMode = this.getUrlParamFromUrl("mode"),
+                        this.isView = this.getUrlParamFromUrl("isView") === "false" ? false : true,
+                        document.addEventListener('DOMContentLoaded', (e) => {
+                            this.getLabelDataFromServer();
+                        })
                 },
             });
             app.use(ElementPlus).mount("#ls-container");

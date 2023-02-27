@@ -78,7 +78,7 @@
     },
     "region:visibility": {
         "key": "alt+h",
-        "description": "Toggle selected region visibility"
+        "description": "可见或不可见"
     },
     "region:lock": {
         "key": "alt+l",

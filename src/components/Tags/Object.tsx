@@ -16,7 +16,6 @@ const ObjectTagView: FC<ObjectTagViewProps> = ({
   className,
   children,
 }) => {
-
   const moreProps = item.getProps && item.getProps();
 
   return (

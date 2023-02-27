@@ -7,6 +7,7 @@ import { Block, Elem, useBEM } from '../../../utils/bem';
 import './RegionEditor.styl';
 import { TimeDurationControl } from '../../TimeDurationControl/TimeDurationControl';
 import { FF_DEV_2715, isFF } from '../../../utils/feature-flags';
+import { getUrlParams } from '../../../utils/urlParams';
 
 interface RegionEditorProps {
   region: any;
@@ -255,12 +256,16 @@ const RegionInput: FC<RegionInputProps> = ({
     updateValue(value);
   }, [value]);
 
+
+  const  {isView} = getUrlParams();
+
   return (
     <input
       {...props}
       className={block?.elem('input').toClassName()}
       type="text"
       step={step}
+      disabled={isView}
       onChange={onChangeHandler}
       onKeyDown={onKeyDown}
       value={currentValue}

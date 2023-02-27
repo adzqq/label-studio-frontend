@@ -315,6 +315,9 @@ const AnnotationStoreModel = types
         }
 
         function addAnnotation(options = {}) {
+
+            console.log("addAnnotation", options);
+
             options.type = 'annotation';
 
             const item = createItem(options);

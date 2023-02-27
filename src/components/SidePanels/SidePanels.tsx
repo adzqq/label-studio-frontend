@@ -14,6 +14,8 @@ import './SidePanels.styl';
 import { SidePanelsContext } from './SidePanelsContext';
 import { useRegionsCopyPaste } from '../../hooks/useRegionsCopyPaste';
 
+import { getEnv} from 'mobx-state-tree';
+
 const maxWindowWidth = 980;
 
 interface SidePanelsProps {
@@ -51,9 +53,15 @@ type PanelSize = Record<PanelType, PanelBBox>;
 const restorePanel = (name: PanelType, defaults: PanelBBox) => {
     const panelData = window.localStorage.getItem(`panel:${name}`);
 
+    //panel默认开关为true
+    let jsonData = panelData?JSON.parse(panelData):""
+    if(jsonData){
+        jsonData.visible = true;
+    }
+
     return panelData ? {
         ...defaults,
-        ...JSON.parse(panelData),
+        ...jsonData,
     } : defaults;
 };
 
@@ -145,7 +153,11 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     const onVisibilityChange = useCallback((name: PanelType, visible: boolean) => {
         const panel = panelData[name];
         const position = normalizeOffsets(name, panel.top, panel.left, visible);
-
+        //panel开关事件传递
+        if(name==="details"){
+            getEnv(currentEntity.regionStore).events.invoke("detailPannelClick", visible);
+        }
+       
         updatePanel(name, {
             visible,
             storedTop: position.top / viewportSize.current.height * 100,

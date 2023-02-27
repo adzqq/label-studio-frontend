@@ -5,6 +5,7 @@ import { IconLink, IconLockLocked, IconLockUnlocked, IconPlusAlt, IconTrash, Ico
 import { IconEyeClosed, IconEyeOpened } from '../../../assets/icons/timeline';
 import { Button, ButtonProps } from '../../../common/Button/Button';
 import { Block, Elem } from '../../../utils/bem';
+import { getUrlParams } from '../../../utils/urlParams';
 import { NodeIcon } from '../../Node/Node';
 
 interface RegionItemProps {
@@ -38,7 +39,6 @@ export const RegionItem: FC<RegionItemProps> = observer(({
 
     const color = useMemo(() => {
         const bgColor = region.background ?? region.getOneColor() ?? '#666';
-
         return chroma(bgColor).alpha(1);
     }, [region]);
 
@@ -89,6 +89,8 @@ const RegionAction: FC<any> = observer(({
 }) => {
     const entityButtons: JSX.Element[] = [];
 
+    const { isView } = getUrlParams();
+
     //   entityButtons.push((
     //     <RegionActionButton
     //       key="relation"
@@ -104,18 +106,20 @@ const RegionAction: FC<any> = observer(({
     //       hotkey="region:relation"
     //     />
     //   ));
+ 
+        entityButtons.push((
+            <RegionActionButton
+                key="meta"
+                icon={<IconPlusAlt />}
+                primary={editMode}
+                onClick={() => onEditModeChange(!editMode)}
+                hotkey="region:meta"
+            />
+        ));
 
-    entityButtons.push((
-        <RegionActionButton
-            key="meta"
-            icon={<IconPlusAlt />}
-            primary={editMode}
-            onClick={() => onEditModeChange(!editMode)}
-            hotkey="region:meta"
-        />
-    ));
+    
 
-    return (
+    return !isView&&(
         <Block name="region-actions">
             <Elem name="group" mod={{ align: 'left' }}>
                 {!(region.readonly || region.locked || !region.editable) && entityButtons}

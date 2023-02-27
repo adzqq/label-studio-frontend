@@ -44,7 +44,8 @@ import { isDefined } from '../../utils/utilities';
 import { FF_DEV_1170, isFF } from '../../utils/feature-flags';
 import { Annotation } from './Annotation';
 import { Button } from '../../common/Button/Button';
-import TextArea from 'antd/lib/input/TextArea';
+
+import { Select } from 'antd';
 
 /**
  * App
@@ -121,7 +122,9 @@ class App extends Component {
         );
     }
 
+
     _renderUI(root, as) {
+        const { store } = this.props;
         return (
             <>
                 {!as.viewingAllAnnotations && !as.viewingAllPredictions && (
@@ -139,6 +142,7 @@ class App extends Component {
             </>
         );
     }
+
 
     _renderInfobar(as) {
         const { id, queue } = getRoot(as).task;

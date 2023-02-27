@@ -167,144 +167,144 @@ export const PanelBase: FC<PanelBaseProps> = ({
     }, [onResize, onResizeStart, onResizeEnd, onPositionChange, onVisibilityChange, onPositionChangeBegin, onSnap]);
 
     // Panel positioning
-    useDrag({
-        elementRef: headerRef,
-        disabled: locked || (!detached && !visible),
+    // useDrag({
+    //     elementRef: headerRef,
+    //     disabled: locked || (!detached && !visible),
 
-        onMouseDown(e) {
-            const el = e.target as HTMLElement;
-            const toggleClassName = '[class*=__toggle]';
+    //     onMouseDown(e) {
+    //         const el = e.target as HTMLElement;
+    //         const toggleClassName = '[class*=__toggle]';
 
-            if (el.matches(toggleClassName) || el.closest(toggleClassName)) {
-                return;
-            }
+    //         if (el.matches(toggleClassName) || el.closest(toggleClassName)) {
+    //             return;
+    //         }
 
-            const allowDrag = detached;
-            const panel = panelRef.current!;
-            const parentBBox = root.current!.getBoundingClientRect();
-            const bbox = panel.getBoundingClientRect();
-            const [x, y] = [e.pageX, e.pageY];
-            const [oX, oY] = [
-                bbox.left - parentBBox.left,
-                bbox.top - parentBBox.top,
-            ];
+    //         const allowDrag = detached;
+    //         const panel = panelRef.current!;
+    //         const parentBBox = root.current!.getBoundingClientRect();
+    //         const bbox = panel.getBoundingClientRect();
+    //         const [x, y] = [e.pageX, e.pageY];
+    //         const [oX, oY] = [
+    //             bbox.left - parentBBox.left,
+    //             bbox.top - parentBBox.top,
+    //         ];
 
-            handlers.current.onPositionChangeBegin?.(name, top, left, detached);
+    //         handlers.current.onPositionChangeBegin?.(name, top, left, detached);
 
-            return { x, y, oX, oY, allowDrag };
-        },
+    //         return { x, y, oX, oY, allowDrag };
+    //     },
 
-        onMouseMove(e, data) {
-            if (data) {
-                const { x, y, oX, oY } = data;
-                let { allowDrag } = data;
-                const [mX, mY] = [e.pageX, e.pageY];
-                const dist = distance(x, mX, y, mY);
+    //     onMouseMove(e, data) {
+    //         if (data) {
+    //             const { x, y, oX, oY } = data;
+    //             let { allowDrag } = data;
+    //             const [mX, mY] = [e.pageX, e.pageY];
+    //             const dist = distance(x, mX, y, mY);
 
-                if (dist > 30) {
-                    // setDragLocked(true);
-                    allowDrag = true;
-                }
+    //             if (dist > 30) {
+    //                 // setDragLocked(true);
+    //                 allowDrag = true;
+    //             }
 
-                if (!allowDrag) return;
+    //             if (!allowDrag) return;
 
-                const [nX, nY] = [oX + (mX - x), oY + (mY - y)];
+    //             const [nX, nY] = [oX + (mX - x), oY + (mY - y)];
 
-                handlers.current.onPositionChange?.(name, nY, nX, true);
-            }
-        },
+    //             handlers.current.onPositionChange?.(name, nY, nX, true);
+    //         }
+    //     },
 
-        onMouseUp() {
-            handlers.current.onSnap?.(name);
-        },
-    }, [headerRef, detached, visible, locked]);
+    //     onMouseUp() {
+    //         handlers.current.onSnap?.(name);
+    //     },
+    // }, [headerRef, detached, visible, locked]);
 
     // Panel resizing
-    useDrag({
-        elementRef: resizerRef,
-        disabled: locked || positioning,
-        capture: true,
-        passive: true,
+    // useDrag({
+    //     elementRef: resizerRef,
+    //     disabled: locked || positioning,
+    //     capture: true,
+    //     passive: true,
 
-        onMouseDown(e) {
-            const target = e.target as HTMLElement;
-            const type = target.dataset.resize;
-            const shift = (() => {
-                switch (type) {
-                    case 'top-left':
-                        return 'top-left';
-                    case 'top':
-                    case 'top-right':
-                        return 'top';
-                    case 'left':
-                    case 'bottom-left':
-                        return 'left';
-                }
-            })();
+    //     onMouseDown(e) {
+    //         const target = e.target as HTMLElement;
+    //         const type = target.dataset.resize;
+    //         const shift = (() => {
+    //             switch (type) {
+    //                 case 'top-left':
+    //                     return 'top-left';
+    //                 case 'top':
+    //                 case 'top-right':
+    //                     return 'top';
+    //                 case 'left':
+    //                 case 'bottom-left':
+    //                     return 'left';
+    //             }
+    //         })();
 
-            const resizeDirections = (() => {
-                return {
-                    x: type?.match(/left|right/i) !== null,
-                    y: type?.match(/top|bottom/i) !== null,
-                };
-            })();
+    //         const resizeDirections = (() => {
+    //             return {
+    //                 x: type?.match(/left|right/i) !== null,
+    //                 y: type?.match(/top|bottom/i) !== null,
+    //             };
+    //         })();
 
-            setResizing(type);
-            handlers.current.onResizeStart?.();
+    //         setResizing(type);
+    //         handlers.current.onResizeStart?.();
 
-            return {
-                pos: [e.pageX, e.pageY],
-                type,
-                width,
-                maxWidth,
-                height,
-                top,
-                left,
-                resizeDirections,
-                shift,
-            };
-        },
-        onMouseMove(e, data) {
-            if (data) {
-                const {
-                    pos,
-                    width: w,
-                    height: h,
-                    maxWidth,
-                    top: t,
-                    left: l,
-                    resizeDirections,
-                    shift,
-                } = data;
+    //         return {
+    //             pos: [e.pageX, e.pageY],
+    //             type,
+    //             width,
+    //             maxWidth,
+    //             height,
+    //             top,
+    //             left,
+    //             resizeDirections,
+    //             shift,
+    //         };
+    //     },
+    //     onMouseMove(e, data) {
+    //         if (data) {
+    //             const {
+    //                 pos,
+    //                 width: w,
+    //                 height: h,
+    //                 maxWidth,
+    //                 top: t,
+    //                 left: l,
+    //                 resizeDirections,
+    //                 shift,
+    //             } = data;
 
-                const [sX, sY] = pos;
+    //             const [sX, sY] = pos;
 
-                const wMod = resizeDirections.x ? e.pageX - sX : 0;
-                const hMod = resizeDirections.y ? e.pageY - sY : 0;
+    //             const wMod = resizeDirections.x ? e.pageX - sX : 0;
+    //             const hMod = resizeDirections.y ? e.pageY - sY : 0;
 
-                const shiftLeft = isDefined(shift) && ['left', 'top-left'].includes(shift);
-                const shiftTop = isDefined(shift) && ['top', 'top-left'].includes(shift);
+    //             const shiftLeft = isDefined(shift) && ['left', 'top-left'].includes(shift);
+    //             const shiftTop = isDefined(shift) && ['top', 'top-left'].includes(shift);
 
-                const width = clamp((shiftLeft ? w - wMod : w + wMod), DEFAULT_PANEL_WIDTH, maxWidth);
-                const height = clamp((shiftTop ? h - hMod : h + hMod), DEFAULT_PANEL_HEIGHT, t + h);
+    //             const width = clamp((shiftLeft ? w - wMod : w + wMod), DEFAULT_PANEL_WIDTH, maxWidth);
+    //             const height = clamp((shiftTop ? h - hMod : h + hMod), DEFAULT_PANEL_HEIGHT, t + h);
 
-                const top = shiftTop ? (t + (h - height)) : t;
-                const left = shiftLeft ? (l + (w - width)) : l;
+    //             const top = shiftTop ? (t + (h - height)) : t;
+    //             const left = shiftLeft ? (l + (w - width)) : l;
 
-                handlers.current.onResize(
-                    name,
-                    width,
-                    height,
-                    top,
-                    left,
-                );
-            }
-        },
-        onMouseUp() {
-            handlers.current.onResizeEnd?.();
-            setResizing(undefined);
-        },
-    }, [handlers, detached, width, maxWidth, height, top, left, visible, locked, positioning]);
+    //             handlers.current.onResize(
+    //                 name,
+    //                 width,
+    //                 height,
+    //                 top,
+    //                 left,
+    //             );
+    //         }
+    //     },
+    //     onMouseUp() {
+    //         handlers.current.onResizeEnd?.();
+    //         setResizing(undefined);
+    //     },
+    // }, [handlers, detached, width, maxWidth, height, top, left, visible, locked, positioning]);
 
     return (
         <Block

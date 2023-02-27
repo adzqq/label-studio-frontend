@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Block, Elem } from '../../utils/bem';
+import { getUrlParams } from '../../utils/urlParams';
 import './Toolbar.styl';
 import './Tool.styl';
 import './FlyoutMenu.styl';
@@ -40,9 +41,9 @@ export const Toolbar = inject('store')(
 
         const smartTools = tools.filter(t => t.dynamic);
 
+        const { isView } = getUrlParams();
 
-
-        return (
+        return !isView && (
             <ToolbarProvider value={{ expanded, alignment }}>
                 <Block ref={el => setToolbar(el)} name="toolbar" mod={{ alignment, expanded }}>
                     {Object.entries(toolGroups).map(([name, tools], i) => {
