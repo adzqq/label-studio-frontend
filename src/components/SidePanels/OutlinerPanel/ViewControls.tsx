@@ -9,7 +9,7 @@ import './ViewControls.styl';
 
 const { Block, Elem } = BemWithSpecifiContext();
 
-export type GroupingOptions = 'manual' | 'label' | 'type';
+export type GroupingOptions = 'manual' | 'label' | 'type'|'lesionNumber';
 
 export type OrderingOptions = 'score' | 'date'
 
@@ -48,6 +48,11 @@ export const ViewControls: FC<ViewControlsProps> = ({
                 selectedLabel: '按工具',
                 icon: <IconCursor />,
             };
+            case 'lesionNumber': return {
+                label: '按病灶编号',
+                selectedLabel: '按病灶编号',
+                icon: <IconCursor />,
+            };
         }
     }, []);
 
@@ -70,7 +75,7 @@ export const ViewControls: FC<ViewControlsProps> = ({
         <Block name="view-controls" mod={{ collapsed: context.locked }}>
             <Grouping
                 value={grouping}
-                options={['manual', 'type', 'label']}
+                options={['manual', 'type', 'label','lesionNumber']}
                 onChange={value => onGroupingChange(value)}
                 readableValueForKey={getGrouppingLabels}
             />

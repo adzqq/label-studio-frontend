@@ -130,6 +130,8 @@ const useDataTree = ({
         const style = item?.background ?? item?.getOneColor?.();
         const color = chroma(style ?? '#666').alpha(1);
         const mods: Record<string, any> = { hidden, type, isDrawing };
+
+        console.log("useCallback",item);
         const label = (() => {
             if (!type) {
                 return 'No Label';
@@ -139,6 +141,8 @@ const useDataTree = ({
                 return (item?.labels ?? []).join(', ') || 'No label';
             } else if (type.includes('tool')) {
                 return item.value;
+            }else if (type.includes('lesionNumber')) {
+                return item.value=="0"?"无":item.value;
             }
         })();
 

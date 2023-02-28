@@ -141,7 +141,7 @@ export default types
         ),
 
         group: types.optional(
-            types.enumeration(['type', 'label', 'manual']),
+            types.enumeration(['type', 'label', 'manual', 'lesionNumber']),
             () => window.localStorage.getItem(localStorageKeys.group) ?? 'manual',
         ),
 
@@ -240,9 +240,64 @@ export default types
                     return self.asLabelsTree(enrich);
                 } else if (self.group === 'type') {
                     return self.asTypeTree(enrich);
+                } else if (self.group === 'lesionNumber') {
+                    return self.asLesionNumberTree(enrich);
                 } else {
                     console.error(`Grouping by ${self.group} is not implemented`);
                 }
+            },
+
+            //按照病灶编号分类
+            asLesionNumberTree(enrich) {
+                // collect all label states into two maps
+                const groups = {};
+                const result = [];
+                const onClick = createClickRegionInTreeHandler(result);
+                let index = 0;
+                const getLesionGroup = (region, key) => {
+                    const lessionGroup = groups[key];
+
+                    if (lessionGroup) return lessionGroup;
+
+                    const groupingEntity = {
+                        type: 'lesionNumber',
+                        value: key,
+                        background: '#000',
+                    };
+
+                    return (groups[key] = {
+                        ...enrich(groupingEntity, index, true),
+                        id: key,
+                        key,
+                        isArea: false,
+                        isGroup: true,
+                        lesionNumber: key,
+                        children: [],
+                        entity: region,
+                    });
+                };
+
+                const addRegionsToLesionGroup = region => {
+                    const key = region.lesionNumber ? region.lesionNumber : '0';
+                    const group = getLesionGroup(region, key);
+
+                    group.children.push({
+                        ...enrich(region, index, false, null, onClick),
+                        item: region,
+                        isArea: true,
+                    });
+                };
+
+                for (const region of self.regions) {
+                    addRegionsToLesionGroup(region);
+                    index++;
+                }
+
+
+                const groupsArray = Object.values(groups);
+                result.push(...groupsArray);
+
+                return result;
             },
 
             asTree(enrich) {
@@ -288,6 +343,7 @@ export default types
                 const onClick = createClickRegionInTreeHandler(result);
                 let index = 0;
                 const getLabelGroup = (label, key) => {
+                    console.log(label);
                     const labelGroup = groups[key];
 
                     if (labelGroup) return labelGroup;
