@@ -130,8 +130,6 @@ const useDataTree = ({
         const style = item?.background ?? item?.getOneColor?.();
         const color = chroma(style ?? '#666').alpha(1);
         const mods: Record<string, any> = { hidden, type, isDrawing };
-
-        console.log("useCallback",item);
         const label = (() => {
             if (!type) {
                 return 'No Label';

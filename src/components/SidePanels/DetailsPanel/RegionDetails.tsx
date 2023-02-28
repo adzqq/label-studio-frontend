@@ -192,7 +192,7 @@ const ResultItem: FC<{ result: any }> = observer(({ result }) => {
                               label: 'name',
                               value: 'id',
                             }}
-                            disabled={isView}
+                            disabled={isView||region.locked}
                             options={result.labelTreeObj[item.number]}
                             placeholder="请选择"
                             onChange={v => onSelectLabelContent(v, item.number)}
@@ -230,7 +230,7 @@ const DynamicLesionNumber= inject('store')(
                     ? region.lesionNumber
                     : '0'
                 }
-                disabled={isView}
+                disabled={isView||region.locked}
                 options={getLesionOptions()}
                 onChange={handleChange}
             ></Select>

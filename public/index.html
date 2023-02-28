@@ -14,7 +14,7 @@
         <script src="element-plus.js"></script>
         <script src="axios.min.js"></script>
         <script src="qs.min.js"></script>
-        <title>图片标注工具</title>
+        <title>图片|心电标注工具</title>
     </head>
 
     <body>
@@ -36,25 +36,25 @@
 
 
             <div class="advice-container" :style="`left:${dynamicLeft}px`">
-                <div>
-                    <div class="advice-title">诊断意见</div>
-                    <el-input style="width: 300px;" :rows="4" v-model="form.opinion" type="textarea" :disabled="isView"
-                        placeholder="请输入诊断建议" maxlength="100" show-word-limit>
-                    </el-input>
-                </div>
 
-                <div style="margin-left: 20px;" v-if="false">
-                    <div class="advice-title">仲裁意见</div>
-                    <el-tabs v-model="activeName" type="card" size="small" style="width: 300px;">
-                        <el-tab-pane label="用户" name="first">用户管理</el-tab-pane>
-                        <el-tab-pane label="配置" name="second">配置管放大撒旦发顺丰大是大非啊手动阀发射点阿斯顿发放的理</el-tab-pane>
-                        <el-tab-pane label="角色" name="third">角色管理</el-tab-pane>
-                        <el-tab-pane label="定时" name="fourth">定时任务补偿</el-tab-pane>
+                <div v-if="['review', 'arbitration'].includes(curMode)&&totalOpinions.length>0">
+                    <div class="advice-title">诊断意见</div>
+                    <el-tabs v-model="activeName" type="border-card" size="small" style="width: 300px;">
+                        <el-tab-pane :label="item.userName" :name="index" v-for="(item, index) in totalOpinions"
+                            :key="index">
+                            <div class="advice-content">{{item.opinion}}</div>
+                        </el-tab-pane>
                     </el-tabs>
+                </div>
+                <div style="margin-left: 20px;">
+                    <div class="advice-title">{{getOpinionTitle()}}</div>
+                    <el-input style="width: 300px;" :rows="5" v-model="form.opinion" type="textarea" :disabled="isView"
+                        placeholder="请输入" maxlength="100" show-word-limit>
+                    </el-input>
                 </div>
             </div>
 
-            <div class="lesion-container">
+            <div class="lesion-container" v-if="!isView">
                 病灶编号： <el-select v-model="selectLesion" placeholder="请选择" @change="onSelectChanged" style="width:100px">
                     <el-option v-for="item in lesionOptions" :key="item.value" :label="item.label" :value="item.value">
                     </el-option>
@@ -125,23 +125,30 @@
             }
 
             .advice-container {
-                position: fixed;
-                bottom: 0px;
+                position: absolute;
+                bottom: 20px;
                 left: 500px;
                 z-index: 200;
-                margin: 0 0 40px 20px;
+                margin: 0 0 10px 20px;
                 display: flex;
             }
 
-            .advice-title {
-                background-color: #f2f2f2;
-                height: 40px;
-                line-height: 40px;
-                padding-left: 10px;
+            .advice-content {
+                word-wrap: break-word;
+                word-break: normal;
+                height: 54px;
+                overflow-y: auto;
             }
 
             .el-tabs__header {
                 margin: 0 0 10px;
+            }
+
+            .advice-title {
+                background-color: #f2f2f2;
+                height: 32px;
+                line-height: 32px;
+                padding-left: 10px;
             }
 
             .el-tabs {
@@ -242,7 +249,7 @@
                         },
                         templateLabels: "",
                         labelInfos: "",
-                        activeName: "",
+                        activeName: 0,
                         dynamicLeft: 500,
                         curMode: 'label',//label(标注)/review(审核)/arbitration(仲裁)  默认查看（label）
                         hasLabel: true,//是否包含标注 
@@ -257,7 +264,8 @@
                                 value: '1',
                             },
                         ],
-                        selectLesion: ''
+                        selectLesion: '',
+                        totalOpinions: []
                     }
                 },
                 methods: {
@@ -294,6 +302,7 @@
                         service.get("http://localhost:8080/api/annotation-service/annotation/task/image/data", { params: postData }).then((rsp => {
                             this.submitLoading = false;
                             if (rsp.status == 200 && rsp.data.success) {
+                                this.form.opinion = rsp.data.data.opinion;
                                 let labelDataStr = rsp.data.data.annotationData;
                                 if (labelDataStr) {
                                     let labelData = JSON.parse(labelDataStr);
@@ -543,6 +552,42 @@
                             );
                             this.lesionOptions = storageOptions;
                         }
+                    },
+                    getOpinionTitle() {
+                        let title = '诊断意见';
+                        if (this.curMode === 'review') title = '审核意见';
+                        if (this.curMode === 'arbitration') title = '仲裁意见';
+                        return title;
+                    },
+                    //获取所有评论
+                    getPersonOpinionByTaskId() {
+                        let taskId = this.getUrlParamFromUrl("taskId");
+                        let dataId = this.getUrlParamFromUrl("dataId");
+                        let processType = this.getUrlParamFromUrl("processType");
+                        const url = `http://localhost:8080/api/annotation-service/annotation/task/audit?taskId=${taskId}&dataId=${dataId}&processType=${processType}`;
+                        service.get(url).then((rsp => {
+                            if (rsp.status == 200 && rsp.data.success) {
+                                let result = rsp.data;
+                                if (result && result.data && Array.isArray(result.data)) {
+                                    //options配置中的标签内容
+                                    if (result.data.length > 0) {
+                                        this.totalOpinions = result.data;
+                                    }
+                                    // else {
+                                    //     this.totalOpinions = [
+                                    //         {
+                                    //             userName: 'zq',
+                                    //             opinion: '阿斯顿发送到发送到发'
+                                    //         }, {
+
+                                    //             userName: 'dh',
+                                    //             opinion: '阿斯顿发送到发送到发'
+                                    //         }
+                                    //     ]
+                                    // }
+                                }
+                            }
+                        }))
                     }
                 },
 
@@ -552,8 +597,10 @@
                     this.hasLabel = this.getUrlParamFromUrl("hasLabel") === "false" ? false : true,
                         this.curMode = this.getUrlParamFromUrl("mode"),
                         this.isView = this.getUrlParamFromUrl("isView") === "false" ? false : true,
+
                         document.addEventListener('DOMContentLoaded', (e) => {
                             this.getLabelDataFromServer();
+                            this.getPersonOpinionByTaskId();
                         })
                 },
             });

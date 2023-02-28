@@ -343,7 +343,6 @@ export default types
                 const onClick = createClickRegionInTreeHandler(result);
                 let index = 0;
                 const getLabelGroup = (label, key) => {
-                    console.log(label);
                     const labelGroup = groups[key];
 
                     if (labelGroup) return labelGroup;

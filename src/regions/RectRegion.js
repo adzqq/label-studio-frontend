@@ -103,7 +103,6 @@ const Model = types
     }))
     .actions(self => ({
         afterCreate() {
-            console.log("rectRegion", self);
             self.startX = self.x;
             self.startY = self.y;
 
