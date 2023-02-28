@@ -247,6 +247,7 @@ const Model = types
                 original_height: self.parent.naturalHeight,
                 image_rotation: self.parent.rotation,
                 labelContent: self.labelContent,
+                lesionNumber: self.lesionNumber,
                 value: {
                     x: self.convertXToPerc(self.x),
                     y: self.convertYToPerc(self.y),

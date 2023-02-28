@@ -7,7 +7,8 @@ import { Block, Elem, useBEM } from '../../../utils/bem';
 import { getUrlParams } from '../../../utils/urlParams';
 import { RegionEditor } from './RegionEditor';
 import './RegionDetails.styl';
-import { Cascader } from 'antd';
+import { Cascader,Select } from 'antd';
+
 
 const { Text } = Typography;
 
@@ -118,9 +119,7 @@ const ResultItem: FC<{ result: any }> = observer(({ result }) => {
 
 
 
-/**
- * 
- */
+//标签内容分类
  const DynamicLabelContent = inject('store')(
     observer(({ store,region }) => {
         const onSelectLabelContent = (value, originNumber) => {
@@ -210,6 +209,36 @@ const ResultItem: FC<{ result: any }> = observer(({ result }) => {
 );
 
 
+//病灶编号
+const DynamicLesionNumber= inject('store')(
+    observer(({ store,region }) => {
+        const handleChange = (value:any) => {
+            region.setLesionNumber(value);
+          };
+        const getLesionOptions = () => {
+            let result = localStorage.getItem('lesion-options');
+            return result ? JSON.parse(result) : [];
+          };
+
+        const  {isView} = getUrlParams();
+
+        return <div style={{margin:"10px"}}>
+            <span className="title">病灶编号：</span>
+            <Select
+                defaultValue={
+                    region.lesionNumber
+                    ? region.lesionNumber
+                    : '0'
+                }
+                disabled={isView}
+                options={getLesionOptions()}
+                onChange={handleChange}
+            ></Select>
+        </div> 
+    }),
+);
+
+
 
 export const RegionDetailsMain: FC<{ region: any }> = inject('store')(observer(({ store,
     region
@@ -222,6 +251,7 @@ export const RegionDetailsMain: FC<{ region: any }> = inject('store')(observer((
             </Elem>
             <RegionEditor region={region} />
             <DynamicLabelContent   store={store} region={region}></DynamicLabelContent>
+            <DynamicLesionNumber store={store} region={region}></DynamicLesionNumber>
         </>
     );
 }));

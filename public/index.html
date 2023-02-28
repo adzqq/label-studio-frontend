@@ -36,16 +36,15 @@
 
 
             <div class="advice-container" :style="`left:${dynamicLeft}px`">
-
                 <div>
-                    <div style="background-color:#f2f2f2;height:40px;line-height: 40px;padding-left: 10px;">诊断意见</div>
-                    <el-input style="width: 300px;" :rows="4" v-model="form.opinion" type="textarea" disabled="isView"
+                    <div class="advice-title">诊断意见</div>
+                    <el-input style="width: 300px;" :rows="4" v-model="form.opinion" type="textarea" :disabled="isView"
                         placeholder="请输入诊断建议" maxlength="100" show-word-limit>
                     </el-input>
                 </div>
 
                 <div style="margin-left: 20px;" v-if="false">
-                    <div style="background-color:#f2f2f2;height:40px;line-height: 40px;padding-left: 10px;">仲裁意见</div>
+                    <div class="advice-title">仲裁意见</div>
                     <el-tabs v-model="activeName" type="card" size="small" style="width: 300px;">
                         <el-tab-pane label="用户" name="first">用户管理</el-tab-pane>
                         <el-tab-pane label="配置" name="second">配置管放大撒旦发顺丰大是大非啊手动阀发射点阿斯顿发放的理</el-tab-pane>
@@ -53,9 +52,13 @@
                         <el-tab-pane label="定时" name="fourth">定时任务补偿</el-tab-pane>
                     </el-tabs>
                 </div>
+            </div>
 
-
-
+            <div class="lesion-container">
+                病灶编号： <el-select v-model="selectLesion" placeholder="请选择" @change="onSelectChanged" style="width:100px">
+                    <el-option v-for="item in lesionOptions" :key="item.value" :label="item.label" :value="item.value">
+                    </el-option>
+                </el-select>
             </div>
 
             <el-dialog v-model="dialogVisible" title="请填写标注进度" :width="400" @closed="form.progress=1;">
@@ -120,6 +123,13 @@
                 display: flex;
             }
 
+            .advice-title {
+                background-color: #f2f2f2;
+                height: 40px;
+                line-height: 40px;
+                padding-left: 10px;
+            }
+
             .el-tabs__header {
                 margin: 0 0 10px;
             }
@@ -130,6 +140,13 @@
 
             .el-tabs__item {
                 height: 30px;
+            }
+
+            .lesion-container {
+                position: absolute;
+                z-index: 9999;
+                top: 8px;
+                right: 340px;
             }
         </style>
         <script>
@@ -219,7 +236,18 @@
                         dynamicLeft: 500,
                         curMode: 'label',//label(标注)/review(审核)/arbitration(仲裁)  默认查看（label）
                         hasLabel: true,//是否包含标注 
-                        isView: false//不能提交，不能画图，输入框disable,按钮隐藏
+                        isView: false,//不能提交，不能画图，输入框disable,按钮隐藏
+                        lesionOptions: [
+                            {
+                                label: '无',
+                                value: '0',
+                            },
+                            {
+                                label: '1',
+                                value: '1',
+                            },
+                        ],
+                        selectLesion: ''
                     }
                 },
                 methods: {
@@ -287,6 +315,7 @@
                                     });
                                     this.tasks = tasks;
                                     console.log(this.tasks);
+                                    this.getDefaultLesionOptions();
                                     this.getLabelByTaskId();
                                 }
                             }
@@ -446,6 +475,64 @@
                                 </labels>
                             </View>`
                         return config
+                    },
+                    getDefaultLesionOptions() {
+                        //获取最大值
+                        let max = -1;
+                        this.tasks.forEach(x => {
+                            if (x.annotations && x.annotations.length > 0) {
+                                x.annotations.forEach(y => {
+                                    if (y.result && y.result.length > 0) {
+                                        y.result.forEach(z => {
+                                            if (z.lesionNumber && z.lesionNumbe != "0") {
+                                                if (parseInt(z.lesionNumber) > max) {
+                                                    max = parseInt(z.lesionNumber);
+                                                }
+                                            }
+                                        });
+                                    }
+                                });
+
+                            }
+                        });
+                        if (max > 0) {
+                            let serverLesionOptions = [];
+                            for (let index = 0; index <= max; index++) {
+                                let item = {
+                                    label: index == 0 ? '无' : index + '',
+                                    value: index + '',
+                                };
+                                serverLesionOptions.push(item);
+                            }
+                            this.lesionOptions = serverLesionOptions;
+                            localStorage.setItem(
+                                'lesion-options',
+                                JSON.stringify(serverLesionOptions)
+                            );
+                        } else {
+                            localStorage.setItem(
+                                'lesion-options',
+                                JSON.stringify(this.lesionOptions)
+                            );
+                        }
+                    },
+                    onSelectChanged(value) {
+                        sessionStorage.setItem('defaultLesionNumber', value + '');
+                        let result = localStorage.getItem('lesion-options');
+                        let storageOptions = result ? JSON.parse(result) : [];
+                        let nextValue = parseInt(value) + 1;
+                        if (!storageOptions.find(x => x.value == nextValue)) {
+                            let addData = {
+                                label: nextValue + '',
+                                value: nextValue + '',
+                            };
+                            storageOptions.push(addData);
+                            localStorage.setItem(
+                                'lesion-options',
+                                JSON.stringify(storageOptions)
+                            );
+                            this.lesionOptions = storageOptions;
+                        }
                     }
                 },
 

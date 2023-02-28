@@ -23,8 +23,11 @@ const RegionsMixin = types
 
         origin: types.optional(types.enumeration(['prediction', 'prediction-changed', 'manual']), 'manual'),
 
-        // //标签内容
+        //标签内容
         labelContent: types.maybeNull(types.string),
+
+        //病灶编号
+        lesionNumber: types.maybeNull(types.string),
     })
     .volatile(() => ({
         // selected: false,
@@ -84,6 +87,9 @@ const RegionsMixin = types
         return {
             setLabelContent(value) {
                 self.labelContent = value;
+            },
+            setLesionNumber(value) {
+                self.lesionNumber = value;
             },
             setParentID(id) {
                 self.parentID = id;
@@ -181,7 +187,6 @@ const RegionsMixin = types
             },
 
             toStateJSON() {
-                console.log("toStateJSON执行了");
                 const parent = self.parent;
                 const buildTree = control => {
                     const tree = {
@@ -315,9 +320,17 @@ const RegionsMixin = types
             },
 
             notifyDrawingFinished({ destroy = false } = {}) {
+                console.log("notifyDrawingFinished");
                 if (self.origin === 'prediction') {
                     self.origin = 'prediction-changed';
                 }
+
+
+                //画完后默认选中状态,并且设置默认病灶编号
+                setTimeout(() => {
+                    self._selectArea(false);
+                    self.lesionNumber = self.lesionNumber ? self.lesionNumber : (sessionStorage.getItem('defaultLesionNumber') || '0')
+                }, 100);
 
                 // everything above is related to dynamic preannotations
                 if (!self.dynamic || self.fromSuggestion) return;
@@ -331,7 +344,9 @@ const RegionsMixin = types
                     self.drawingTimeout = setTimeout(() => {
                         env.events.invoke('regionFinishedDrawing', self, self.getConnectedDynamicRegions(destroy));
                     }, timeout);
+
                 }
+
             },
         };
     });

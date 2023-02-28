@@ -302,8 +302,6 @@ const Result = types
 
             if (!self.editable) data.readonly = true;
 
-            console.log("result-serialize执行了", self);
-
             return data;
         },
 

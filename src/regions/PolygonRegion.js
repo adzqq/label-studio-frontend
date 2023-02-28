@@ -287,6 +287,7 @@ const Model = types
                     original_height: self.parent.naturalHeight,
                     image_rotation: self.parent.rotation,
                     labelContent: self.labelContent,
+                    lesionNumber: self.lesionNumber,
                     value: {
                         points: self.points.map(p => [self.convertXToPerc(p.x), self.convertYToPerc(p.y)]),
                         ...(isFF(FF_DEV_2432) ? { closed: self.closed } : {}),
