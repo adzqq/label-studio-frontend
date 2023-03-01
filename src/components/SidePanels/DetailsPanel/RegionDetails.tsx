@@ -221,6 +221,7 @@ const DynamicLesionNumber= inject('store')(
           };
 
         const  {isView} = getUrlParams();
+        console.log("DynamicLesionNumber",region.serialize());
 
         return <div style={{margin:"10px"}}>
             <span className="title">病灶编号：</span>
@@ -240,6 +241,95 @@ const DynamicLesionNumber= inject('store')(
 
 
 
+//计算长短径和面积
+const CalcRegionData= inject('store')(
+    observer(({ store,region }) => {
+        //物理长度 = 像素长度/dpi(结果为英寸，1英寸=2.54cm)
+
+        const getPolygonArea  = (points:any) =>{
+            // 计算多边形的面积
+            var area = 0;
+            var j = points.length - 1;
+          
+            for (var i = 0; i < points.length; i++) {
+              area += (points[j][0] + points[i][0]) * (points[j][1] - points[i][1]);
+              j = i;
+            }
+          
+            return Math.abs(area / 2).toFixed(2);
+          }
+
+          const getPointsDistance =(p1:any,p2:any) =>{
+            const dx = (p1[0] - p2[0]);
+            const dy = (p1[1] - p2[1]);
+            return Math.sqrt(dx * dx + dy * dy);
+          }
+
+          const calculateLongestAndShortestDiameters =(points:any)=> {
+            let [newLong, newShort] = [0, 0];
+            let tempLong = 0;
+            for (let i = 0; i < points.length; i++) {
+              for (let j = i + 1; j < points.length; j++) {
+                tempLong = getPointsDistance(points[i], points[j]);
+                if (tempLong > newLong) {
+                  newLong = tempLong;
+                }
+              }
+            }
+            return {
+                longDiameter: newLong.toFixed(2),
+                shortDiameter: newShort.toFixed(2),
+            };
+          }
+
+        const calcRegion = ()=>{
+            let dpi = 762;
+            let origin_width = region.parent.naturalWidth;
+            let origin_height = region.parent.naturalHeight;
+            if(region.type=="rectangleregion"){
+                let heightPercent = region.relativeHeight/100;
+                let widthPercent = region.relativeWidth/100;
+                let physicalWidth = widthPercent*origin_width*2.54*10/dpi;//单位毫米(mm)
+                let physicalHeight = heightPercent*origin_height*2.54*10/dpi;
+                let area = (physicalWidth*physicalHeight).toFixed(2);
+                //矩形长径(对角线)  短径(短边)
+                let longDiameter = Math.sqrt(physicalWidth*physicalWidth+physicalHeight*physicalHeight).toFixed(2);
+                let shortDiameter  = (physicalWidth>physicalHeight?physicalHeight:physicalWidth).toFixed(2);;
+                return {area,longDiameter,shortDiameter}
+            }else if(region.type=="ellipseregion"){//椭圆
+                let radiusXPercent = region.relativeRadiusX/100;
+                let radiusYPercent = region.relativeRadiusY/100;
+                let physicalRx = radiusXPercent*origin_width*2.54*10/dpi;//单位毫米(mm)
+                let physicalRy = radiusYPercent*origin_height*2.54*10/dpi;
+                let area = (Math.PI*physicalRx*physicalRy).toFixed(2);
+                let longDiameter = ((physicalRx>physicalRy?physicalRx:physicalRy)*2).toFixed(2);
+                let shortDiameter = ((physicalRx>physicalRy?physicalRy:physicalRx)*2).toFixed(2);
+                return {area,longDiameter,shortDiameter}
+            }else if(region.type=="polygonregion"){
+                let result = region.serialize();
+                let points = result.value.points;
+                points.forEach((p:any) => {
+                   p[0] = p[0]*origin_width*2.54*10/(100*dpi)
+                   p[1] = p[1]*origin_height*2.54*10/(100*dpi)
+                });
+                let area = getPolygonArea(points);
+                const{longDiameter,shortDiameter} = calculateLongestAndShortestDiameters(points);
+                return {area,longDiameter,shortDiameter}
+            }
+           
+            return {};
+        } 
+        const {area,longDiameter,shortDiameter} = calcRegion();
+        return <div style={{margin:"10px"}}>
+            <span>面积：{area}mm{String.fromCharCode(178)}</span>
+            <span style={{marginLeft:"20px"}}>长径：{longDiameter}mm</span>
+            <div> <span>短径：{shortDiameter==0?'---':shortDiameter}mm</span></div>
+        </div> 
+    }),
+);
+
+
+
 export const RegionDetailsMain: FC<{ region: any }> = inject('store')(observer(({ store,
     region
 }) => {
@@ -252,6 +342,7 @@ export const RegionDetailsMain: FC<{ region: any }> = inject('store')(observer((
             <RegionEditor region={region} />
             <DynamicLabelContent   store={store} region={region}></DynamicLabelContent>
             <DynamicLesionNumber store={store} region={region}></DynamicLesionNumber>
+            {['rectangleregion','ellipseregion','polygonregion'].includes(region.type)&&<CalcRegionData store={store} region={region}></CalcRegionData>}
         </>
     );
 }));

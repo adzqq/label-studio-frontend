@@ -35,7 +35,7 @@
 
 
 
-            <div class="advice-container" :style="`left:${dynamicLeft}px`">
+            <div class="advice-container" :style="`left:${dynamicLeft}px`" v-if="tasks.length>0">
 
                 <div v-if="['review', 'arbitration'].includes(curMode)&&totalOpinions.length>0">
                     <div class="advice-title">诊断意见</div>
@@ -54,7 +54,7 @@
                 </div>
             </div>
 
-            <div class="lesion-container" v-if="!isView">
+            <div class="lesion-container" v-if="!isView&&tasks.length>0">
                 病灶编号： <el-select v-model="selectLesion" placeholder="请选择" @change="onSelectChanged" style="width:100px">
                     <el-option v-for="item in lesionOptions" :key="item.value" :label="item.label" :value="item.value">
                     </el-option>
@@ -284,11 +284,9 @@
                     setCurrentTaskData() {
                         //获取所有的标签数据
                         let annotations = this.ls.store.annotationStore.annotations;
-                        console.log(annotations);
                         let cacheResults = [];
                         annotations.forEach(annotation => {
                             let result = annotation.serializeAnnotation()
-                            console.log(result);
                             cacheResults = cacheResults.concat(result);
                         });
                         this.tasks[this.imageIndex].annotations[this.selectAnnotationIndex].result = cacheResults;
@@ -298,8 +296,9 @@
                             taskId: this.getUrlParamFromUrl("taskId"),
                             dataId: this.getUrlParamFromUrl("dataId"),
                             processType: this.getUrlParamFromUrl("processType"),
+                            hasLabel: this.getUrlParamFromUrl("hasLabel"),
                         }
-                        service.get("http://localhost:8080/api/annotation-service/annotation/task/image/data", { params: postData }).then((rsp => {
+                        service.get("http://192.168.3.15:8080/api/annotation-service/annotation/task/image/data", { params: postData }).then((rsp => {
                             this.submitLoading = false;
                             if (rsp.status == 200 && rsp.data.success) {
                                 this.form.opinion = rsp.data.data.opinion;
@@ -312,6 +311,7 @@
                                         tasks = [];
                                     }
                                     tasks.forEach(x => {
+                                        // x.id = parseInt(x.id);
                                         if (x.annotations && x.annotations.length == 0) {
                                             x.annotations = [{ id: userId, result: [] }]
                                         } else {
@@ -333,7 +333,6 @@
                                         }
                                     });
                                     this.tasks = tasks;
-                                    console.log(this.tasks);
                                     this.getDefaultLesionOptions();
                                     this.getLabelByTaskId();
                                 }
@@ -362,7 +361,7 @@
                             })
                         }
                         console.log(this.tasks);
-                        service.post("http://localhost:8080/api/annotation-service/annotation/task/data/commit", postData).then((rsp => {
+                        service.post("http://192.168.3.15:8080/api/annotation-service/annotation/task/data/commit", postData).then((rsp => {
                             this.submitLoading = false;
                             if (rsp.status == 200 && rsp.data.success) {
                                 this.dialogVisible = false;
@@ -437,7 +436,7 @@
                     },
                     getLabelByTaskId() {
                         let taskId = this.getUrlParamFromUrl("taskId");
-                        service.get(`http://localhost:8080/api/annotation-service/task/getLabelSet?taskId=${taskId}`).then((rsp => {
+                        service.get(`http://192.168.3.15:8080/api/annotation-service/task/getLabelSet?taskId=${taskId}`).then((rsp => {
                             this.submitLoading = false;
                             if (rsp.status == 200 && rsp.data.success) {
                                 let result = rsp.data;
@@ -458,7 +457,7 @@
                         }))
                     },
                     getLableTreesBySetId(labelSetId, totalLabels) {
-                        service.get(`http://localhost:8080/api/data-center/labelSet/tree?id=${labelSetId}`).then((rsp => {
+                        service.get(`http://192.168.3.15:8080/api/data-center/labelSet/tree?id=${labelSetId}`).then((rsp => {
                             this.submitLoading = false;
                             if (rsp.status == 200 && rsp.data.success) {
                                 let result = rsp.data;
@@ -564,7 +563,7 @@
                         let taskId = this.getUrlParamFromUrl("taskId");
                         let dataId = this.getUrlParamFromUrl("dataId");
                         let processType = this.getUrlParamFromUrl("processType");
-                        const url = `http://localhost:8080/api/annotation-service/annotation/task/audit?taskId=${taskId}&dataId=${dataId}&processType=${processType}`;
+                        const url = `http://192.168.3.15:8080/api/annotation-service/annotation/task/audit?taskId=${taskId}&dataId=${dataId}&processType=${processType}`;
                         service.get(url).then((rsp => {
                             if (rsp.status == 200 && rsp.data.success) {
                                 let result = rsp.data;

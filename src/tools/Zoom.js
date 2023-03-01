@@ -11,18 +11,18 @@ import { IconExpand, IconHandTool, IconZoomIn, IconZoomOut } from '../assets/ico
 const ToolView = observer(({ item }) => {
     return (
         <Fragment>
-            {/* <Tool
-        active={item.selected}
-        icon={<IconHandTool />}
-        ariaLabel="pan"
-        label="Pan Image"
-        shortcut="H"
-        onClick={() => {
-          const sel = item.selected;
+            <Tool
+                active={item.selected}
+                icon={<IconHandTool />}
+                ariaLabel="pan"
+                label="平移图像"
+                // shortcut="H"
+                onClick={() => {
+                    const sel = item.selected;
 
-          item.manager.selectTool(item, !sel);
-        }}
-      /> */}
+                    item.manager.selectTool(item, !sel);
+                }}
+            />
             <Tool
                 icon={<IconZoomIn />}
                 ariaLabel="zoom-in"

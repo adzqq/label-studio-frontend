@@ -16,7 +16,7 @@ const _Tool = types
                 return true;
             },
             get viewTooltip() {
-                return '移动';
+                return '移动标注';
             },
             get iconComponent() {
                 return IconMoveTool;
