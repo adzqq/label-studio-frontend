@@ -1,4 +1,5 @@
-import { IconCopy, IconInfo, IconViewAll, LsSettings, LsTrash } from '../../assets/icons';
+// import { IconCopy, IconInfo, IconViewAll, LsSettings, LsTrash } from '../../assets/icons';
+import { IconCopy, IconInfo, IconViewAll, LsTrash } from '../../assets/icons';
 import { Button } from '../../common/Button/Button';
 import { Tooltip } from '../../common/Tooltip/Tooltip';
 import { Elem } from '../../utils/bem';

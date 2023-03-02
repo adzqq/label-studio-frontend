@@ -8,58 +8,58 @@ import { isDefined } from '../../utils/utilities';
 import './CurrentTask.styl';
 
 export const CurrentTask = observer(({ store }) => {
-    const currentIndex = useMemo(() => {
-        return store.taskHistory.findIndex(x => x.taskId === store.task.id) + 1;
-    }, [store.taskHistory]);
+  const currentIndex = useMemo(() => {
+    return store.taskHistory.findIndex(x => x.taskId === store.task.id) + 1;
+  }, [store.taskHistory]);
 
-    const historyEnabled = store.hasInterface('topbar:prevnext');
-    const showCounter = store.hasInterface('topbar:task-counter');
-    // @todo some interface?
-    const canPostpone =
+  const historyEnabled = store.hasInterface('topbar:prevnext');
+  const showCounter = store.hasInterface('topbar:task-counter');
+  // @todo some interface?
+  const canPostpone =
         isFF(FF_DEV_3034) &&
         !isDefined(store.annotationStore.selected.pk) &&
         !store.canGoNextTask &&
         !store.hasInterface('review') &&
         store.hasInterface('postpone');
 
-    return (
-        <Elem name="section">
-            <Block name="current-task" mod={{ 'with-history': historyEnabled }}>
-                <Elem name="task-id">
-                    {store.task.id ?? guidGenerator()}
-                    {historyEnabled && showCounter && (
-                        <Elem name="task-count">
-                            {currentIndex} of {store.taskHistory.length}
-                        </Elem>
-                    )}
-                </Elem>
-                {historyEnabled && (
-                    <Elem name="history-controls">
-                        <Elem
-                            tag={Button}
-                            name="prevnext"
-                            mod={{ prev: true, disabled: !store.canGoPrevTask }}
-                            type="link"
-                            disabled={!historyEnabled || !store.canGoPrevTask}
-                            onClick={store.prevTask}
-                            style={{ background: 'none', backgroundColor: 'none' }}
-                        />
-                        <Elem
-                            tag={Button}
-                            name="prevnext"
-                            mod={{
-                                next: true,
-                                disabled: !store.canGoNextTask && !canPostpone,
-                                postpone: !store.canGoNextTask && canPostpone,
-                            }}
-                            type="link"
-                            disabled={!store.canGoNextTask && !canPostpone}
-                            onClick={store.canGoNextTask ? store.nextTask : store.postponeTask}
-                            style={{ background: 'none', backgroundColor: 'none' }}
-                        />
-                    </Elem>
-                )}
-            </Block>
+  return (
+    <Elem name="section">
+      <Block name="current-task" mod={{ 'with-history': historyEnabled }}>
+        <Elem name="task-id">
+          {store.task.id ?? guidGenerator()}
+          {historyEnabled && showCounter && (
+            <Elem name="task-count">
+              {currentIndex} of {store.taskHistory.length}
+            </Elem>
+          )}
         </Elem>
-    );
+        {historyEnabled && (
+          <Elem name="history-controls">
+            <Elem
+              tag={Button}
+              name="prevnext"
+              mod={{ prev: true, disabled: !store.canGoPrevTask }}
+              type="link"
+              disabled={!historyEnabled || !store.canGoPrevTask}
+              onClick={store.prevTask}
+              style={{ background: 'none', backgroundColor: 'none' }}
+            />
+            <Elem
+              tag={Button}
+              name="prevnext"
+              mod={{
+                next: true,
+                disabled: !store.canGoNextTask && !canPostpone,
+                postpone: !store.canGoNextTask && canPostpone,
+              }}
+              type="link"
+              disabled={!store.canGoNextTask && !canPostpone}
+              onClick={store.canGoNextTask ? store.nextTask : store.postponeTask}
+              style={{ background: 'none', backgroundColor: 'none' }}
+            />
+          </Elem>
+        )}
+      </Block>
+    </Elem>
+  );
 });

@@ -3,168 +3,169 @@ import { cloneNode, restoreNewsnapshot } from '../core/Helpers';
 import { AnnotationMixin } from './AnnotationMixin';
 import { getUrlParams } from '../utils/urlParams';
 const ToolMixin = types
-    .model({
-        selected: types.optional(types.boolean, false),
-        group: types.optional(types.string, 'default'),
-        shortcut: types.optional(types.maybeNull(types.string), null),
-    })
-    .views(self => ({
-        get obj() {
-            return self.manager?.obj ?? getEnv(self).object;
-        },
+  .model({
+    selected: types.optional(types.boolean, false),
+    group: types.optional(types.string, 'default'),
+    shortcut: types.optional(types.maybeNull(types.string), null),
+  })
+  .views(self => ({
+    get obj() {
+      return self.manager?.obj ?? getEnv(self).object;
+    },
 
-        get manager() {
-            return getEnv(self).manager;
-        },
+    get manager() {
+      return getEnv(self).manager;
+    },
 
-        get control() {
-            return getEnv(self).control;
-        },
+    get control() {
+      return getEnv(self).control;
+    },
 
-        get viewClass() {
-            return () => null;
-        },
+    get viewClass() {
+      return () => null;
+    },
 
-        get fullName() {
-            return self.toolName + (self.dynamic ? '-dynamic' : '');
-        },
+    get fullName() {
+      return self.toolName + (self.dynamic ? '-dynamic' : '');
+    },
 
-        get clonedStates() {
-            const states = [self.control];
-            const activeStates = states
-                ? states.filter(c => c.isSelected)
-                : // .filter(
-                //   c =>
-                //     c.type === IMAGE_CONSTANTS.rectanglelabels ||
-                //     c.type === IMAGE_CONSTANTS.keypointlabels ||
-                //     c.type === IMAGE_CONSTANTS.polygonlabels ||
-                //     c.type === IMAGE_CONSTANTS.brushlabels,
-                // )
-                null;
+    get clonedStates() {
+      const states = [self.control];
+      const activeStates = states
+        ? states.filter(c => c.isSelected)
+        : // .filter(
+      //   c =>
+      //     c.type === IMAGE_CONSTANTS.rectanglelabels ||
+      //     c.type === IMAGE_CONSTANTS.keypointlabels ||
+      //     c.type === IMAGE_CONSTANTS.polygonlabels ||
+      //     c.type === IMAGE_CONSTANTS.brushlabels,
+      // )
+        null;
 
-            return activeStates ? activeStates.map(s => cloneNode(s)) : null;
-        },
+      return activeStates ? activeStates.map(s => cloneNode(s)) : null;
+    },
 
-        get getActiveShape() {
-            // active shape here is the last one that was added
-            const obj = self.obj;
+    get getActiveShape() {
+      // active shape here is the last one that was added
+      const obj = self.obj;
 
-            return obj.regs[obj.regs.length - 1];
-        },
+      return obj.regs[obj.regs.length - 1];
+    },
 
-        get getSelectedShape() {
-            return self.control.annotation.highlightedNode;
-        },
+    get getSelectedShape() {
+      return self.control.annotation.highlightedNode;
+    },
 
-        get extraShortcuts() {
-            return {};
-        },
+    get extraShortcuts() {
+      return {};
+    },
 
-        get shouldPreserveSelectedState() {
-            if (!self.obj) return false;
+    get shouldPreserveSelectedState() {
+      if (!self.obj) return false;
 
-            const settings = getRoot(self.obj).settings;
+      const settings = getRoot(self.obj).settings;
 
-            return settings.preserveSelectedTool;
-        },
+      return settings.preserveSelectedTool;
+    },
 
-        get isPreserved() {
-            const { isView } = getUrlParams();
-            if (isView) {
-                return 'SelectionTool';
-            }
-            return window.localStorage.getItem(`selected-tool:${self.obj?.name}`) === self.fullName;
-        },
-    }))
-    .actions(self => ({
-        setSelected(selected) {
-            self.selected = selected;
-            self.afterUpdateSelected();
+    get isPreserved() {
+      const { isView } = getUrlParams();
 
-            if (selected && self.obj) {
-                const storeName = `selected-tool:${self.obj.name}`;
+      if (isView) {
+        return 'SelectionTool';
+      }
+      return window.localStorage.getItem(`selected-tool:${self.obj?.name}`) === self.fullName;
+    },
+  }))
+  .actions(self => ({
+    setSelected(selected) {
+      self.selected = selected;
+      self.afterUpdateSelected();
 
-                if (self.shouldPreserveSelectedState) {
-                    window.localStorage.setItem(storeName, self.fullName);
-                }
-            }
-        },
+      if (selected && self.obj) {
+        const storeName = `selected-tool:${self.obj.name}`;
 
-        afterUpdateSelected() { },
+        if (self.shouldPreserveSelectedState) {
+          window.localStorage.setItem(storeName, self.fullName);
+        }
+      }
+    },
 
-        event(name, ev, args) {
-            const fn = name + 'Ev';
+    afterUpdateSelected() { },
 
-            if (typeof self[fn] !== 'undefined') self[fn].call(self, ev, args);
-        },
+    event(name, ev, args) {
+      const fn = name + 'Ev';
 
-        createFromJSON(obj, fromModel) {
-            let r;
-            let states = [];
+      if (typeof self[fn] !== 'undefined') self[fn].call(self, ev, args);
+    },
 
-            const fm = self.annotation.names.get(obj.from_name);
+    createFromJSON(obj, fromModel) {
+      let r;
+      let states = [];
 
-            fm.fromStateJSON(obj);
+      const fm = self.annotation.names.get(obj.from_name);
 
-            // workaround to prevent perregion textarea from duplicating
-            // during deserialisation
-            if (fm.perregion && fromModel.type === 'textarea') return;
+      fm.fromStateJSON(obj);
 
-            const { stateTypes, controlTagTypes } = self.tagTypes;
+      // workaround to prevent perregion textarea from duplicating
+      // during deserialisation
+      if (fm.perregion && fromModel.type === 'textarea') return;
 
-            if (!fm.perregion && !controlTagTypes.includes(fromModel.type)) return;
+      const { stateTypes, controlTagTypes } = self.tagTypes;
 
-            if (obj.type === stateTypes) {
-                states = restoreNewsnapshot(fromModel);
-                if (states.fromStateJSON) {
-                    states.fromStateJSON(obj);
-                }
+      if (!fm.perregion && !controlTagTypes.includes(fromModel.type)) return;
 
-                states = [states];
-            }
+      if (obj.type === stateTypes) {
+        states = restoreNewsnapshot(fromModel);
+        if (states.fromStateJSON) {
+          states.fromStateJSON(obj);
+        }
 
-            if (controlTagTypes.includes(obj.type)) {
-                const params = {};
-                const moreParams = self.moreRegionParams?.(obj) ?? obj;
-                const data = {
-                    pid: obj.id,
-                    parentID: obj.parent_id === null ? '' : obj.parent_id,
-                    score: obj.score,
-                    readonly: obj.readonly,
-                    coordstype: 'perc',
-                    states,
-                    ...params,
-                    ...obj.value,
-                    ...moreParams,
-                };
+        states = [states];
+      }
 
-                r = self.createRegion(data);
-            } else if (fm.perregion) {
-                const m = restoreNewsnapshot(fromModel);
+      if (controlTagTypes.includes(obj.type)) {
+        const params = {};
+        const moreParams = self.moreRegionParams?.(obj) ?? obj;
+        const data = {
+          pid: obj.id,
+          parentID: obj.parent_id === null ? '' : obj.parent_id,
+          score: obj.score,
+          readonly: obj.readonly,
+          coordstype: 'perc',
+          states,
+          ...params,
+          ...obj.value,
+          ...moreParams,
+        };
 
-                // [TODO] this is a poor mans findRegion for the image
-                // regions right now. This is based on a idea that
-                // results comming from the same region share the same
-                // id, which might not be the case since it'd a good
-                // practice to have unique ids
-                const { regions } = self.obj;
+        r = self.createRegion(data);
+      } else if (fm.perregion) {
+        const m = restoreNewsnapshot(fromModel);
 
-                r = regions.find(r => r.pid === obj.id);
+        // [TODO] this is a poor mans findRegion for the image
+        // regions right now. This is based on a idea that
+        // results comming from the same region share the same
+        // id, which might not be the case since it'd a good
+        // practice to have unique ids
+        const { regions } = self.obj;
 
-                // r = self.findRegion(obj.value);
+        r = regions.find(r => r.pid === obj.id);
 
-                if (r) r.states.push(m);
-            }
+        // r = self.findRegion(obj.value);
 
-            return r;
-        },
+        if (r) r.states.push(m);
+      }
 
-        fromStateJSON(obj, fromModel) {
-            // tool may not be implementing fromStateJSON at all
-            if (!self.tagTypes) return;
+      return r;
+    },
 
-            return self.createFromJSON(obj, fromModel);
-        },
-    }));
+    fromStateJSON(obj, fromModel) {
+      // tool may not be implementing fromStateJSON at all
+      if (!self.tagTypes) return;
+
+      return self.createFromJSON(obj, fromModel);
+    },
+  }));
 
 export default types.compose(ToolMixin, AnnotationMixin);

@@ -6,59 +6,59 @@ import { AnnotationMixin } from '../mixins/AnnotationMixin';
 import { IconMoveTool } from '../assets/icons';
 
 const _Tool = types
-    .model('SelectionTool', {
-        // shortcut: 'V',
-        group: 'control',
-    })
-    .views(() => {
-        return {
-            get isSeparated() {
-                return true;
-            },
-            get viewTooltip() {
-                return '移动标注';
-            },
-            get iconComponent() {
-                return IconMoveTool;
-            },
-            get useTransformer() {
-                return true;
-            },
-        };
-    })
-    .actions(self => {
-        let isSelecting = false;
+  .model('SelectionTool', {
+    // shortcut: 'V',
+    group: 'control',
+  })
+  .views(() => {
+    return {
+      get isSeparated() {
+        return true;
+      },
+      get viewTooltip() {
+        return '移动标注';
+      },
+      get iconComponent() {
+        return IconMoveTool;
+      },
+      get useTransformer() {
+        return true;
+      },
+    };
+  })
+  .actions(self => {
+    let isSelecting = false;
 
-        return {
-            shouldSkipInteractions() {
-                return false;
-            },
+    return {
+      shouldSkipInteractions() {
+        return false;
+      },
 
-            mousedownEv(ev, [x, y]) {
-                isSelecting = true;
-                self.obj.setSelectionStart({ x, y });
-            },
+      mousedownEv(ev, [x, y]) {
+        isSelecting = true;
+        self.obj.setSelectionStart({ x, y });
+      },
 
-            mousemoveEv(ev, [x, y]) {
-                if (!isSelecting) return;
-                self.obj.setSelectionEnd({ x, y });
-            },
+      mousemoveEv(ev, [x, y]) {
+        if (!isSelecting) return;
+        self.obj.setSelectionEnd({ x, y });
+      },
 
-            mouseupEv(ev, [x, y]) {
-                if (!isSelecting) return;
-                self.obj.setSelectionEnd({ x, y });
-                const { regionsInSelectionArea } = self.obj;
+      mouseupEv(ev, [x, y]) {
+        if (!isSelecting) return;
+        self.obj.setSelectionEnd({ x, y });
+        const { regionsInSelectionArea } = self.obj;
 
-                self.obj.resetSelection();
-                if (ev.ctrlKey || ev.metaKey) {
-                    self.annotation.extendSelectionWith(regionsInSelectionArea);
-                } else {
-                    self.annotation.selectAreas(regionsInSelectionArea);
-                }
-                isSelecting = false;
-            },
-        };
-    });
+        self.obj.resetSelection();
+        if (ev.ctrlKey || ev.metaKey) {
+          self.annotation.extendSelectionWith(regionsInSelectionArea);
+        } else {
+          self.annotation.selectAreas(regionsInSelectionArea);
+        }
+        isSelecting = false;
+      },
+    };
+  });
 
 const Selection = types.compose('MoveTool', ToolMixin, BaseTool, AnnotationMixin, _Tool);
 

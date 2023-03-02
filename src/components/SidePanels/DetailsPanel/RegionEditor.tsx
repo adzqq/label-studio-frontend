@@ -257,7 +257,7 @@ const RegionInput: FC<RegionInputProps> = ({
   }, [value]);
 
 
-  const  {isView} = getUrlParams();
+  const  { isView } = getUrlParams();
 
   return (
     <input

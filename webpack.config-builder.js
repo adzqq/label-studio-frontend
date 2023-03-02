@@ -21,6 +21,8 @@ const customDistDir = !!process.env.WORK_DIR;
 
 const DEFAULT_NODE_ENV = process.env.BUILD_MODULE ? "production" : process.env.NODE_ENV || "development";
 
+console.log("DEFAULT_NODE_ENV", DEFAULT_NODE_ENV);
+
 const isDevelopment = DEFAULT_NODE_ENV !== "production";
 
 const BUILD = {
@@ -214,7 +216,13 @@ const devServer = () => {
             },
             client: {
                 overlay: false,
-            }
+            },
+            proxy: {
+                ['/api/']: {
+                    target: "http://192.168.3.40:10080",
+                    changeOrigin: true
+                }
+            },
         }
     } : {};
 };

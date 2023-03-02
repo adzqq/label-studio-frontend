@@ -9,46 +9,46 @@ import { Tool } from '../components/Toolbar/Tool';
 import { IconRotateLeftTool, IconRotateRightTool } from '../assets/icons';
 
 const ToolView = observer(({ item }) => {
-    return (
-        <>
-            <Tool
-                active={item.selected}
-                icon={<IconRotateLeftTool />}
-                ariaLabel="rotate-left"
-                label="向左旋转"
-                // shortcut="alt+left"
-                onClick={() => {
-                    item.rotate(-90);
-                }}
-            />
-            <Tool
-                active={item.selected}
-                icon={<IconRotateRightTool />}
-                ariaLabel="rotate-right"
-                label="向右旋转"
-                // shortcut="alt+right"
-                onClick={() => {
-                    item.rotate(90);
-                }}
-            />
-        </>
-    );
+  return (
+    <>
+      <Tool
+        active={item.selected}
+        icon={<IconRotateLeftTool />}
+        ariaLabel="rotate-left"
+        label="向左旋转"
+        // shortcut="alt+left"
+        onClick={() => {
+          item.rotate(-90);
+        }}
+      />
+      <Tool
+        active={item.selected}
+        icon={<IconRotateRightTool />}
+        ariaLabel="rotate-right"
+        label="向右旋转"
+        // shortcut="alt+right"
+        onClick={() => {
+          item.rotate(90);
+        }}
+      />
+    </>
+  );
 });
 
 const _Tool = types
-    .model('RotateTool', {
-        group: 'control',
-    })
-    .views(self => ({
-        get viewClass() {
-            return () => <ToolView item={self} />;
-        },
-    }))
-    .actions(self => ({
-        rotate(degree) {
-            self.obj.rotate(degree);
-        },
-    }));
+  .model('RotateTool', {
+    group: 'control',
+  })
+  .views(self => ({
+    get viewClass() {
+      return () => <ToolView item={self} />;
+    },
+  }))
+  .actions(self => ({
+    rotate(degree) {
+      self.obj.rotate(degree);
+    },
+  }));
 
 const Rotate = types.compose(_Tool.name, ToolMixin, BaseTool, _Tool);
 

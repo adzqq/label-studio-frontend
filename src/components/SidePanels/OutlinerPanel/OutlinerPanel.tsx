@@ -7,47 +7,47 @@ import { ViewControls } from './ViewControls';
 import './OutlinerPanel.styl';
 
 interface OutlinerPanelProps extends PanelProps {
-    regions: any;
+  regions: any;
 }
 
 const OutlinerPanelComponent: FC<OutlinerPanelProps> = ({ regions, ...props }) => {
-    const [group, setGroup] = useState();
-    const onOrderingChange = useCallback((value) => {
-        regions.setSort(value);
-    }, [regions]);
+  const [group, setGroup] = useState();
+  const onOrderingChange = useCallback((value) => {
+    regions.setSort(value);
+  }, [regions]);
 
-    const onGroupingChange = useCallback((value) => {
-        regions.setGrouping(value);
-        setGroup(value);
-    }, [regions]);
+  const onGroupingChange = useCallback((value) => {
+    regions.setGrouping(value);
+    setGroup(value);
+  }, [regions]);
 
-    useEffect(() => {
-        setGroup(regions.group);
-    }, []);
+  useEffect(() => {
+    setGroup(regions.group);
+  }, []);
 
-    regions.setGrouping(group);
+  regions.setGrouping(group);
 
-    return (
-        <PanelBase {...props} name="outliner" title="标注面板">
-            <ViewControls
-                grouping={regions.group}
-                ordering={regions.sort}
-                orderingDirection={regions.sortOrder}
-                onOrderingChange={onOrderingChange}
-                onGroupingChange={onGroupingChange}
-            />
-            {regions?.regions?.length > 0 ? (
-                <OutlinerTree
-                    regions={regions}
-                    selectedKeys={regions.selection.keys}
-                />
-            ) : (
-                <Elem name="empty">
+  return (
+    <PanelBase {...props} name="outliner" title="标注面板">
+      <ViewControls
+        grouping={regions.group}
+        ordering={regions.sort}
+        orderingDirection={regions.sortOrder}
+        onOrderingChange={onOrderingChange}
+        onGroupingChange={onGroupingChange}
+      />
+      {regions?.regions?.length > 0 ? (
+        <OutlinerTree
+          regions={regions}
+          selectedKeys={regions.selection.keys}
+        />
+      ) : (
+        <Elem name="empty">
                     Regions not added
-                </Elem>
-            )}
-        </PanelBase>
-    );
+        </Elem>
+      )}
+    </PanelBase>
+  );
 };
 
 export const OutlinerPanel = observer(OutlinerPanelComponent);

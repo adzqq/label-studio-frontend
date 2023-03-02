@@ -4,9 +4,11 @@ import { IconArrowLeft, IconArrowRight, IconOutlinerCollapse, IconOutlinerExpand
 
 import './PanelBase.styl';
 import { PanelType } from './SidePanels';
-import { useDrag } from '../../hooks/useDrag';
-import { clamp, isDefined } from '../../utils/utilities';
-import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT_PADDED } from './constants';
+// import { useDrag } from '../../hooks/useDrag';
+// import { clamp, isDefined } from '../../utils/utilities';
+import {  isDefined } from '../../utils/utilities';
+// import { DEFAULT_PANEL_HEIGHT, DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT_PADDED } from './constants';
+import {  DEFAULT_PANEL_WIDTH, PANEL_HEADER_HEIGHT_PADDED } from './constants';
 
 export type PanelBaseExclusiveProps = 'name' | 'title'
 
@@ -19,347 +21,349 @@ type PositonChangeHandler = (name: PanelType, top: number, left: number, detache
 type VisibilityChangeHandler = (name: PanelType, visible: boolean) => void;
 
 const resizers = [
-    'top-left',
-    'top-right',
-    'bottom-left',
-    'bottom-right',
-    'top',
-    'bottom',
-    'right',
-    'left',
+  'top-left',
+  'top-right',
+  'bottom-left',
+  'bottom-right',
+  'top',
+  'bottom',
+  'right',
+  'left',
 ];
 
 interface PanelBaseProps {
-    root: MutableRefObject<HTMLDivElement | undefined>;
-    name: PanelType;
-    title: string;
-    tooltip: string;
-    top: number;
-    left: number;
-    relativeTop: number;
-    relativeLeft: number;
-    width: number;
-    maxWidth: number;
-    height: number;
-    visible: boolean;
-    alignment: 'left' | 'right';
-    currentEntity: any;
-    detached: boolean;
-    expanded: boolean;
-    locked: boolean;
-    zIndex: number;
-    positioning: boolean;
-    onResize: ResizeHandler;
-    onResizeStart: () => void;
-    onResizeEnd: () => void;
-    onSnap: SnapHandler;
-    onPositionChange: PositonChangeHandler;
-    onVisibilityChange: VisibilityChangeHandler;
-    onPositionChangeBegin: PositonChangeHandler;
+  root: MutableRefObject<HTMLDivElement | undefined>;
+  name: PanelType;
+  title: string;
+  tooltip: string;
+  top: number;
+  left: number;
+  relativeTop: number;
+  relativeLeft: number;
+  width: number;
+  maxWidth: number;
+  height: number;
+  visible: boolean;
+  alignment: 'left' | 'right';
+  currentEntity: any;
+  detached: boolean;
+  expanded: boolean;
+  locked: boolean;
+  zIndex: number;
+  positioning: boolean;
+  onResize: ResizeHandler;
+  onResizeStart: () => void;
+  onResizeEnd: () => void;
+  onSnap: SnapHandler;
+  onPositionChange: PositonChangeHandler;
+  onVisibilityChange: VisibilityChangeHandler;
+  onPositionChangeBegin: PositonChangeHandler;
 }
 
 export type PanelProps = Omit<PanelBaseProps, PanelBaseExclusiveProps>
 
-const distance = (x1: number, x2: number, y1: number, y2: number) => {
-    return Math.sqrt(
-        Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2),
-    );
-};
+// const distance = (x1: number, x2: number, y1: number, y2: number) => {
+//   return Math.sqrt(
+//     Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2),
+//   );
+// };
 
 export const PanelBase: FC<PanelBaseProps> = ({
-    name,
-    root,
-    title,
-    width,
-    maxWidth,
-    height,
-    visible,
-    detached,
-    alignment,
-    expanded,
-    top,
-    left,
-    relativeTop,
-    relativeLeft,
-    zIndex,
-    tooltip,
-    locked = false,
-    positioning = false,
-    onSnap,
-    onResize,
-    onResizeStart,
-    onResizeEnd,
-    onVisibilityChange,
-    onPositionChange,
-    onPositionChangeBegin,
-    children,
+  name,
+  //   root,
+  title,
+  width,
+  //   maxWidth,
+  height,
+  visible,
+  detached,
+  alignment,
+  expanded,
+  //   top,
+  //   left,
+  relativeTop,
+  relativeLeft,
+  zIndex,
+  tooltip,
+  locked = false,
+  positioning = false,
+  onSnap,
+  onResize,
+  onResizeStart,
+  onResizeEnd,
+  onVisibilityChange,
+  onPositionChange,
+  onPositionChangeBegin,
+  children,
 }) => {
-    const headerRef = useRef<HTMLDivElement>();
-    const panelRef = useRef<HTMLDivElement>();
-    const resizerRef = useRef<HTMLDivElement>();
-    const handlers = useRef({ onResize, onResizeStart, onResizeEnd, onPositionChange, onPositionChangeBegin, onVisibilityChange, onSnap });
-    const [resizing, setResizing] = useState<string | undefined>();
+  const headerRef = useRef<HTMLDivElement>();
+  const panelRef = useRef<HTMLDivElement>();
+  const resizerRef = useRef<HTMLDivElement>();
+  const handlers = useRef({ onResize, onResizeStart, onResizeEnd, onPositionChange, onPositionChangeBegin, onVisibilityChange, onSnap });
+  //   const [resizing, setResizing] = useState<string | undefined>();
 
-    const handleCollapse = useCallback((e: RMouseEvent<HTMLOrSVGElement>) => {
-        e.stopPropagation();
-        e.preventDefault();
-        onVisibilityChange?.(name, false);
-    }, [onVisibilityChange]);
+  const [resizing] = useState<string | undefined>();
 
-    const handleExpand = useCallback(() => {
-        onVisibilityChange?.(name, true);
-    }, [onVisibilityChange]);
+  const handleCollapse = useCallback((e: RMouseEvent<HTMLOrSVGElement>) => {
+    e.stopPropagation();
+    e.preventDefault();
+    onVisibilityChange?.(name, false);
+  }, [onVisibilityChange]);
 
-    const style = useMemo(() => {
-        const dynamicStyle = visible ? {
-            height: detached ? height ?? '100%' : '100%',
-            width: expanded ? '100%' : width ?? DEFAULT_PANEL_WIDTH,
-        } : {
-            width: detached ? width ?? DEFAULT_PANEL_WIDTH : '100%',
-            height: detached ? PANEL_HEADER_HEIGHT_PADDED : undefined, // header height + 1px margin top and bottom,
-        };
+  const handleExpand = useCallback(() => {
+    onVisibilityChange?.(name, true);
+  }, [onVisibilityChange]);
 
-        return {
-            ...dynamicStyle,
-            zIndex,
-        };
-    }, [width, height, visible, detached, expanded, zIndex]);
+  const style = useMemo(() => {
+    const dynamicStyle = visible ? {
+      height: detached ? height ?? '100%' : '100%',
+      width: expanded ? '100%' : width ?? DEFAULT_PANEL_WIDTH,
+    } : {
+      width: detached ? width ?? DEFAULT_PANEL_WIDTH : '100%',
+      height: detached ? PANEL_HEADER_HEIGHT_PADDED : undefined, // header height + 1px margin top and bottom,
+    };
 
-    const coordinates = useMemo(() => {
-        return detached && !locked ? {
-            top: `${relativeTop}%`,
-            left: `${relativeLeft}%`,
-        } : {};
-    }, [detached, relativeTop, relativeLeft, locked]);
+    return {
+      ...dynamicStyle,
+      zIndex,
+    };
+  }, [width, height, visible, detached, expanded, zIndex]);
 
-    const mods = useMemo(() => {
-        return {
-            detached: locked ? false : detached,
-            resizing: isDefined(resizing),
-            hidden: !visible,
-            alignment: detached ? 'left' : alignment ?? 'left',
-            disabled: locked,
-        };
-    }, [alignment, visible, detached, resizing, locked]);
+  const coordinates = useMemo(() => {
+    return detached && !locked ? {
+      top: `${relativeTop}%`,
+      left: `${relativeLeft}%`,
+    } : {};
+  }, [detached, relativeTop, relativeLeft, locked]);
 
-    const currentIcon = useMemo(() => {
-        if (detached) return visible ? <IconOutlinerCollapse /> : <IconOutlinerExpand />;
-        if (alignment === 'left') return visible ? <IconArrowLeft /> : <IconArrowRight />;
-        if (alignment === 'right') return visible ? <IconArrowRight /> : <IconArrowLeft />;
+  const mods = useMemo(() => {
+    return {
+      detached: locked ? false : detached,
+      resizing: isDefined(resizing),
+      hidden: !visible,
+      alignment: detached ? 'left' : alignment ?? 'left',
+      disabled: locked,
+    };
+  }, [alignment, visible, detached, resizing, locked]);
 
-        return null;
-    }, [detached, visible, alignment]);
+  const currentIcon = useMemo(() => {
+    if (detached) return visible ? <IconOutlinerCollapse /> : <IconOutlinerExpand />;
+    if (alignment === 'left') return visible ? <IconArrowLeft /> : <IconArrowRight />;
+    if (alignment === 'right') return visible ? <IconArrowRight /> : <IconArrowLeft />;
 
-    const tooltipText = useMemo(() => {
-        return `${visible ? '关闭' : '打开'} ${tooltip}`;
-    }, [visible, tooltip]);
+    return null;
+  }, [detached, visible, alignment]);
 
-    useEffect(() => {
-        Object.assign(handlers.current, {
-            onResize,
-            onResizeStart,
-            onResizeEnd,
-            onPositionChangeBegin,
-            onPositionChange,
-            onVisibilityChange,
-            onSnap,
-        });
-    }, [onResize, onResizeStart, onResizeEnd, onPositionChange, onVisibilityChange, onPositionChangeBegin, onSnap]);
+  const tooltipText = useMemo(() => {
+    return `${visible ? '关闭' : '打开'} ${tooltip}`;
+  }, [visible, tooltip]);
 
-    // Panel positioning
-    // useDrag({
-    //     elementRef: headerRef,
-    //     disabled: locked || (!detached && !visible),
+  useEffect(() => {
+    Object.assign(handlers.current, {
+      onResize,
+      onResizeStart,
+      onResizeEnd,
+      onPositionChangeBegin,
+      onPositionChange,
+      onVisibilityChange,
+      onSnap,
+    });
+  }, [onResize, onResizeStart, onResizeEnd, onPositionChange, onVisibilityChange, onPositionChangeBegin, onSnap]);
 
-    //     onMouseDown(e) {
-    //         const el = e.target as HTMLElement;
-    //         const toggleClassName = '[class*=__toggle]';
+  // Panel positioning
+  // useDrag({
+  //     elementRef: headerRef,
+  //     disabled: locked || (!detached && !visible),
 
-    //         if (el.matches(toggleClassName) || el.closest(toggleClassName)) {
-    //             return;
-    //         }
+  //     onMouseDown(e) {
+  //         const el = e.target as HTMLElement;
+  //         const toggleClassName = '[class*=__toggle]';
 
-    //         const allowDrag = detached;
-    //         const panel = panelRef.current!;
-    //         const parentBBox = root.current!.getBoundingClientRect();
-    //         const bbox = panel.getBoundingClientRect();
-    //         const [x, y] = [e.pageX, e.pageY];
-    //         const [oX, oY] = [
-    //             bbox.left - parentBBox.left,
-    //             bbox.top - parentBBox.top,
-    //         ];
+  //         if (el.matches(toggleClassName) || el.closest(toggleClassName)) {
+  //             return;
+  //         }
 
-    //         handlers.current.onPositionChangeBegin?.(name, top, left, detached);
+  //         const allowDrag = detached;
+  //         const panel = panelRef.current!;
+  //         const parentBBox = root.current!.getBoundingClientRect();
+  //         const bbox = panel.getBoundingClientRect();
+  //         const [x, y] = [e.pageX, e.pageY];
+  //         const [oX, oY] = [
+  //             bbox.left - parentBBox.left,
+  //             bbox.top - parentBBox.top,
+  //         ];
 
-    //         return { x, y, oX, oY, allowDrag };
-    //     },
+  //         handlers.current.onPositionChangeBegin?.(name, top, left, detached);
 
-    //     onMouseMove(e, data) {
-    //         if (data) {
-    //             const { x, y, oX, oY } = data;
-    //             let { allowDrag } = data;
-    //             const [mX, mY] = [e.pageX, e.pageY];
-    //             const dist = distance(x, mX, y, mY);
+  //         return { x, y, oX, oY, allowDrag };
+  //     },
 
-    //             if (dist > 30) {
-    //                 // setDragLocked(true);
-    //                 allowDrag = true;
-    //             }
+  //     onMouseMove(e, data) {
+  //         if (data) {
+  //             const { x, y, oX, oY } = data;
+  //             let { allowDrag } = data;
+  //             const [mX, mY] = [e.pageX, e.pageY];
+  //             const dist = distance(x, mX, y, mY);
 
-    //             if (!allowDrag) return;
+  //             if (dist > 30) {
+  //                 // setDragLocked(true);
+  //                 allowDrag = true;
+  //             }
 
-    //             const [nX, nY] = [oX + (mX - x), oY + (mY - y)];
+  //             if (!allowDrag) return;
 
-    //             handlers.current.onPositionChange?.(name, nY, nX, true);
-    //         }
-    //     },
+  //             const [nX, nY] = [oX + (mX - x), oY + (mY - y)];
 
-    //     onMouseUp() {
-    //         handlers.current.onSnap?.(name);
-    //     },
-    // }, [headerRef, detached, visible, locked]);
+  //             handlers.current.onPositionChange?.(name, nY, nX, true);
+  //         }
+  //     },
 
-    // Panel resizing
-    // useDrag({
-    //     elementRef: resizerRef,
-    //     disabled: locked || positioning,
-    //     capture: true,
-    //     passive: true,
+  //     onMouseUp() {
+  //         handlers.current.onSnap?.(name);
+  //     },
+  // }, [headerRef, detached, visible, locked]);
 
-    //     onMouseDown(e) {
-    //         const target = e.target as HTMLElement;
-    //         const type = target.dataset.resize;
-    //         const shift = (() => {
-    //             switch (type) {
-    //                 case 'top-left':
-    //                     return 'top-left';
-    //                 case 'top':
-    //                 case 'top-right':
-    //                     return 'top';
-    //                 case 'left':
-    //                 case 'bottom-left':
-    //                     return 'left';
-    //             }
-    //         })();
+  // Panel resizing
+  // useDrag({
+  //     elementRef: resizerRef,
+  //     disabled: locked || positioning,
+  //     capture: true,
+  //     passive: true,
 
-    //         const resizeDirections = (() => {
-    //             return {
-    //                 x: type?.match(/left|right/i) !== null,
-    //                 y: type?.match(/top|bottom/i) !== null,
-    //             };
-    //         })();
+  //     onMouseDown(e) {
+  //         const target = e.target as HTMLElement;
+  //         const type = target.dataset.resize;
+  //         const shift = (() => {
+  //             switch (type) {
+  //                 case 'top-left':
+  //                     return 'top-left';
+  //                 case 'top':
+  //                 case 'top-right':
+  //                     return 'top';
+  //                 case 'left':
+  //                 case 'bottom-left':
+  //                     return 'left';
+  //             }
+  //         })();
 
-    //         setResizing(type);
-    //         handlers.current.onResizeStart?.();
+  //         const resizeDirections = (() => {
+  //             return {
+  //                 x: type?.match(/left|right/i) !== null,
+  //                 y: type?.match(/top|bottom/i) !== null,
+  //             };
+  //         })();
 
-    //         return {
-    //             pos: [e.pageX, e.pageY],
-    //             type,
-    //             width,
-    //             maxWidth,
-    //             height,
-    //             top,
-    //             left,
-    //             resizeDirections,
-    //             shift,
-    //         };
-    //     },
-    //     onMouseMove(e, data) {
-    //         if (data) {
-    //             const {
-    //                 pos,
-    //                 width: w,
-    //                 height: h,
-    //                 maxWidth,
-    //                 top: t,
-    //                 left: l,
-    //                 resizeDirections,
-    //                 shift,
-    //             } = data;
+  //         setResizing(type);
+  //         handlers.current.onResizeStart?.();
 
-    //             const [sX, sY] = pos;
+  //         return {
+  //             pos: [e.pageX, e.pageY],
+  //             type,
+  //             width,
+  //             maxWidth,
+  //             height,
+  //             top,
+  //             left,
+  //             resizeDirections,
+  //             shift,
+  //         };
+  //     },
+  //     onMouseMove(e, data) {
+  //         if (data) {
+  //             const {
+  //                 pos,
+  //                 width: w,
+  //                 height: h,
+  //                 maxWidth,
+  //                 top: t,
+  //                 left: l,
+  //                 resizeDirections,
+  //                 shift,
+  //             } = data;
 
-    //             const wMod = resizeDirections.x ? e.pageX - sX : 0;
-    //             const hMod = resizeDirections.y ? e.pageY - sY : 0;
+  //             const [sX, sY] = pos;
 
-    //             const shiftLeft = isDefined(shift) && ['left', 'top-left'].includes(shift);
-    //             const shiftTop = isDefined(shift) && ['top', 'top-left'].includes(shift);
+  //             const wMod = resizeDirections.x ? e.pageX - sX : 0;
+  //             const hMod = resizeDirections.y ? e.pageY - sY : 0;
 
-    //             const width = clamp((shiftLeft ? w - wMod : w + wMod), DEFAULT_PANEL_WIDTH, maxWidth);
-    //             const height = clamp((shiftTop ? h - hMod : h + hMod), DEFAULT_PANEL_HEIGHT, t + h);
+  //             const shiftLeft = isDefined(shift) && ['left', 'top-left'].includes(shift);
+  //             const shiftTop = isDefined(shift) && ['top', 'top-left'].includes(shift);
 
-    //             const top = shiftTop ? (t + (h - height)) : t;
-    //             const left = shiftLeft ? (l + (w - width)) : l;
+  //             const width = clamp((shiftLeft ? w - wMod : w + wMod), DEFAULT_PANEL_WIDTH, maxWidth);
+  //             const height = clamp((shiftTop ? h - hMod : h + hMod), DEFAULT_PANEL_HEIGHT, t + h);
 
-    //             handlers.current.onResize(
-    //                 name,
-    //                 width,
-    //                 height,
-    //                 top,
-    //                 left,
-    //             );
-    //         }
-    //     },
-    //     onMouseUp() {
-    //         handlers.current.onResizeEnd?.();
-    //         setResizing(undefined);
-    //     },
-    // }, [handlers, detached, width, maxWidth, height, top, left, visible, locked, positioning]);
+  //             const top = shiftTop ? (t + (h - height)) : t;
+  //             const left = shiftLeft ? (l + (w - width)) : l;
 
-    return (
-        <Block
-            ref={panelRef}
-            name="panel"
-            mix={name}
-            mod={mods}
-            style={{ ...style, ...coordinates }}
-        >
-            <Elem name="content">
-                {!locked && (
-                    <Elem
-                        ref={headerRef}
-                        name="header"
-                        onClick={!detached ? handleExpand : undefined}
-                    >
-                        {(visible || detached) && (
-                            <Elem name="title">{title}</Elem>
-                        )}
+  //             handlers.current.onResize(
+  //                 name,
+  //                 width,
+  //                 height,
+  //                 top,
+  //                 left,
+  //             );
+  //         }
+  //     },
+  //     onMouseUp() {
+  //         handlers.current.onResizeEnd?.();
+  //         setResizing(undefined);
+  //     },
+  // }, [handlers, detached, width, maxWidth, height, top, left, visible, locked, positioning]);
 
-                        <Elem
-                            name="toggle"
-                            mod={{ enabled: visible }}
-                            onClick={(detached && !visible) ? handleExpand : handleCollapse}
-                            data-tooltip={tooltipText}
-                        >
-                            {currentIcon}
-                        </Elem>
-                    </Elem>
-                )}
-                {visible && (
-                    <Elem name="body">
-                        <Block name={name}>
-                            {children}
-                        </Block>
-                    </Elem>
-                )}
-            </Elem>
-
-            {visible && !positioning && !locked && (
-                <Elem name="resizers" ref={resizerRef} mod={{ locked: positioning || locked }}>
-                    {resizers.map((res) => {
-                        const shouldRender = ((res === 'left' || res === 'right') && alignment !== res || detached) || detached;
-
-                        return shouldRender ? (
-                            <Elem
-                                key={res}
-                                name="resizer"
-                                mod={{ drag: res === resizing }}
-                                data-resize={res}
-                            />
-                        ) : null;
-                    })}
-                </Elem>
+  return (
+    <Block
+      ref={panelRef}
+      name="panel"
+      mix={name}
+      mod={mods}
+      style={{ ...style, ...coordinates }}
+    >
+      <Elem name="content">
+        {!locked && (
+          <Elem
+            ref={headerRef}
+            name="header"
+            onClick={!detached ? handleExpand : undefined}
+          >
+            {(visible || detached) && (
+              <Elem name="title">{title}</Elem>
             )}
-        </Block>
-    );
+
+            <Elem
+              name="toggle"
+              mod={{ enabled: visible }}
+              onClick={(detached && !visible) ? handleExpand : handleCollapse}
+              data-tooltip={tooltipText}
+            >
+              {currentIcon}
+            </Elem>
+          </Elem>
+        )}
+        {visible && (
+          <Elem name="body">
+            <Block name={name}>
+              {children}
+            </Block>
+          </Elem>
+        )}
+      </Elem>
+
+      {visible && !positioning && !locked && (
+        <Elem name="resizers" ref={resizerRef} mod={{ locked: positioning || locked }}>
+          {resizers.map((res) => {
+            const shouldRender = ((res === 'left' || res === 'right') && alignment !== res || detached) || detached;
+
+            return shouldRender ? (
+              <Elem
+                key={res}
+                name="resizer"
+                mod={{ drag: res === resizing }}
+                data-resize={res}
+              />
+            ) : null;
+          })}
+        </Elem>
+      )}
+    </Block>
+  );
 };

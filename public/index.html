@@ -8,7 +8,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <meta name="theme-color" content="#000000">
 
-        <link rel="stylesheet" href="/styles/main.css">
+        <!-- <link rel="stylesheet" href="/styles/main.css"> -->
         <link rel="stylesheet" href="element.css">
         <script src="vue.global.prod.js"></script>
         <script src="element-plus.js"></script>
@@ -37,7 +37,7 @@
 
             <div class="advice-container" :style="`left:${dynamicLeft}px`" v-if="tasks.length>0">
 
-                <div v-if="['review', 'arbitration'].includes(curMode)&&totalOpinions.length>0">
+                <div v-if="['review', 'arbitration'].includes(curMode)&&totalOpinions.length>0&&tasks.length>0">
                     <div class="advice-title">诊断意见</div>
                     <el-tabs v-model="activeName" type="border-card" size="small" style="width: 300px;">
                         <el-tab-pane :label="item.userName" :name="index" v-for="(item, index) in totalOpinions"
@@ -167,7 +167,8 @@
             }
         </style>
         <script>
-
+            //   var serverUrl = "http://192.168.3.15:8080";
+            var serverUrl = "";
             //引入qs
             const qs = Qs;
             //使用axios
@@ -265,7 +266,8 @@
                             },
                         ],
                         selectLesion: '',
-                        totalOpinions: []
+                        totalOpinions: [],
+                        createdBy: ''//当前账号的用户名
                     }
                 },
                 methods: {
@@ -298,7 +300,7 @@
                             processType: this.getUrlParamFromUrl("processType"),
                             hasLabel: this.getUrlParamFromUrl("hasLabel"),
                         }
-                        service.get("http://192.168.3.15:8080/api/annotation-service/annotation/task/image/data", { params: postData }).then((rsp => {
+                        service.get(`${serverUrl}/api/annotation-service/annotation/task/image/data`, { params: postData }).then((rsp => {
                             this.submitLoading = false;
                             if (rsp.status == 200 && rsp.data.success) {
                                 this.form.opinion = rsp.data.data.opinion;
@@ -310,31 +312,48 @@
                                     if (!Array.isArray(tasks)) {
                                         tasks = [];
                                     }
-                                    tasks.forEach(x => {
-                                        // x.id = parseInt(x.id);
-                                        if (x.annotations && x.annotations.length == 0) {
-                                            x.annotations = [{ id: userId, result: [] }]
-                                        } else {
-                                            x.annotations.forEach(y => {
-                                                if (y.result && y.result.length == 0) {
-                                                    x.annotations = [{ id: userId, result: [] }]
-                                                } else {
-                                                    if (!this.hasLabel) {//没有标注
-                                                        y.result = []
+                                    const url = `${serverUrl}/api/business/getCurrentLoginUserInfo`;
+                                    service.get(url).then((rsp => {//获取用户名
+                                        if (rsp.status == 200 && rsp.data.success) {
+                                            let result = rsp.data;
+                                            if (rsp.data.data) {
+                                                //获取用户名
+                                                this.createdBy = rsp.data.data.realName;
+                                                tasks.forEach(x => {
+                                                    if (!Number.isNaN(x.id)) {
+                                                        x.id = parseInt(x.id);
                                                     }
-                                                    if (this.isView) {//默认只读上锁，不可编辑
-                                                        y.result.forEach(z => {
-                                                            z.locked = true
-                                                        });
-                                                    }
-                                                }
+                                                    if (x.annotations && x.annotations.length == 0) {
+                                                        x.annotations = [{ id: userId, createdBy: this.createdBy, result: [] }]
+                                                    } else {
+                                                        x.annotations.forEach(y => {
+                                                            if (!y.id) {
+                                                                y.id = userId;
+                                                            }
+                                                            if (!y.createdBy) {
+                                                                y.createdBy = this.createdBy;
+                                                            }
+                                                            if (!this.hasLabel) {//没有标注
+                                                                y.result = []
+                                                            }
+                                                            if (this.isView) {//默认只读上锁，不可编辑
+                                                                y.result.forEach(z => {
+                                                                    z.locked = true
+                                                                });
+                                                            }
 
-                                            })
+
+                                                        })
+                                                    }
+                                                });
+                                                this.tasks = tasks;
+                                                console.log(this.tasks);
+                                                this.getDefaultLesionOptions();
+                                                this.getLabelByTaskId();
+                                            }
                                         }
-                                    });
-                                    this.tasks = tasks;
-                                    this.getDefaultLesionOptions();
-                                    this.getLabelByTaskId();
+                                    }))
+
                                 }
                             }
                         })).catch((error) => {
@@ -361,7 +380,7 @@
                             })
                         }
                         console.log(this.tasks);
-                        service.post("http://192.168.3.15:8080/api/annotation-service/annotation/task/data/commit", postData).then((rsp => {
+                        service.post(`${serverUrl}/api/annotation-service/annotation/task/data/commit`, postData).then((rsp => {
                             this.submitLoading = false;
                             if (rsp.status == 200 && rsp.data.success) {
                                 this.dialogVisible = false;
@@ -402,14 +421,9 @@
                         this.ls = new LabelStudio("label-studio", options);
                         this.ls.on("storageInitialized", (store) => {
                             this.ls.on("selectAnnotation", (next) => {
-                                //当地选中的anotation
+                                //当选中左边的anotation
                                 this.selectAnnotationIndex = this.tasks[this.imageIndex].annotations.findIndex(x.id == next.pk);
                             })
-
-                            // this.ls.on("regionFinishedDrawing", (region, list) => {
-                            //     console.log("finish drawing", region)
-                            // })
-
                         })
 
                         this.ls.on("detailPannelClick", (value) => {
@@ -436,7 +450,7 @@
                     },
                     getLabelByTaskId() {
                         let taskId = this.getUrlParamFromUrl("taskId");
-                        service.get(`http://192.168.3.15:8080/api/annotation-service/task/getLabelSet?taskId=${taskId}`).then((rsp => {
+                        service.get(`${serverUrl}/api/annotation-service/task/getLabelSet?taskId=${taskId}`).then((rsp => {
                             this.submitLoading = false;
                             if (rsp.status == 200 && rsp.data.success) {
                                 let result = rsp.data;
@@ -457,7 +471,7 @@
                         }))
                     },
                     getLableTreesBySetId(labelSetId, totalLabels) {
-                        service.get(`http://192.168.3.15:8080/api/data-center/labelSet/tree?id=${labelSetId}`).then((rsp => {
+                        service.get(`${serverUrl}/api/data-center/labelSet/tree?id=${labelSetId}`).then((rsp => {
                             this.submitLoading = false;
                             if (rsp.status == 200 && rsp.data.success) {
                                 let result = rsp.data;
@@ -563,7 +577,7 @@
                         let taskId = this.getUrlParamFromUrl("taskId");
                         let dataId = this.getUrlParamFromUrl("dataId");
                         let processType = this.getUrlParamFromUrl("processType");
-                        const url = `http://192.168.3.15:8080/api/annotation-service/annotation/task/audit?taskId=${taskId}&dataId=${dataId}&processType=${processType}`;
+                        const url = `${serverUrl}/api/annotation-service/annotation/task/audit?taskId=${taskId}&dataId=${dataId}&processType=${processType}`;
                         service.get(url).then((rsp => {
                             if (rsp.status == 200 && rsp.data.success) {
                                 let result = rsp.data;
@@ -572,22 +586,11 @@
                                     if (result.data.length > 0) {
                                         this.totalOpinions = result.data;
                                     }
-                                    // else {
-                                    //     this.totalOpinions = [
-                                    //         {
-                                    //             userName: 'zq',
-                                    //             opinion: '阿斯顿发送到发送到发'
-                                    //         }, {
-
-                                    //             userName: 'dh',
-                                    //             opinion: '阿斯顿发送到发送到发'
-                                    //         }
-                                    //     ]
-                                    // }
                                 }
                             }
                         }))
-                    }
+                    },
+
                 },
 
 
