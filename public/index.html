@@ -35,7 +35,7 @@
 
 
 
-            <div class="advice-container" :style="`left:${dynamicLeft}px`" v-if="tasks.length>0">
+            <!-- <div class="advice-container" :style="`left:${dynamicLeft}px`" v-if="tasks.length>0">
 
                 <div v-if="['review', 'arbitration'].includes(curMode)&&totalOpinions.length>0&&tasks.length>0">
                     <div class="advice-title">诊断意见</div>
@@ -50,6 +50,24 @@
                     <div class="advice-title">{{getOpinionTitle()}}</div>
                     <el-input style="width: 300px;" :rows="5" v-model="form.opinion" type="textarea" :disabled="isView"
                         placeholder="请输入" maxlength="100" show-word-limit>
+                    </el-input>
+                </div>
+            </div> -->
+            <div class="advice-container" :style="`left:${dynamicLeft}px`" v-if="tasks.length>0&&leftPannelVisible">
+
+                <div v-if="['review', 'arbitration'].includes(curMode)&&totalOpinions.length>0&&tasks.length>0">
+                    <div class="advice-title">诊断意见</div>
+                    <el-tabs v-model="activeName" type="border-card" size="small" style="width: 300px;margin:10px">
+                        <el-tab-pane :label="item.userName" :name="index" v-for="(item, index) in totalOpinions"
+                            :key="index">
+                            <div class="advice-content">{{item.opinion}}</div>
+                        </el-tab-pane>
+                    </el-tabs>
+                </div>
+                <div style="margin-top: 10px">
+                    <div class="advice-title">{{getOpinionTitle()}}</div>
+                    <el-input style="width: 300px;margin:10px" :rows="4" v-model="form.opinion" type="textarea"
+                        :disabled="isView" placeholder="请输入" maxlength="100" show-word-limit>
                     </el-input>
                 </div>
             </div>
@@ -98,6 +116,7 @@
                 width: 180px;
                 height: 100vh;
                 box-sizing: border-box;
+                border-right: 1px solid #e1e0e0;
                 overflow-y: auto;
                 overflow-x: hidden;
             }
@@ -114,7 +133,7 @@
 
             .label-studio {
                 width: calc(100% - 180px) !important;
-                height: calc(100vh - 160px) !important;
+                /* height: calc(100vh - 160px) !important; */
                 box-sizing: border-box;
             }
 
@@ -127,10 +146,10 @@
             .advice-container {
                 position: absolute;
                 bottom: 20px;
-                left: 500px;
-                z-index: 200;
-                margin: 0 0 10px 20px;
-                display: flex;
+                left: 180px;
+                z-index: 180;
+                margin: 0 0 10px 0px;
+                /* display: flex; */
             }
 
             .advice-content {
@@ -146,9 +165,11 @@
 
             .advice-title {
                 background-color: #f2f2f2;
-                height: 32px;
-                line-height: 32px;
+                color: rgba(0, 0, 0, 0.5);
+                height: 40px;
+                line-height: 40px;
                 padding-left: 10px;
+                width: 320px;
             }
 
             .el-tabs {
@@ -161,7 +182,7 @@
 
             .lesion-container {
                 position: absolute;
-                z-index: 9999;
+                z-index: 120;
                 top: 8px;
                 right: 340px;
             }
@@ -251,7 +272,7 @@
                         templateLabels: "",
                         labelInfos: "",
                         activeName: 0,
-                        dynamicLeft: 500,
+                        dynamicLeft: 180,
                         curMode: 'label',//label(标注)/review(审核)/arbitration(仲裁)  默认查看（label）
                         hasLabel: true,//是否包含标注 
                         isView: false,//不能提交，不能画图，输入框disable,按钮隐藏
@@ -267,7 +288,8 @@
                         ],
                         selectLesion: '',
                         totalOpinions: [],
-                        createdBy: ''//当前账号的用户名
+                        createdBy: '',//当前账号的用户名,
+                        leftPannelVisible: true
                     }
                 },
                 methods: {
@@ -323,6 +345,7 @@
                                                     if (!Number.isNaN(x.id)) {
                                                         x.id = parseInt(x.id);
                                                     }
+                                                    x.data.image = `${x.data.image}?token=${window.token}`
                                                     if (x.annotations && x.annotations.length == 0) {
                                                         x.annotations = [{ id: userId, createdBy: this.createdBy, result: [] }]
                                                     } else {
@@ -336,12 +359,14 @@
                                                             if (!this.hasLabel) {//没有标注
                                                                 y.result = []
                                                             }
-                                                            if (this.isView) {//默认只读上锁，不可编辑
-                                                                y.result.forEach(z => {
+                                                            y.result.forEach(z => {
+                                                                if (!z.dpi) {
+                                                                    z.dpi = x.dpi ? x.dpi : 762;//设置图片dpi
+                                                                }
+                                                                if (this.isView) {//默认只读上锁，不可编辑
                                                                     z.locked = true
-                                                                });
-                                                            }
-
+                                                                }
+                                                            });
 
                                                         })
                                                     }
@@ -426,8 +451,9 @@
                             })
                         })
 
-                        this.ls.on("detailPannelClick", (value) => {
-                            that.dynamicLeft = value ? 500 : 180;
+                        this.ls.on("ListPannelClick", (value) => {
+                            // that.dynamicLeft = value ? 500 : 180;
+                            this.leftPannelVisible = value;
                         });
 
                         this.ls.on("updateAnnotation", (LS, annotation) => {
@@ -487,13 +513,14 @@
 
 
                     getConfigViews() {
+                        console.log('templateLabels', this.templateLabels);
                         var labels = [];
                         this.templateLabels.forEach((x, index) => {
                             //selected 设置底部标签默认选中状态
                             if (index == 0) {
-                                labels.push(`<label name="${x.value}" value="${x.name}" selected="true"  background="${x.color}"></label>`)
+                                labels.push(`<label tid="${x.value}}"  value="${x.name}" selected="true"  background="${x.color}"></label>`)
                             } else {
-                                labels.push(`<label name="${x.value}" value="${x.name}"  background="${x.color}"></label>`)
+                                labels.push(`<label tid="${x.value}}" value="${x.name}"  background="${x.color}"></label>`)
                             }
                         });
                         let config = `

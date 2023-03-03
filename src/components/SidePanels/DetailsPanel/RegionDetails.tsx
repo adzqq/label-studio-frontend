@@ -130,7 +130,6 @@ const DynamicLabelContent = inject('store')(
       region.setLabelContent(JSON.stringify(tempData));
     };
 
-    console.log(region);
 
     /* 获取分类信息数据 */
     const getClassificationData = number => {
@@ -232,8 +231,6 @@ const DynamicLesionNumber= inject('store')(
     };
 
     const  { isView } = getUrlParams();
-
-    console.log('DynamicLesionNumber',region.serialize());
 
     return (
       <div style={{ margin:'10px' }}>
@@ -342,6 +339,10 @@ const CalcRegionData= inject('store')(
     }; 
     const { area,longDiameter,shortDiameter } = calcRegion();
 
+
+    region.setCalcArea(Number.parseFloat(area));
+    region.setLongDiameter(Number.parseFloat(longDiameter));
+    region.setShortDiameter(Number.parseFloat(shortDiameter));
     return (
       <div style={{ margin:'10px' }}>
         <span>面积：{area}mm{String.fromCharCode(178)}</span>
@@ -408,7 +409,7 @@ export const RegionDetailsMeta: FC<RegionDetailsMetaProps> = observer(({
       {editMode&&!isView ? (
         <textarea
           ref={el => input.current = el}
-          placeholder="Meta"
+          placeholder="描述"
           className={bem.elem('meta-text').toClassName()}
           value={region.normInput}
           onChange={(e) => saveMeta(e.target.value)}

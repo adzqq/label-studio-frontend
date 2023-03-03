@@ -156,8 +156,8 @@ const SidePanelsComponent: FC<SidePanelsProps> = ({
     const position = normalizeOffsets(name, panel.top, panel.left, visible);
     //panel开关事件传递
 
-    if(name==='details'){
-      getEnv(currentEntity.regionStore).events.invoke('detailPannelClick', visible);
+    if(name==='outliner'){
+      getEnv(currentEntity.regionStore).events.invoke('ListPannelClick', visible);
     }
        
     updatePanel(name, {
