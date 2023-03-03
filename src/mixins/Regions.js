@@ -315,7 +315,7 @@ const RegionsMixin = types
                     if (wasNotSelected) {
                         annotation.selectArea(self);
                     } else {
-                        // annotation.unselectAll();
+                        annotation.unselectAll();
                     }
                 }
             },
@@ -350,8 +350,12 @@ const RegionsMixin = types
 
                 //画完后默认选中状态,并且设置默认病灶编号
                 setTimeout(() => {
-                    self._selectArea(false);
-                    self.lesionNumber = self.lesionNumber ? self.lesionNumber : (sessionStorage.getItem('defaultLesionNumber') || '0');
+                    console.log(self);
+                    // self.lesionNumber = self.lesionNumber ? self.lesionNumber : (sessionStorage.getItem('defaultLesionNumber') || '0');
+                    self.setCalcArea(self.calcArea + 0.01)
+                    if (!self.selected) {
+                        self._selectArea(false);
+                    }
                 }, 100);
 
                 // everything above is related to dynamic preannotations

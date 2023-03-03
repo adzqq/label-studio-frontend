@@ -6,48 +6,49 @@ import InfoModal from '../components/Infomodal/Infomodal';
  * Wrapper of Control item
  */
 const LabelMixin = types.model('LabelMixin').actions(self => ({
-  /**
-   * Usage check of selected controls before send annotation to server
-   */
-  beforeSend() {
-    const names = self.selectedValues();
+    /**
+     * Usage check of selected controls before send annotation to server
+     */
+    beforeSend() {
+        const names = self.selectedValues();
 
-    if (names && self.type === self._type) {
-      self.unselectAll();
-    }
-  },
+        if (names && self.type === self._type) {
+            self.unselectAll();
+        }
+    },
 
-  // copy state from another Labels object
-  copyState(labels) {
-    // self.unselectAll();
-    labels.selectedValues().forEach(l => {
-      self.findLabel(l).setSelected(true);
-    });
-  },
+    // copy state from another Labels object
+    copyState(labels) {
+        // self.unselectAll();
+        labels.selectedValues().forEach(l => {
+            self.findLabel(l).setSelected(true);
+        });
+    },
 
-  fromStateJSON(obj) {
-    self.unselectAll();
 
-    const objectType = obj.value[self._type];
+    fromStateJSON(obj) {
+        self.unselectAll();
 
-    if (!objectType) {
-      InfoModal.error(`Error with ${self._type}.`);
-      return;
-    }
+        const objectType = obj.value[self._type];
 
-    if (obj.id) self.pid = obj.id;
+        if (!objectType) {
+            InfoModal.error(`Error with ${self._type}.`);
+            return;
+        }
 
-    objectType.forEach(obj => {
-      const findedObj = self.findLabel(obj);
+        if (obj.id) self.pid = obj.id;
 
-      if (!findedObj) {
-        InfoModal.error(`Error with ${self._type}. Not found: ` + objectType);
-        return;
-      }
+        objectType.forEach(obj => {
+            const findedObj = self.findLabel(obj);
 
-      findedObj.setSelected(true);
-    });
-  },
+            if (!findedObj) {
+                InfoModal.error(`Error with ${self._type}. Not found: ` + objectType);
+                return;
+            }
+
+            findedObj.setSelected(true);
+        });
+    },
 }));
 
 export default LabelMixin;

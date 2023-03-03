@@ -198,6 +198,8 @@ const useEventHandlers = ({
     }
   }, []);
 
+  
+
   const onMouseEnter = useCallback(({ node }: any) => {
     onHover(true, node.key);
     node.item?.setHighlight(true);

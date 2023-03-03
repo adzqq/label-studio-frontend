@@ -367,7 +367,7 @@ export const RegionDetailsMain: FC<{ region: any }> = inject('store')(observer((
       <RegionEditor region={region} />
       <DynamicLabelContent   store={store} region={region}></DynamicLabelContent>
       <DynamicLesionNumber store={store} region={region}></DynamicLesionNumber>
-      {['rectangleregion','ellipseregion','polygonregion'].includes(region.type)&&<CalcRegionData store={store} region={region}></CalcRegionData>}
+      {/* {['rectangleregion','ellipseregion','polygonregion'].includes(region.type)&&<CalcRegionData store={store} region={region}></CalcRegionData>} */}
     </>
   );
 }));
