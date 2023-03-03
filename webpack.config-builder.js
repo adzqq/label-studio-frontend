@@ -218,6 +218,13 @@ const devServer = () => {
                 overlay: false,
             },
             proxy: {
+                '/api/preview': {
+                    target: "http://192.168.3.40:10081",
+                    changeOrigin: true,
+                    pathRewrite: {
+                        '^/api/preview/': '/api/preview/' // 本身的接口地址没有 '/api' 这种通用前缀，所以要rewrite，如果本身有则去掉
+                    }
+                },
                 ['/api/']: {
                     target: "http://192.168.3.40:10080",
                     changeOrigin: true

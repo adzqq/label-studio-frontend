@@ -342,9 +342,9 @@
                                                 //获取用户名
                                                 this.createdBy = rsp.data.data.realName;
                                                 tasks.forEach(x => {
-                                                    // if (!x.data.image.includes('token=')) {
-                                                    //     x.data.image = x.data.image + "&token=" + window.token;
-                                                    // }
+                                                    if (!x.data.image.includes('token=')) {
+                                                        x.data.image = x.data.image + "&token=" + window.token;
+                                                    }
 
                                                     if (!Number.isNaN(x.id)) {
                                                         x.id = parseInt(x.id);
@@ -526,7 +526,6 @@
                                 labels.push(`<label tid="${x.value}}" value="${x.name}"  background="${x.color}"></label>`)
                             }
                         });
-                        labels.push(`<label tid="123412341234" value="模拟数据"  background="#333"></label>`)
                         let config = `
                             <View>
                                 <Ellipse name="ellipse1-1" toName="image" />
