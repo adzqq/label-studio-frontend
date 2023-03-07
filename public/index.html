@@ -25,8 +25,12 @@
 
         <div id="ls-container" class="ls-container">
             <div class="image-container">
-                <img style="margin-top: 20px;" @click="onImageClick(item,index)" v-for="(item, index) in tasks"
-                    :key="index" :src="item.data.image" class="left-pannel-img" />
+                <img v-if="isImg" style="margin-top: 20px;" @click="onImageClick(item,index)"
+                    v-for="(item, index) in tasks" :key="index" :src="item.data.image" class="left-pannel-img" />
+
+                <div v-else="!isImg" style="margin-top: 20px;" @click="onImageClick(item,index)"
+                    v-for="(item, index) in tasks" :key="index" :src="item.data.image" class="left-pannel-img"
+                    :class="{'left-pannel-time':!isImg}"></div>
             </div>
 
 
@@ -53,7 +57,7 @@
                     </el-input>
                 </div>
             </div> -->
-            <div class="advice-container" :style="`left:${dynamicLeft}px`" v-if="tasks.length>0&&leftPannelVisible">
+            <!-- <div class="advice-container" :style="`left:${dynamicLeft}px`" v-if="tasks.length>0&&leftPannelVisible">
 
                 <div v-if="['review', 'arbitration'].includes(curMode)&&totalOpinions.length>0&&tasks.length>0">
                     <div class="advice-title">诊断意见</div>
@@ -70,7 +74,7 @@
                         :disabled="isView" placeholder="请输入" maxlength="100" show-word-limit>
                     </el-input>
                 </div>
-            </div>
+            </div> -->
 
             <div class="lesion-container" v-if="!isView&&tasks.length>0">
                 病灶编号： <el-select v-model="selectLesion" placeholder="请选择" @change="onSelectChanged" style="width:100px">
@@ -141,6 +145,10 @@
                 height: 140px;
                 width: 140px;
                 margin: 20px;
+            }
+
+            .left-pannel-time {
+                background-color: #e1e0e0;
             }
 
             .advice-container {
@@ -247,12 +255,13 @@
                     "topbar",
                     "instruction",
                     "annotations:tabs",
-                    "annotations:menu",
+                    "annotations:menu"
                 ],
                 config: "",
                 task: null,
                 description: '',
-                labelInfos: ""
+                labelInfos: "",
+                isImg: false,//区分图片和心电标注
             }
 
 
@@ -314,6 +323,7 @@
                             cacheResults = cacheResults.concat(result);
                         });
                         this.tasks[this.imageIndex].annotations[this.selectAnnotationIndex].result = cacheResults;
+                        console.log(this.tasks);
                     },
                     getLabelDataFromServer() {
                         let postData = {
@@ -341,14 +351,11 @@
                                             if (rsp.data.data) {
                                                 //获取用户名
                                                 this.createdBy = rsp.data.data.realName;
-                                                tasks.forEach(x => {
+                                                tasks.forEach((x, index) => {
                                                     if (!x.data.image.includes('token=')) {
                                                         x.data.image = x.data.image + "&token=" + window.token;
                                                     }
-
-                                                    if (!Number.isNaN(x.id)) {
-                                                        x.id = parseInt(x.id);
-                                                    }
+                                                    x.id = index;
                                                     if (x.annotations && x.annotations.length == 0) {
                                                         x.annotations = [{ id: userId, createdBy: this.createdBy, result: [] }]
                                                     } else {
@@ -375,7 +382,8 @@
                                                     }
                                                 });
                                                 this.tasks = tasks;
-                                                console.log(this.tasks);
+                                                //测试心电标注数
+                                                this.getCsvFromServer();
                                                 this.getDefaultLesionOptions();
                                                 this.getLabelByTaskId();
                                             }
@@ -385,7 +393,6 @@
                                 }
                             }
                         })).catch((error) => {
-                            console.log(error);
                             ElMessage({
                                 showClose: true,
                                 message: error && error.message ? error.message : "请求错误请重试",
@@ -394,9 +401,67 @@
 
                         })
                     },
+
+                    getCsvFromServer() {
+                        if (this.isImg) {
+                            return;
+                        }
+                        this.tasks = [
+                            {
+                                id: 1,
+                                data: {
+                                    csv: 'https://htx-pub.s3.amazonaws.com/datasets/timeseries/time-series-velocity-acceleration.csv',
+                                },
+                                annotations: [
+                                    {
+                                        id: 1001,
+                                        createdBy: "邓鸿",
+                                        result: [
+                                            // {
+                                            //     value: {
+                                            //         start: 4,
+                                            //         end: 23,
+                                            //         instant: false,
+                                            //         timeserieslabels: ['Run'],
+                                            //     },
+                                            //     id: 'Oek-tTCZ6_',
+                                            //     from_name: 'label',
+                                            //     to_name: 'ts',
+                                            //     type: 'timeserieslabels',
+                                            //     origin: 'manual',
+                                            // },
+                                            // {
+                                            //     value: {
+                                            //         start: 52,
+                                            //         end: 69,
+                                            //         instant: false,
+                                            //         timeserieslabels: ['Walk'],
+                                            //     },
+                                            //     id: 'U0S2_cORxv',
+                                            //     from_name: 'label',
+                                            //     to_name: 'ts',
+                                            //     type: 'timeserieslabels',
+                                            //     origin: 'manual',
+                                            // },
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+
+
                     submitAnotations() {
                         this.submitLoading = true;
                         this.setCurrentTaskData();
+                        let submitTask = JSON.parse(JSON.stringify(this.tasks))
+                        //提交的时候去掉token地址
+                        submitTask.forEach(item => {
+                            if (item.data.image.includes('token')) {
+                                item.data.image = item.data.image.substring(0, item.data.image.indexOf('&token='))
+                            }
+                        });
+
                         let postData = {
                             taskId: this.getUrlParamFromUrl("taskId"),
                             dataId: this.getUrlParamFromUrl("dataId"),
@@ -404,10 +469,9 @@
                             opinion: this.form.opinion,
                             progress: this.form.progress,
                             annotationData: JSON.stringify({
-                                tasks: this.tasks,
+                                tasks: submitTask,
                             })
                         }
-                        console.log(this.tasks);
                         service.post(`${serverUrl}/api/annotation-service/annotation/task/data/commit`, postData).then((rsp => {
                             this.submitLoading = false;
                             if (rsp.status == 200 && rsp.data.success) {
@@ -477,24 +541,26 @@
                         }
                         return result;
                     },
-                    getLabelByTaskId() {
+                    getLabelByTaskId(isHeartbeat = false) {
                         let taskId = this.getUrlParamFromUrl("taskId");
                         service.get(`${serverUrl}/api/annotation-service/task/getLabelSet?taskId=${taskId}`).then((rsp => {
                             this.submitLoading = false;
                             if (rsp.status == 200 && rsp.data.success) {
-                                let result = rsp.data;
-                                if (result && result.data && Array.isArray(result.data.labels)) {
-                                    //options配置中的标签内容
-                                    result.data.labels.forEach(item => {
-                                        item.label = item.title;
-                                        item.value = item.id;
-                                    });
-                                    this.templateLabels = result.data.labels.map(x => {
-                                        return { name: x.title, value: x.id, color: x.color }
-                                    })
-                                    let totalLabels = result.data.labels;
-                                    const labelSetId = result.data.id || '';
-                                    this.getLableTreesBySetId(labelSetId, totalLabels);
+                                if (!isHeartbeat) {
+                                    let result = rsp.data;
+                                    if (result && result.data && Array.isArray(result.data.labels)) {
+                                        //options配置中的标签内容
+                                        result.data.labels.forEach(item => {
+                                            item.label = item.title;
+                                            item.value = item.id;
+                                        });
+                                        this.templateLabels = result.data.labels.map(x => {
+                                            return { name: x.title, value: x.id, color: x.color }
+                                        })
+                                        let totalLabels = result.data.labels;
+                                        const labelSetId = result.data.id || '';
+                                        this.getLableTreesBySetId(labelSetId, totalLabels);
+                                    }
                                 }
                             }
                         }))
@@ -536,6 +602,21 @@
                                 ${labels}
                                 </labels>
                             </View>`
+                        if (!this.isImg) {
+                            //心电标注
+                            config = `
+                            <View>
+                                <TimeSeries name="ts" valueType="url"
+                                    timeColumn="time" value="$csv"
+                                    sep="," overviewChannels="velocity">
+                                    <Channel column="velocity" strokeColor="#1f77b4"/>
+                                    <Channel column="acceleration" strokeColor="#ff7f0e"/>
+                                </TimeSeries>
+                                <TimeSeriesLabels  name="lbl" toName="ts">
+                                ${labels}
+                                </TimeSeriesLabels>
+                            </View>`
+                        }
                         return config
                     },
                     getDefaultLesionOptions() {
@@ -620,20 +701,24 @@
                             }
                         }))
                     },
-
                 },
 
 
                 mounted() {
                     window.token = this.getUrlParamFromUrl("token");
-                    this.hasLabel = this.getUrlParamFromUrl("hasLabel") === "false" ? false : true,
+                    this.isImg = this.getUrlParamFromUrl("isImg") === "false" ? false : true,
+                        this.hasLabel = this.getUrlParamFromUrl("hasLabel") === "false" ? false : true,
                         this.curMode = this.getUrlParamFromUrl("mode"),
                         this.isView = this.getUrlParamFromUrl("isView") === "false" ? false : true,
+                        setInterval(() => {
+                            this.getLabelByTaskId(true)
+                        }, 60 * 10000);
 
-                        document.addEventListener('DOMContentLoaded', (e) => {
-                            this.getLabelDataFromServer();
-                            this.getPersonOpinionByTaskId();
-                        })
+                    document.addEventListener('DOMContentLoaded', (e) => {
+
+                        this.getLabelDataFromServer();
+                        this.getPersonOpinionByTaskId();
+                    })
                 },
             });
             app.use(ElementPlus).mount("#ls-container");

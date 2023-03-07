@@ -228,7 +228,7 @@ const devServer = () => {
                 ['/api/']: {
                     target: "http://192.168.3.40:10080",
                     changeOrigin: true
-                }
+                },
             },
         }
     } : {};
